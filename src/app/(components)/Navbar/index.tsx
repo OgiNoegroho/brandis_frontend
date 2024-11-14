@@ -2,7 +2,7 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
-import { Bell, Menu, Moon, Settings, Sun } from "lucide-react";
+import { Bell, Menu, Moon, Settings, Sun, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -41,7 +41,7 @@ const Navbar = () => {
           />
 
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-non">
-            <Bell className="text-gray-500" size={20} />
+            <Search className="text-gray-500" size={20} />
           </div>
         </div>
       </div>
