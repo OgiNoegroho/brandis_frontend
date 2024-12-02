@@ -63,8 +63,20 @@ const OutletDetail = () => {
         aria-label="Outlet Details Tabs"
         selectedKey={activeTab}
         onSelectionChange={(key) => setActiveTab(String(key))}
+        className="gap-4"
       >
-        <Tab key="stock" title="Stock Overview">
+        <Tab 
+          key="stock" 
+          title={
+            <div className={`px-6 py-2 rounded-lg ${
+              activeTab === 'stock' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}>
+              Stock Overview
+            </div>
+          }
+        >
           <Card>
             <CardBody>
               <StockOverview />
@@ -72,7 +84,18 @@ const OutletDetail = () => {
           </Card>
         </Tab>
 
-        <Tab key="distribution" title="Distribution History">
+        <Tab 
+          key="distribution" 
+          title={
+            <div className={`px-6 py-2 rounded-lg ${
+              activeTab === 'distribution' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}>
+              Distribution History
+            </div>
+          }
+        >
           <Card>
             <CardBody>
               <DistributionHistory />
@@ -80,7 +103,18 @@ const OutletDetail = () => {
           </Card>
         </Tab>
 
-        <Tab key="returns" title="Return Management">
+        <Tab 
+          key="returns" 
+          title={
+            <div className={`px-6 py-2 rounded-lg ${
+              activeTab === 'returns' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-gray-100 hover:bg-gray-200'
+            }`}>
+              Return Management
+            </div>
+          }
+        >
           <Card>
             <CardBody>
               <ReturnManagement />

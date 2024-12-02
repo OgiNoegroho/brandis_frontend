@@ -1,171 +1,248 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
 import {
   Card,
   CardBody,
-  Button,
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
-} from "@nextui-org/react"; // Import Next UI components
+} from "@nextui-org/react";
 
+// Type Definitions
 type Batch = {
   id: number;
   name: string;
   productionDate: string;
   expirationDate: string;
+  quantity: number;
 };
 
+// Sample batch data
 const batches: Batch[] = [
-  { id: 1, name: "Batch 001", productionDate: "2024-01-10", expirationDate: "2025-01-10" },
-  { id: 2, name: "Batch 002", productionDate: "2024-02-15", expirationDate: "2025-02-15" },
-  { id: 3, name: "Batch 003", productionDate: "2024-03-20", expirationDate: "2025-03-20" },
-];
-
-const products = [
-  { id: 1, name: "Product A" },
-  { id: 2, name: "Product B" },
-  { id: 3, name: "Product C" },
+  { id: 1, name: "Batch 1", productionDate: "2024/03/05", expirationDate: "2025/03/05", quantity: 10 },
+  { id: 2, name: "Batch 2", productionDate: "2024/03/05", expirationDate: "2025/03/05", quantity: 20 },
+  { id: 3, name: "Batch 3", productionDate: "2024/03/05", expirationDate: "2025/03/05", quantity: 35 },
 ];
 
 const BatchManagement: React.FC = () => {
   const [showBatchForm, setShowBatchForm] = useState(false);
-  const [showAddProductsForm, setShowAddProductsForm] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+
+  // State for New Batch
   const [batchName, setBatchName] = useState("");
-  const [productionDate, setProductionDate] = useState<Date | null>(null);
-  const [expirationDate, setExpirationDate] = useState<Date | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState<number>(0);
-  const [selectedBatchId, setSelectedBatchId] = useState<number | null>(null);
+  const [quantity, setQuantity] = useState(0);
+  const [productionDate, setProductionDate] = useState("");
+  const [expirationDate, setExpirationDate] = useState("");
 
-  const handleAddNewBatch = () => setShowBatchForm(true);
-  const handleSaveBatch = () => {
-    console.log("Batch created:", { batchName, productionDate, expirationDate });
-    setShowBatchForm(false);
-  };
-
-  const handleAddProductToBatch = () => {
-    console.log(`Added ${selectedProduct} with quantity ${quantity} to batch ${selectedBatchId}`);
-    setShowAddProductsForm(false);
+  // Handle Modal for Add New Batch
+  const handleAddNewBatch = () => {
+    setBatchName("");
+    setQuantity(0);
+    setProductionDate("");
+    setExpirationDate("");
+    setShowBatchForm(true);
   };
 
   const closeBatchForm = () => {
     setShowBatchForm(false);
-    setBatchName("");
-    setProductionDate(null);
-    setExpirationDate(null);
   };
 
-  const closeAddProductsForm = () => {
-    setShowAddProductsForm(false);
-    setSelectedProduct(null);
-    setQuantity(0);
+  // Handle Detail Modal
+  const handleShowDetail = (batch: Batch) => {
+    setSelectedBatch(batch);
+    setShowDetailModal(true);
+  };
+
+  const closeDetailModal = () => {
+    setSelectedBatch(null);
+    setShowDetailModal(false);
+  };
+
+  // Handle Edit Modal
+  const handleEditBatch = (batch: Batch) => {
+    setSelectedBatch(batch);
+    setBatchName(batch.name);
+    setQuantity(batch.quantity);
+    setProductionDate(batch.productionDate);
+    setExpirationDate(batch.expirationDate);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setSelectedBatch(null);
+    setIsEditModalOpen(false);
+  };
+
+  const handleSaveChanges = () => {
+    console.log("Updated batch:", {
+      id: selectedBatch?.id,
+      name: batchName,
+      quantity,
+      productionDate,
+      expirationDate,
+    });
+    closeEditModal();
   };
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
+      {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold">Batch Management</h1>
-        <Button variant="flat" color="primary" onClick={handleAddNewBatch}>
-          <Plus className="w-4 h-4 mr-2" />
-          New Batch
-        </Button>
+        <button
+          className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition"
+          onClick={handleAddNewBatch}
+        >
+          Add New Batch
+        </button>
       </div>
 
-      {/* Batch Creation Form Modal */}
+      {/* Add New Batch Modal */}
       {showBatchForm && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Create New Batch</h3>
+            <h3 className="text-lg font-semibold mb-4">Add New Batch</h3>
             <div className="flex flex-col space-y-4">
-              <label htmlFor="batchName" className="text-sm">Batch Name</label>
+              <label className="text-sm">Batch Name</label>
               <input
-                id="batchName"
                 type="text"
                 value={batchName}
                 onChange={(e) => setBatchName(e.target.value)}
                 className="border border-gray-300 rounded-lg p-2"
-                required
               />
-
-              <label htmlFor="productionDate" className="text-sm">Production Date</label>
+              <label className="text-sm">Quantity</label>
               <input
-                id="productionDate"
-                type="date"
-                value={productionDate?.toISOString().split("T")[0] || ""}
-                onChange={(e) => setProductionDate(new Date(e.target.value))}
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
                 className="border border-gray-300 rounded-lg p-2"
-                required
               />
-
-              <label htmlFor="expirationDate" className="text-sm">Expiration Date</label>
+              <label className="text-sm">Production Date</label>
               <input
-                id="expirationDate"
                 type="date"
-                value={expirationDate?.toISOString().split("T")[0] || ""}
-                onChange={(e) => setExpirationDate(new Date(e.target.value))}
+                value={productionDate}
+                onChange={(e) => setProductionDate(e.target.value)}
                 className="border border-gray-300 rounded-lg p-2"
-                required
+              />
+              <label className="text-sm">Expiration Date</label>
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                className="border border-gray-300 rounded-lg p-2"
               />
             </div>
-
             <div className="mt-6 flex justify-between">
-              <button className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg" onClick={closeBatchForm}>
+              <button
+                className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg"
+                onClick={closeBatchForm}
+              >
                 Cancel
               </button>
-              <Button color="primary" onClick={handleSaveBatch}>
-                Save and Add Products
-              </Button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                onClick={() => console.log("Batch added:", { batchName, quantity, productionDate, expirationDate })}
+              >
+                Save
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add Products to Batch Form Modal */}
-      {showAddProductsForm && (
+      {/* Updated Detail Modal */}
+      {showDetailModal && selectedBatch && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[500px]">
+            <h3 className="text-xl font-semibold mb-6">Batch Details For Product A</h3>
+            
+            <div className="w-full">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="text-left py-2">Batch Name</th>
+                    <th className="text-left py-2">Quantity</th>
+                    <th className="text-left py-2">Production Date</th>
+                    <th className="text-left py-2">Expiration Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-gray-200">
+                    <td className="py-3">{selectedBatch.name}</td>
+                    <td className="py-3">{selectedBatch.quantity}</td>
+                    <td className="py-3">{selectedBatch.productionDate}</td>
+                    <td className="py-3">{selectedBatch.expirationDate}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                onClick={closeDetailModal}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Add Products to Batch {selectedBatchId}</h3>
+            <h3 className="text-lg font-semibold mb-4">Edit Batch</h3>
             <div className="flex flex-col space-y-4">
-              <label htmlFor="selectProduct" className="text-sm">Select Product</label>
-              <select
-                id="selectProduct"
-                value={selectedProduct || ""}
-                onChange={(e) => setSelectedProduct(e.target.value)}
-                className="border border-gray-300 rounded-lg p-2"
-                required
-              >
-                <option value="">Select Product</option>
-                {products.map((product) => (
-                  <option key={product.id} value={String(product.id)}>
-                    {product.name}
-                  </option>
-                ))}
-              </select>
-
-              <label htmlFor="quantity" className="text-sm">Quantity</label>
+              <label className="text-sm">Batch Name</label>
               <input
-                id="quantity"
+                type="text"
+                value={batchName}
+                onChange={(e) => setBatchName(e.target.value)}
+                className="border border-gray-300 rounded-lg p-2"
+              />
+              <label className="text-sm">Quantity</label>
+              <input
                 type="number"
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="border border-gray-300 rounded-lg p-2"
-                required
+              />
+              <label className="text-sm">Production Date</label>
+              <input
+                type="date"
+                value={productionDate}
+                onChange={(e) => setProductionDate(e.target.value)}
+                className="border border-gray-300 rounded-lg p-2"
+              />
+              <label className="text-sm">Expiration Date</label>
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                className="border border-gray-300 rounded-lg p-2"
               />
             </div>
-
             <div className="mt-6 flex justify-between">
-              <button className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg" onClick={closeAddProductsForm}>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+                onClick={closeEditModal}
+              >
                 Cancel
               </button>
-              <Button color="primary" onClick={handleAddProductToBatch}>
-                Add Product
-              </Button>
+              <button
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                onClick={handleSaveChanges}
+              >
+                Save Changes
+              </button>
             </div>
           </div>
         </div>
@@ -191,19 +268,18 @@ const BatchManagement: React.FC = () => {
                   <TableCell>{batch.expirationDate}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                      <Button variant="flat" color="primary">
+                      <button
+                        className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition"
+                        onClick={() => handleShowDetail(batch)}
+                      >
                         Detail
-                      </Button>
-                      <Button variant="flat"
-                        color="primary"
-                      
-                        onClick={() => {
-                          setSelectedBatchId(batch.id);
-                          setShowAddProductsForm(true);
-                        }}
+                      </button>
+                      <button
+                        className="bg-yellow-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition"
+                        onClick={() => handleEditBatch(batch)}
                       >
                         Edit
-                      </Button>
+                      </button>
                     </div>
                   </TableCell>
                 </TableRow>

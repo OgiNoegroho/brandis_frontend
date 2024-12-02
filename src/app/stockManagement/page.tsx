@@ -54,23 +54,29 @@ const StockManagement: React.FC = () => {
     </div>
 
       {/* Top Summary Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-10">
+      <div className="grid grid-cols-3 gap-10 mb-10">
         <Card className="shadow-lg">
           <CardBody>
+            <div className="px-3">
             <h4 className="font-semibold">Total Products</h4>
             <b>868</b>
+            </div>
           </CardBody>
         </Card>
         <Card className="shadow-lg">
           <CardBody>
+          <div className="px-3">
             <h4 className="font-semibold">Top Selling (Last 7 Days)</h4>
             <b>₹2500</b>
+            </div>
           </CardBody>
         </Card>
         <Card className="shadow-lg">
           <CardBody>
+          <div className="px-3">
             <h4 className="font-semibold">Low Stocks</h4>
             <b>12 Ordered, 2 Not in Stock</b>
+            </div>
           </CardBody>
         </Card>
       </div>

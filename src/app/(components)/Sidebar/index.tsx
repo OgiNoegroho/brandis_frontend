@@ -1,12 +1,10 @@
-import { useAppDispatch, useAppSelector } from "@/app/redux";
-import { setIsSidebarCollapsed } from "@/state";
+import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
+import { setIsSidebarCollapsed } from "@/app/redux/state";
 import {
   Archive,
-  CircleDollarSign,
   Clipboard,
   Layout,
   LucideIcon,
-  Menu,
   Users,
   House,
   ChartColumn,
@@ -67,12 +65,45 @@ const SidebarLink = ({
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
+  const [isMobile, setIsMobile] = useState(false);
+  const [wasOpenBeforeMobile, setWasOpenBeforeMobile] = useState(false);
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
   const pathname = usePathname();
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const inventoryRef = useRef<HTMLDivElement>(null);
+
+  // Check and update mobile state
+  useEffect(() => {
+    const checkMobileSize = () => {
+      const mobile = window.innerWidth <= 768; // tailwind md breakpoint
+      
+      if (mobile !== isMobile) {
+        // When transitioning to mobile and sidebar is not collapsed
+        if (mobile && !isSidebarCollapsed) {
+          setWasOpenBeforeMobile(true);
+          dispatch(setIsSidebarCollapsed(true));
+        }
+        
+        // When transitioning back from mobile and sidebar was open before
+        if (!mobile && wasOpenBeforeMobile) {
+          dispatch(setIsSidebarCollapsed(false));
+          setWasOpenBeforeMobile(false);
+        }
+        
+        setIsMobile(mobile);
+      }
+    };
+
+    // Check on mount and add resize listener
+    checkMobileSize();
+    window.addEventListener('resize', checkMobileSize);
+
+    return () => {
+      window.removeEventListener('resize', checkMobileSize);
+    };
+  }, [dispatch, isMobile, isSidebarCollapsed, wasOpenBeforeMobile]);
 
   const toggleSidebar = () => {
     dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
@@ -86,30 +117,38 @@ const Sidebar = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isSidebarCollapsed && inventoryRef.current && !inventoryRef.current.contains(event.target as Node)) {
+      if (
+        isSidebarCollapsed &&
+        inventoryRef.current &&
+        !inventoryRef.current.contains(event.target as Node)
+      ) {
         setIsInventoryOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isSidebarCollapsed]);
 
   useEffect(() => {
-    if (!pathname.startsWith("/stockManagement") && !pathname.startsWith("/batchManagement")) {
+    if (
+      !pathname.startsWith("/stockManagement") &&
+      !pathname.startsWith("/batchManagement")
+    ) {
       setIsInventoryOpen(false);
     }
   }, [pathname]);
 
   const isActiveTab = (tabPath: string) => pathname === tabPath;
-  const isInventoryActive = pathname.startsWith("/stockManagement") || 
-                            pathname.startsWith("/batchManagement");
+  const isInventoryActive =
+    pathname.startsWith("/stockManagement") ||
+    pathname.startsWith("/batchManagement");
 
   const sidebarClassNames = `fixed flex flex-col ${
-    isSidebarCollapsed ? "w-0 md:w-16" : "w-72 md:w-64"
-  } bg-white transition-all duration-300 overflow-visible h-full shadow-md z-40`;
+    isSidebarCollapsed ? "w-16" : "w-72 md:w-64"
+  } bg-white transition-all duration-500 ease-in-out overflow-hidden h-full shadow-md z-40`;
 
   const CollapsedSubmenu = () => (
     <div className="absolute left-16 top-0 bg-white shadow-lg rounded-lg w-48 py-2 z-50">
@@ -165,28 +204,24 @@ const Sidebar = () => {
     <div className={sidebarClassNames}>
       {/* TOP LOGO */}
       <div
-        className={`flex gap-3 justify-between md:justify-normal items-center pt-8 ${
-          isSidebarCollapsed ? "px-5" : "px-8"
-        }`}
+        className={`flex items-center justify-between ${
+          isSidebarCollapsed ? "px-4" : "px-8"
+        } pt-8 transition-all duration-500`}
       >
-        <Image
-          src="https://s3-inventorymanagement.s3.us-east-2.amazonaws.com/logo.png"
-          alt="Brandis-logo"
-          width={27}
-          height={27}
-          className="rounded w-8"
-        />
-        <h1
-          className={`${isSidebarCollapsed ? "hidden" : "block"} font-extrabold text-2xl`}
-        >
-          BRANDIS.
-        </h1>
-        <button
-          className="md:hidden px-3 py-3 bg-gray-100 rounded-full hover:bg-blue-100"
-          onClick={toggleSidebar}
-        >
-          <Menu className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/brandis_logo.png"
+            alt="Brandis Logo"
+            width={isSidebarCollapsed ? 40 : 50}
+            height={isSidebarCollapsed ? 40 : 50}
+            className="rounded-full object-cover transition-all duration-500"
+          />
+          {!isSidebarCollapsed && (
+            <h1 className="font-extrabold text-2xl transition-opacity duration-500">
+              BRANDIS.
+            </h1>
+          )}
+        </div>
       </div>
 
       {/* LINKS */}
@@ -239,9 +274,8 @@ const Sidebar = () => {
           </div>
 
           {/* Conditional Submenu Rendering */}
-          {isInventoryOpen && (
-            isSidebarCollapsed ? <CollapsedSubmenu /> : <ExpandedSubmenu />
-          )}
+          {isInventoryOpen &&
+            (isSidebarCollapsed ? <CollapsedSubmenu /> : <ExpandedSubmenu />)}
         </div>
 
         <SidebarLink
@@ -258,7 +292,6 @@ const Sidebar = () => {
           isCollapsed={isSidebarCollapsed}
           isActive={!isInventoryActive && isActiveTab("/financialReports")}
         />
-     
       </div>
 
       {/* FOOTER */}

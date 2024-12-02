@@ -1,4 +1,4 @@
-import { useGetDashboardMetricsQuery } from "@/state/api";
+import { useGetDashboardMetricsQuery } from "@/app/redux/api";
 import { TrendingUp } from "lucide-react";
 import React, { useState } from "react";
 import {

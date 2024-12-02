@@ -1,4 +1,4 @@
-import { useGetDashboardMetricsQuery } from "@/state/api";
+import { useGetDashboardMetricsQuery } from "@/app/redux/api";
 import { ShoppingBag } from "lucide-react";
 import React from "react";
 //import Rating from "../(components)/Rating";

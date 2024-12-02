@@ -1,9 +1,7 @@
 "use client";
 import React, { useState } from "react";
-import { Card, CardBody, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Input } from "@nextui-org/react";
-import Image from "next/image";
 
-const products = [
+const initialProducts = [
   {
     id: 1,
     name: 'Brandis Natural Drink "MIX"',
@@ -49,18 +47,31 @@ const products = [
 ];
 
 const ProductsPage = () => {
+  const [products, setProducts] = useState(initialProducts);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState({
-    productName: "",
-    productId: "",
+    id: "",
+    name: "",
     category: "",
     price: "",
     expiryDate: "",
   });
 
   const handleAddProduct = () => {
-    console.log("Product added:", newProduct);
-    setIsModalOpen(false);
+    if (newProduct.name && newProduct.category && newProduct.price) {
+      setProducts([
+        ...products,
+        {
+          ...newProduct,
+          id: products.length + 1,
+          imageUrl: "/images/default-product.png", // Default image placeholder
+        },
+      ]);
+      setNewProduct({ id: "", name: "", category: "", price: "", expiryDate: "" });
+      setIsModalOpen(false);
+    } else {
+      alert("Mohon isi semua data produk!");
+    }
   };
 
   return (
@@ -68,100 +79,140 @@ const ProductsPage = () => {
       {/* Header with Add Product Button */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Product</h2>
-        <Button variant="flat" color="primary" onPress={() => setIsModalOpen(true)}>
-          + Tambah
-        </Button>
+        <button
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Add Product
+        </button>
       </div>
 
-      {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+      {/* Grid Produk */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {products.map((product) => (
-          <Card key={product.id} isHoverable isPressable>
-            <CardBody className="p-0">
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                width={300}
-                height={300}
-                className="rounded-t-lg"
-              />
-              <div className="p-4">
-                <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
-                <p className="text-sm text-gray-500">Kategori: {product.category}</p>
-                <p className="text-blue-600 font-semibold">Rp. {product.price}</p>
-              </div>
-            </CardBody>
-          </Card>
+          <div
+            key={product.id}
+            className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+          >
+            <img
+              src={product.imageUrl}
+              alt={product.name}
+              className="w-full h-64 object-cover"
+            />
+            <div className="p-4">
+              <h3 className="text-lg font-semibold mb-1">{product.name}</h3>
+              <p className="text-sm text-gray-500">Kategori: {product.category}</p>
+              <p className="text-blue-600 font-semibold">Rp. {product.price}</p>
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Add Product Modal */}
-      <Modal isOpen={isModalOpen} onOpenChange={setIsModalOpen} placement="center" size="xs">
-        <ModalContent>
-          <ModalHeader className="flex flex-col gap-1">New Product</ModalHeader>
-          <ModalBody className="flex flex-col items-center space-y-4">
-            {/* Image Upload Placeholder */}
-            <div className="w-20 h-20 border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg mb-2">
-              <span role="img" aria-label="camera" className="text-gray-500 text-2xl">
-                📷
-              </span>
+      {/* Modal Tambah Produk */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-md p-6">
+            <h2 className="text-xl font-bold mb-4">New Product</h2>
+            <form className="space-y-4">
+              {/* Image Upload */}
+              <div className="flex flex-col items-center">
+                <div className="w-20 h-20 border-dashed border-2 border-gray-300 flex items-center justify-center rounded-lg mb-2">
+                  <span role="img" aria-label="camera" className="text-gray-500 text-2xl">
+                    📷
+                  </span>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Drag image here or{" "}
+                  <span className="text-blue-500 cursor-pointer">Browse image</span>
+                </p>
+              </div>
+
+              {/* Input Nama Produk */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Enter product name"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={newProduct.name}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, name: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Input ID Produk */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Enter product ID"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={newProduct.id}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, id: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Dropdown Kategori */}
+              <div>
+                <select
+                  className="w-full border border-gray-300 rounded-lg p-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={newProduct.category}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, category: e.target.value })
+                  }
+                >
+                  <option value="">Select product category</option>
+                  <option value="Food">Food</option>
+                  <option value="Drink">Drink</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Input Harga */}
+              <div>
+                <input
+                  type="number"
+                  placeholder="Enter buying price"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={newProduct.price}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, price: e.target.value })
+                  }
+                />
+              </div>
+
+              {/* Input Tanggal Expiry */}
+              <div>
+                <input
+                  type="date"
+                  className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  value={newProduct.expiryDate}
+                  onChange={(e) =>
+                    setNewProduct({ ...newProduct, expiryDate: e.target.value })
+                  }
+                />
+              </div>
+            </form>
+
+            {/* Footer Modal */}
+            <div className="mt-6 flex justify-end">
+              <button
+                className="bg-gray-300 text-black py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300 mr-2"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+                onClick={handleAddProduct}
+              >
+                Save
+              </button>
             </div>
-            <p className="text-sm text-gray-500">Drag image here or <span className="text-blue-500 cursor-pointer">Browse image</span></p>
-            
-            {/* Input Fields */}
-            <Input
-              label="Product Name"
-              placeholder="Enter product name"
-              fullWidth
-              size="sm"
-              value={newProduct.productName}
-              onChange={(e) => setNewProduct({ ...newProduct, productName: e.target.value })}
-            />
-            <Input
-              label="Product ID"
-              placeholder="Enter product ID"
-              fullWidth
-              size="sm"
-              value={newProduct.productId}
-              onChange={(e) => setNewProduct({ ...newProduct, productId: e.target.value })}
-            />
-            <Input
-              label="Category"
-              placeholder="Select product category"
-              fullWidth
-              size="sm"
-              value={newProduct.category}
-              onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
-            />
-            <Input
-              label="Price"
-              placeholder="Enter buying price"
-              type="number"
-              fullWidth
-              size="sm"
-              value={newProduct.price}
-              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
-            />
-            <Input
-              label="Expiry Date"
-              placeholder="Enter expiry date"
-              type="date"
-              fullWidth
-              size="sm"
-              value={newProduct.expiryDate}
-              onChange={(e) => setNewProduct({ ...newProduct, expiryDate: e.target.value })}
-            />
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" color="default" onPress={() => setIsModalOpen(false)}>
-              Discard
-            </Button>
-            <Button color="primary" onPress={handleAddProduct}>
-              Add Product
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
