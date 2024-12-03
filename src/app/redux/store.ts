@@ -1,3 +1,5 @@
+// src\app\redux\store.ts
+
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import globalReducer from "@/app/redux/state";
 import { api } from "@/app/redux/api"; // Optional: RTK Query slice

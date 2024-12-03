@@ -7,7 +7,7 @@ import { useAppSelector } from "@/app/redux/hooks"; // Correct import path
 import StoreProvider from "@/app/redux/provider"; // Adjusted import path for the provider
 
 
-const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+const Layout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
@@ -40,12 +40,12 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const DashboardWrapper = ({ children }: { children: React.ReactNode }) => {
+const Wrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreProvider>
-      <DashboardLayout>{children}</DashboardLayout>
+      <Layout>{children}</Layout>
     </StoreProvider>
   );
 };
 
-export default DashboardWrapper;
+export default Wrapper;

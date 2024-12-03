@@ -1,3 +1,5 @@
+// src\app\redux\state.ts
+
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // Define the initial state for the global slice

@@ -1,3 +1,5 @@
+// src\app\redux\provider.tsx
+
 import React, { useRef } from "react";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";

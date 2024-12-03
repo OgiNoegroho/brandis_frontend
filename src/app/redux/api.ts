@@ -1,100 +1,83 @@
+// src\app\redux\api.ts
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+// Product type definition
 export interface Product {
   productId: string;
   name: string;
   price: number;
-  rating?: number;
   stockQuantity: number;
+  createdAt?: string;
 }
 
-export interface NewProduct {
-  name: string;
+// SalesDetail type definition
+export interface SalesDetail {
+  productId: string;
+  quantitySold: number;
   price: number;
-  rating?: number;
-  stockQuantity: number;
+  createdAt: string;
 }
 
-export interface SalesSummary {
-  salesSummaryId: string;
-  totalValue: number;
-  changePercentage?: number;
-  date: string;
+// Outlet performance type definition
+export interface OutletPerformance {
+  outletId: string;
+  outletName: string;
+  totalSold: number;
+  revenue: number;
 }
 
-export interface PurchaseSummary {
-  purchaseSummaryId: string;
-  totalPurchased: number;
-  changePercentage?: number;
-  date: string;
-}
-
-export interface ExpenseSummary {
-  expenseSummarId: string;
-  totalExpenses: number;
-  date: string;
-}
-
-export interface ExpenseByCategorySummary {
-  expenseByCategorySummaryId: string;
-  category: string;
-  amount: string;
-  date: string;
-}
-
+// Dashboard metrics for the specific card data
 export interface DashboardMetrics {
-  popularProducts: Product[];
-  salesSummary: SalesSummary[];
-  purchaseSummary: PurchaseSummary[];
-  expenseSummary: ExpenseSummary[];
-  expenseByCategorySummary: ExpenseByCategorySummary[];
-}
-
-export interface User {
-  userId: string;
-  name: string;
-  email: string;
+  totalRevenue: number;
+  totalProductsSold: number;
+  lowStockProducts: Product[];
+  newProducts: Product[];
+  outletPerformance: OutletPerformance[];
 }
 
 export const api = createApi({
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
   reducerPath: "api",
-  tagTypes: ["DashboardMetrics", "Products", "Users", "Expenses"],
+  tagTypes: ["DashboardMetrics", "Products", "Sales", "Outlets"],
   endpoints: (build) => ({
-    getDashboardMetrics: build.query<DashboardMetrics, void>({
-      query: () => "/dashboard",
-      providesTags: ["DashboardMetrics"],
+    // Total Revenue Overview for the last 30 days
+    getTotalRevenue: build.query<number, void>({
+      query: () => "/sales/totalRevenue",
+      providesTags: ["Sales"],
     }),
-    getProducts: build.query<Product[], string | void>({
-      query: (search) => ({
-        url: "/products",
-        params: search ? { search } : {},
-      }),
+
+    // Total Products Sold for the last 30 days
+    getTotalProductsSold: build.query<number, void>({
+      query: () => "/sales/totalProductsSold",
+      providesTags: ["Sales"],
+    }),
+
+    // Products with stock status (In stock, Low stock, Out of stock)
+    getLowStockProducts: build.query<Product[], void>({
+      query: () => "/products/lowStock",
       providesTags: ["Products"],
     }),
-    createProduct: build.mutation<Product, NewProduct>({
-      query: (newProduct) => ({
-        url: "/products",
-        method: "POST",
-        body: newProduct,
-      }),
-      invalidatesTags: ["Products"],
+
+    // Recently added products (within the last 30 days)
+    getNewProducts: build.query<Product[], void>({
+      query: () => "/products/new",
+      providesTags: ["Products"],
     }),
-    getUsers: build.query<User[], void>({
-      query: () => "/users",
-      providesTags: ["Users"],
+
+    // Outlet Performance based on total sold quantity and revenue
+    getOutletPerformance: build.query<OutletPerformance[], void>({
+      query: () => "/outlets/performance",
+      providesTags: ["Outlets"],
     }),
-    getExpensesByCategory: build.query<ExpenseByCategorySummary[], void>({
-      query: () => "/expenses",
-      providesTags: ["Expenses"],
-    }),
+
   }),
 });
 
 export const {
-  useGetDashboardMetricsQuery,
-  useGetProductsQuery,
-  useCreateProductMutation,
-  useGetUsersQuery,
-  useGetExpensesByCategoryQuery,
+  useGetTotalRevenueQuery,
+  useGetTotalProductsSoldQuery,
+  useGetLowStockProductsQuery,
+  useGetNewProductsQuery,
+  useGetOutletPerformanceQuery,
 } = api;
