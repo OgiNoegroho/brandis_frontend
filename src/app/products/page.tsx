@@ -1,10 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks"; // Use the typed hooks from your custom hooks file
-import { RootState } from "@/redux/store"; // Import RootState for proper type-checking
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
 
-// Define the Product type
 interface Product {
   id: string;
   nama: string;
@@ -14,11 +14,11 @@ interface Product {
   deskripsi: string;
   imageUrl: string | null;
   imagePublicId: string | null;
-  images?: { url: string }[]; // Optional, depending on how images are handled
+  images?: { url: string; isPrimary?: boolean }[];
 }
 
 const ProductsPage = () => {
-  const [products, setProducts] = useState<Product[]>([]); // Explicitly set the type to Product[]
+  const [products, setProducts] = useState<Product[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState({
     nama: "",
@@ -26,16 +26,13 @@ const ProductsPage = () => {
     harga: "",
     komposisi: "",
     deskripsi: "",
-    image: null as File | null, // Specify that 'image' can be a File or null
+    image: null as File | null,
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null); // For image preview
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  // Access the token from Redux
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const dispatch = useAppDispatch();
 
-  // Fetch products from the API
   useEffect(() => {
     const fetchProducts = async () => {
       if (!token) {
@@ -46,13 +43,13 @@ const ProductsPage = () => {
       try {
         const response = await fetch("http://localhost:3008/api/products", {
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure token is used in the request header
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) throw new Error("Failed to fetch products");
 
-        const data: Product[] = await response.json(); // Type the response as Product[]
+        const data: Product[] = await response.json();
         setProducts(data);
       } catch (err) {
         console.error(err);
@@ -61,35 +58,25 @@ const ProductsPage = () => {
     };
 
     fetchProducts();
-  }, [token]); // Only fetch products if the token is available
+  }, [token]);
 
-  // Handle file selection and preview
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setNewProduct({ ...newProduct, image: file });
-      setImagePreview(URL.createObjectURL(file)); // Display image preview
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleRemoveImage = () => {
+    setNewProduct({ ...newProduct, image: null });
+    setImagePreview(null);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      setNewProduct({ ...newProduct, image: file });
-      setImagePreview(URL.createObjectURL(file)); // Display image preview
-    }
-  };
-
-  // Handle adding a new product
   const handleAddProduct = async () => {
     if (!token) {
       setError("No token found. Please log in.");
-      return; // Early exit if no token is available
+      return;
     }
 
     if (newProduct.nama && newProduct.kategori && newProduct.harga) {
@@ -102,21 +89,21 @@ const ProductsPage = () => {
         formData.append("deskripsi", newProduct.deskripsi);
 
         if (newProduct.image) {
-          formData.append("image", newProduct.image); // Append the image file to the FormData
+          formData.append("image", newProduct.image);
         }
 
         const response = await fetch("http://localhost:3008/api/products", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${token}`, // Add token to the request header
+            Authorization: `Bearer ${token}`,
           },
-          body: formData, // Send the FormData directly
+          body: formData,
         });
 
         if (!response.ok) throw new Error("Failed to add product");
 
-        const addedProduct: Product = await response.json(); // Type the added product response
-        setProducts([...products, addedProduct]); // Update products state with the new product
+        const addedProduct: Product = await response.json();
+        setProducts([...products, addedProduct]);
         setNewProduct({
           nama: "",
           kategori: "",
@@ -125,7 +112,7 @@ const ProductsPage = () => {
           deskripsi: "",
           image: null,
         });
-        setImagePreview(null); // Clear the image preview
+        setImagePreview(null);
         setIsModalOpen(false);
       } catch (err) {
         console.error(err);
@@ -154,24 +141,25 @@ const ProductsPage = () => {
 
       {/* Product Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div
-            key={product.id}
-            className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
-          >
-           <img
-  src={product.imageUrl ? product.imageUrl : "/images/default-product.png"}
-  alt={product.nama}
-  className="w-full h-64 object-cover"
-/>
-
-            <div className="p-4">
-              <h3 className="text-lg font-semibold mb-1">{product.nama}</h3>
-              <p className="text-sm text-gray-500">Category: {product.kategori}</p>
-              <p className="text-blue-600 font-semibold">Rp. {product.harga}</p>
-            </div>
-          </div>
-        ))}
+        {products.map((product) => {
+          const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+          return (
+            <Link href={`/productDetail/${product.id}`} key={product.id}>
+              <div className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer">
+                <img
+                  src={primaryImage ? primaryImage.url : "/images/default-product.png"}
+                  alt={product.nama}
+                  className="w-full h-64 object-cover"
+                />
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold mb-1">{product.nama}</h3>
+                  <p className="text-sm text-gray-500">Category: {product.kategori}</p>
+                  <p className="text-blue-600 font-semibold">Rp. {product.harga}</p>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
       </div>
 
       {/* Modal for Adding Product */}
@@ -181,22 +169,30 @@ const ProductsPage = () => {
             <h2 className="text-xl font-bold mb-4">New Product</h2>
             <form className="space-y-4">
               {/* Image Upload */}
-              <div
-                className="flex flex-col items-center border-dashed border-2 border-gray-300 w-full p-4"
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-              >
-                {imagePreview ? (
-                  <img
-                    src={imagePreview}
-                    alt="Preview"
-                    className="w-32 h-32 object-cover mb-2"
-                  />
-                ) : (
+              <div className="flex flex-col items-center border-dashed border-2 border-gray-300 w-full p-4">
+                {imagePreview && (
+                  <div className="relative mb-2">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                    >
+                      X
+                    </button>
+                  </div>
+                )}
+
+                {!imagePreview && (
                   <span role="img" aria-label="camera" className="text-gray-500 text-2xl mb-2">
                     📷
                   </span>
                 )}
+
                 <p className="text-sm text-gray-500">
                   Drag image here or{" "}
                   <input
@@ -205,11 +201,10 @@ const ProductsPage = () => {
                     className="cursor-pointer"
                     onChange={handleImageChange}
                   />
-                  <span className="underline text-blue-500 cursor-pointer">browse</span>
                 </p>
               </div>
 
-              {/* Product Form */}
+              {/* Product Form Inputs */}
               <input
                 type="text"
                 className="w-full p-2 border rounded"

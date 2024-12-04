@@ -4,17 +4,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/redux/hooks";
-import { setToken } from "@/redux/authActions";
-import { saveTokenToLocalStorage } from "@/utils/authUtils"; // Import the utility function
-import Link from "next/link";
 
-const SignIn = () => {
-  const dispatch = useAppDispatch();
+const SignInPage = () => {
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,14 +29,6 @@ const SignIn = () => {
       }
 
       const data = await response.json();
-
-      // Dispatch action to save token in Redux store
-      dispatch(setToken(data.token));
-
-      // Save the token to localStorage
-      saveTokenToLocalStorage(data.token);
-
-      // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
       setError("Invalid credentials, please try again.");
@@ -49,64 +36,90 @@ const SignIn = () => {
   };
 
   return (
-    <>
-      <h2 className="text-2xl font-bold text-center mb-6">Sign In</h2>
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label 
-            htmlFor="email" 
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 h-[3px]">
+      {/* Container utama dengan lebar tetap */}
+      <div className="w-[1200px] h-[500px] bg-white shadow-lg rounded-lg overflow-hidden flex">
+        
+        {/* Panel Kiri - Logo */}
+        <div className="w-1/2 bg-gray-100 flex flex-col items-center justify-center p-6">
+          <img
+            src="/brandis_logo.png" // Ganti dengan path logo Anda
+            alt="Brand Logo"
+            className="h-40 mb-4"
           />
+          <p className="text-gray-700 text-lg font-semibold text-center">
+            Selamat Datang di Brandis!
+          </p>
         </div>
 
-        <div>
-          <label 
-            htmlFor="password" 
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
+        {/* Panel Kanan - Form Login */}
+        <div className="w-1/2 p-10 flex flex-col justify-center">
+          <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+            Login
+          </h2>
+          <p className="text-sm text-gray-600 text-center mb-6">
+            Welcome back! Please enter your details.
+          </p>
+          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {/* Input Email */}
+            <div>
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-600"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Input Password */}
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-600"
+              >
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
+
+            {/* Tombol Login */}
+            <button
+              type="submit"
+              className="w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 transition"
+            >
+              Login
+            </button>
+          </form>
         </div>
-
-        <button 
-          type="submit" 
-          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Sign In
-        </button>
-      </form>
-
-      <p className="text-center mt-4 text-sm">
-        Don't have an account?{" "}
-        <Link 
-          href="/signup" 
-          className="text-blue-500 hover:underline"
-        >
-          Sign Up
-        </Link>
-      </p>
-    </>
+      </div>
+    </div>
   );
 };
 
-export default SignIn;
+export default SignInPage;
