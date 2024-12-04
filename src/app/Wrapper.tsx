@@ -1,25 +1,37 @@
+// src/app/wrapper.tsx
+
 "use client";
 
 import React, { useEffect } from "react";
-import Navbar from "@/app/(components)/Navbar";
-import Sidebar from "@/app/(components)/Sidebar";
-import { useAppSelector } from "@/app/redux/hooks"; // Correct import path
-import StoreProvider from "@/app/redux/provider"; // Adjusted import path for the provider
-
+import Navbar from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
+import { useAppSelector } from "@/redux/hooks";
+import StoreProvider from "@/redux/provider";
+import { usePathname } from "next/navigation";
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+  const pathname = usePathname();
 
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
     } else {
       document.documentElement.classList.add("light");
+      document.documentElement.classList.remove("dark");
     }
-  });
+  }, [isDarkMode]);
+
+  const isAuthPage = pathname === "/signIn"; // Check if the route is `/signIn`
+
+  if (isAuthPage) {
+    // Render only the children for the `/signIn` page
+    return <div className="flex items-center justify-center min-h-screen bg-gray-100">{children}</div>;
+  }
 
   return (
     <div

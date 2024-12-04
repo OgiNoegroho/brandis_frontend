@@ -1,80 +1,76 @@
-'use client';
-
+"use client";
+import React, { useState } from "react";
+import { Line } from "react-chartjs-2";
 import {
-  Package,
-  Tag,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
-import CardTotalRevenueOverview from "./CardTotalRevenueOverview";
-import CardTotalProductsSold from "./CardTotalProductsSold";
-import CardStockStatus from "./CardStockStatus";
-import CardNewProductAdditions from "./CardNewProductAdditions";
-import CardOutletPerformance from "./CardOutletPerformance";
-import StatCard from "./StatCard";
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-const DashboardPage = () => {
+// Registrasi elemen Chart.js
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+const FinancialReports: React.FC = () => {
+  const [selectedMonth, setSelectedMonth] = useState("January");
+
+  const data = {
+    labels: ["Outlet 1", "Outlet 2", "Outlet 3", "Outlet 4"],
+    datasets: [
+      {
+        label: "Revenue",
+        data: [20000, 50000, 40000, 70000, 30000, 40000], // Ganti dengan data Anda
+        borderColor: "blue",
+        backgroundColor: "rgba(0, 0, 255, 0.1)",
+        tension: 0.4, // Membuat kurva halus
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false, // Sembunyikan legenda
+      },
+      tooltip: {
+        enabled: true,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 80000, // Skala maksimal sesuai kebutuhan
+      },
+    },
+  };
+
   return (
-    <div className="min-h-screen p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 xl:overflow-auto gap-10 pb-4 custom-grid-rows">
-        {/* Total Revenue Overview Card */}
-        <CardTotalRevenueOverview />
-
-        {/* Total Products Sold Card */}
-        <CardTotalProductsSold />
-
-        {/* Stock Status Card */}
-        <CardStockStatus />
-
-        {/* New Product Additions Card */}
-        <CardNewProductAdditions />
-
-        {/* Outlet Performance Card */}
-        <CardOutletPerformance />
-
-        {/* Stat Cards */}
-        <StatCard
-          title="Customer & Revenue"
-          primaryIcon={<Package className="text-blue-600 w-6 h-6" />}
-          dateRange="22 - 29 October 2023"
-          details={[
-            {
-              title: "Revenue",
-              amount: "$1,200.00",
-              changePercentage: 12,
-              IconComponent: TrendingUp,
-            },
-            {
-              title: "Expenses",
-              amount: "$200.00",
-              changePercentage: -5,
-              IconComponent: TrendingDown,
-            },
-          ]}
-        />
-
-        <StatCard
-          title="Sales & Stock"
-          primaryIcon={<Tag className="text-blue-600 w-6 h-6" />}
-          dateRange="22 - 29 October 2023"
-          details={[
-            {
-              title: "Products Sold",
-              amount: "500",
-              changePercentage: 15,
-              IconComponent: TrendingUp,
-            },
-            {
-              title: "Stock Remaining",
-              amount: "2,000",
-              changePercentage: -8,
-              IconComponent: TrendingDown,
-            },
-          ]}
-        />
+    <div style={{ padding: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h2>Financial Reports</h2>
+        <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+          <option value="January">January</option>
+          <option value="February">February</option>
+          <option value="March">March</option>
+          <option value="April">April</option>
+          <option value="May">May</option>
+          <option value="June">June</option>
+          <option value="July">July</option>
+          <option value="August">August</option>
+          {/* Tambahkan bulan lainnya sesuai kebutuhan */}
+        </select>
+      </div>
+      <div style={{ border: "1px solid #ccc", borderRadius: "10px", padding: "20px", marginTop: "20px" }}>
+        <h3>{selectedMonth}</h3>
+        <Line data={data} options={options} />
       </div>
     </div>
   );
 };
 
-export default DashboardPage;
+export default FinancialReports;

@@ -1,5 +1,6 @@
-import SignIn from "@/app/signIn/page"; // Make sure the SignIn component is in the correct path
+// src/app/page.tsx
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return <SignIn />;  // This will render the SignIn component instead of Dashboard
+  redirect('/signIn');
 }

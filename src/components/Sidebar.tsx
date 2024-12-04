@@ -1,5 +1,5 @@
-import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
-import { setIsSidebarCollapsed } from "@/app/redux/state";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { setIsSidebarCollapsed } from "@/redux/state";
 import {
   Archive,
   Clipboard,
