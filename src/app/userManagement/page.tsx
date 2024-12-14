@@ -1,30 +1,57 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
+import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
 
 interface User {
   id: string;
-  name: string;
+  nama: string;
   email: string;
-  role: string;
+  peran: string;
 }
 
 const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([
-    { id: "123-123-123", name: "Shohilin", email: "shohilin_ganteng@gmail.com", role: "Pimpinan" },
-    { id: "234-234-234", name: "Ahmad", email: "ahmad_123@yahoo.com", role: "Admin Produksi" },
-    { id: "345-345-345", name: "Andin", email: "andin_andin@gmail.com", role: "Bendahara" },
-  ]);
-
+  const [users, setUsers] = useState<User[]>([]); 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [newUser, setNewUser] = useState<User>({
     id: "",
-    name: "",
+    nama: "",
     email: "",
-    role: "",
+    peran: "",
   });
+
+  // Retrieve the token from Redux state
+  const token = useAppSelector((state: RootState) => state.auth.token);
+
+  // Fetch users from the backend API
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch("https://brandis-backend.vercel.app/api/users/", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add Bearer token to the header
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUsers(data); 
+        } else {
+          console.error("Failed to fetch users");
+        }
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, [token]); // Make sure to re-fetch if token changes
 
   // Handle opening update modal
   const handleOpenUpdateUserModal = (user: User) => {
@@ -33,14 +60,24 @@ const UserManagement: React.FC = () => {
   };
 
   // Handle updating user
-  const handleUpdateUser = () => {
+  const handleUpdateUser = async () => {
     if (selectedUser) {
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === selectedUser.id ? selectedUser : user
-        )
-      );
-      setIsUpdateUserModalOpen(false);
+      const response = await fetch(`https://brandis-backend.vercel.app/api/users/${selectedUser.email}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Add Bearer token to the header
+        },
+        body: JSON.stringify(selectedUser),
+      });
+
+      if (response.ok) {
+        const updatedUsers = await response.json();
+        setUsers(updatedUsers);
+        setIsUpdateUserModalOpen(false);
+      } else {
+        console.error("Failed to update user");
+      }
     }
   };
 
@@ -50,13 +87,48 @@ const UserManagement: React.FC = () => {
   };
 
   // Handle adding new user
-  const handleAddUser = () => {
-    if (newUser.id && newUser.name && newUser.email && newUser.role) {
-      setUsers((prevUsers) => [...prevUsers, newUser]);
-      setNewUser({ id: "", name: "", email: "", role: "" });
-      setIsAddUserModalOpen(false);
+  const handleAddUser = async () => {
+    if (newUser.id && newUser.nama && newUser.email && newUser.peran) {
+      const response = await fetch("https://brandis-backend.vercel.app/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Add Bearer token to the header
+        },
+        body: JSON.stringify(newUser),
+      });
+
+      if (response.ok) {
+        const addedUser = await response.json();
+        setUsers((prevUsers) => [...prevUsers, addedUser]);
+        setNewUser({ id: "", nama: "", email: "", peran: "" });
+        setIsAddUserModalOpen(false);
+      } else {
+        console.error("Failed to add user");
+      }
     } else {
-      alert("Semua field wajib diisi!");
+      alert("All fields are required!");
+    }
+  };
+
+  // Handle deleting a user
+  const handleDeleteUser = async (email: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    if (confirmDelete) {
+      const response = await fetch(`https://brandis-backend.vercel.app/api/users/${email}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Add Bearer token to the header
+        },
+      });
+
+      if (response.ok) {
+        const updatedUsers = users.filter((user) => user.email !== email);
+        setUsers(updatedUsers); 
+      } else {
+        console.error("Failed to delete user");
+      }
     }
   };
 
@@ -74,37 +146,29 @@ const UserManagement: React.FC = () => {
       </div>
 
       {/* User Table */}
-      <table className="table-auto w-full border-collapse border border-gray-200">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border px-4 py-2">ID</th>
-            <th className="border px-4 py-2">Nama</th>
-            <th className="border px-4 py-2">Email</th>
-            <th className="border px-4 py-2">Peran</th>
-          </tr>
-        </thead>
-        <tbody>
+      <Table aria-label="User List">
+        <TableHeader>
+          <TableColumn>ID</TableColumn>
+          <TableColumn>Nama</TableColumn>
+          <TableColumn>Email</TableColumn>
+          <TableColumn>Peran</TableColumn>
+          <TableColumn>Actions</TableColumn>
+        </TableHeader>
+        <TableBody>
           {users.map((user) => (
-            <tr key={user.id} className="hover:bg-gray-50">
-              <td className="border px-4 py-2">{user.id}</td>
-              <td className="border px-4 py-2">{user.name}</td>
-              <td className="border px-4 py-2">{user.email}</td>
-              <td className="border px-4 py-2">{user.role}</td>
-              <td className="border px-4 py-2 text-center">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded mr-2"
-                  onClick={() => handleOpenUpdateUserModal(user)}
-                >
-                  Update
-                </button>
-                <button className="bg-red-500 text-white px-3 py-1 rounded">
-                  Delete
-                </button>
-              </td>
-            </tr>
+            <TableRow key={user.id}>
+              <TableCell>{user.id}</TableCell>
+              <TableCell>{user.nama}</TableCell>
+              <TableCell>{user.email}</TableCell>
+              <TableCell>{user.peran}</TableCell>
+              <TableCell>
+                <Button onClick={() => handleOpenUpdateUserModal(user)}>Update</Button>
+                <Button onClick={() => handleDeleteUser(user.email)}>Delete</Button>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
 
       {/* Add User Modal */}
       {isAddUserModalOpen && (
@@ -127,9 +191,9 @@ const UserManagement: React.FC = () => {
                 type="text"
                 placeholder="Masukkan Nama"
                 className="w-full border px-4 py-2 rounded"
-                value={newUser.name}
+                value={newUser.nama}
                 onChange={(e) =>
-                  setNewUser({ ...newUser, name: e.target.value })
+                  setNewUser({ ...newUser, nama: e.target.value })
                 }
               />
             </div>
@@ -151,9 +215,9 @@ const UserManagement: React.FC = () => {
                 type="text"
                 placeholder="Masukkan Peran"
                 className="w-full border px-4 py-2 rounded"
-                value={newUser.role}
+                value={newUser.peran}
                 onChange={(e) =>
-                  setNewUser({ ...newUser, role: e.target.value })
+                  setNewUser({ ...newUser, peran: e.target.value })
                 }
               />
             </div>
@@ -181,23 +245,14 @@ const UserManagement: React.FC = () => {
           <div className="bg-white rounded-lg shadow-lg w-1/3 p-6">
             <h2 className="text-lg font-bold mb-4">Update User</h2>
             <div className="mb-4">
-              <label className="block mb-1 font-medium">ID User</label>
-              <input
-                type="text"
-                className="w-full border px-4 py-2 rounded bg-gray-100 cursor-not-allowed"
-                value={selectedUser.id}
-                readOnly
-              />
-            </div>
-            <div className="mb-4">
               <label className="block mb-1 font-medium">Nama</label>
               <input
                 type="text"
-                placeholder="Enter Name"
+                placeholder="Masukkan Nama"
                 className="w-full border px-4 py-2 rounded"
-                value={selectedUser.name}
+                value={selectedUser.nama}
                 onChange={(e) =>
-                  setSelectedUser({ ...selectedUser, name: e.target.value })
+                  setSelectedUser({ ...selectedUser, nama: e.target.value })
                 }
               />
             </div>
@@ -205,7 +260,7 @@ const UserManagement: React.FC = () => {
               <label className="block mb-1 font-medium">Email</label>
               <input
                 type="email"
-                placeholder="Enter Email"
+                placeholder="Masukkan Email"
                 className="w-full border px-4 py-2 rounded"
                 value={selectedUser.email}
                 onChange={(e) =>
@@ -217,11 +272,11 @@ const UserManagement: React.FC = () => {
               <label className="block mb-1 font-medium">Peran</label>
               <input
                 type="text"
-                placeholder="08xx-xxxx-xxxx"
+                placeholder="Masukkan Peran"
                 className="w-full border px-4 py-2 rounded"
-                value={selectedUser.role}
+                value={selectedUser.peran}
                 onChange={(e) =>
-                  setSelectedUser({ ...selectedUser, role: e.target.value })
+                  setSelectedUser({ ...selectedUser, peran: e.target.value })
                 }
               />
             </div>

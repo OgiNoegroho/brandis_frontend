@@ -1,18 +1,22 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { setIsDarkMode, setIsSidebarCollapsed } from "@/redux/state";
+import { setIsDarkMode, setIsSidebarCollapsed } from "@/redux/slices/globalSlice";
 import { Bell, Menu, Moon, Settings, Sun, Search } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import { Role } from "@/types/auth"; // Import Role type
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
+
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  // Get the user's role from the Redux store and type it as Role
+  const userRole: Role | null = useAppSelector((state) => state.auth.role);
 
   const [isMenuClicked, setIsMenuClicked] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -26,10 +30,10 @@ const Navbar = () => {
     checkMobile();
 
     // Add event listener for window resize
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
 
     // Cleanup listener
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   const toggleSidebar = () => {
@@ -54,11 +58,13 @@ const Navbar = () => {
           className={`
             p-3 rounded-full transition-all duration-300 
             ${
-              // Mobile condition
-              isMobile 
-                ? (isSidebarCollapsed ? 'ml-7' : 'ml-64')
-                : // Desktop condition
-                (isSidebarCollapsed ? 'ml-0' : '-ml-2')
+              isMobile
+                ? isSidebarCollapsed
+                  ? "ml-7"
+                  : "ml-64"
+                : isSidebarCollapsed
+                ? "ml-0"
+                : "-ml-2"
             }
             ${isMenuClicked ? "bg-blue-200" : "bg-gray-100 hover:bg-blue-100"}
           `}
@@ -72,12 +78,12 @@ const Navbar = () => {
           />
         </button>
 
-        {/* Search Input - Mobile Responsive */}
-        <div 
+        {/* Search Input */}
+        <div
           className={`
             relative flex-grow max-w-md
             md:block 
-            ${isSidebarCollapsed ? 'block' : 'hidden'}
+            ${isSidebarCollapsed ? "block" : "hidden"}
             md:block
           `}
         >
@@ -91,8 +97,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-
-
 
       {/* RIGHT SIDE */}
       <div className="flex items-center space-x-5">
@@ -118,18 +122,11 @@ const Navbar = () => {
             </span>
           </div>
 
-    
-
           {/* User Profile */}
-          <div className="flex items-center space-x-3 cursor-pointer">
-            <Image
-              src="/user_logo.png"
-              alt="Profile"
-              width={50}
-              height={50}
-              className="rounded-full h-full object-cover"
-            />
-            <span className="font-semibold">Pimpinan</span>
+          <div className="flex items-center space-x-3 cursor-pointer">           
+            <span className="font-semibold">
+              {userRole ?? "Guest"}
+            </span>
           </div>
         </div>
 

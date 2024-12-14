@@ -1,4 +1,4 @@
-// src\app\redux\provider.tsx
+// src\redux\provider.tsx
 
 import React, { useRef } from "react";
 import { Provider } from "react-redux";

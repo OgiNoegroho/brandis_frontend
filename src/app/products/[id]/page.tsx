@@ -1,7 +1,9 @@
+// app/products/[id]/page.tsx
+
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // For Next.js 13+ (app directory)
+import { useParams } from "next/navigation"; // Correct import for dynamic routes in Next.js 13
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 
@@ -20,17 +22,13 @@ interface Product {
 const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const router = useRouter();
-  const [id, setId] = useState<string | undefined>(undefined);
+
+  const { id } = useParams(); // Access dynamic route parameter 'id'
 
   useEffect(() => {
-    const pathId = window.location.pathname.split("/").pop(); // Extract 'id' from URL path
-    if (pathId) setId(pathId);
-  }, []);
-
-  useEffect(() => {
-    if (!id) return;
+    if (!id) return; // If no ID is available, exit early.
 
     const fetchProductDetail = async () => {
       if (!token) {
@@ -38,8 +36,12 @@ const ProductDetail = () => {
         return;
       }
 
+      setLoading(true);
+      setProduct(null); // Reset product to show loading state
+      setError("");
+
       try {
-        const response = await fetch(`http://localhost:3008/api/products/${id}`, {
+        const response = await fetch(`https://brandis-backend.vercel.app/api/products/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -50,14 +52,17 @@ const ProductDetail = () => {
       } catch (err) {
         console.error(err);
         setError("Error fetching product details. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchProductDetail();
-  }, [id, token]);
+  }, [id, token]); // Re-run the effect when `id` or `token` changes
 
+  if (loading) return <p className="text-gray-500 text-center">Loading product details...</p>;
   if (error) return <p className="text-red-500 text-center">{error}</p>;
-  if (!product) return <p className="text-gray-500 text-center">Loading product details...</p>;
+  if (!product) return <p className="text-gray-500 text-center">No product found.</p>;
 
   const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
 

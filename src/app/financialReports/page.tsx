@@ -1,73 +1,59 @@
-"use client";
-import React, { useState } from "react";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
+"use client"
 
-// Registrasi elemen Chart.js
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+import React from "react";
+import Link from "next/link"; // Next.js Link for navigation
+
+type Outlet = {
+  id: string;
+  name: string;
+  address: string;
+  phoneNumber: string;
+};
 
 const FinancialReports: React.FC = () => {
-  const [selectedMonth, setSelectedMonth] = useState("January");
-
-  const data = {
-    labels: ["Outlet 1", "Outlet 2", "Outlet 3", "Outlet 4"],
-    datasets: [
-      {
-        label: "Revenue",
-        data: [20000, 50000, 40000, 70000, 30000, 40000], // Ganti dengan data Anda
-        borderColor: "blue",
-        backgroundColor: "rgba(0, 0, 255, 0.1)",
-        tension: 0.4, // Membuat kurva halus
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false, // Sembunyikan legenda
-      },
-      tooltip: {
-        enabled: true,
-      },
+  const outlets: Outlet[] = [
+    {
+      id: "1",
+      name: "Outlet A",
+      address: "123 Main St",
+      phoneNumber: "123-456-7890",
     },
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 80000, // Skala maksimal sesuai kebutuhan
-      },
+    {
+      id: "2",
+      name: "Outlet B",
+      address: "456 Elm St",
+      phoneNumber: "987-654-3210",
     },
-  };
+  ];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2>Financial Reports</h2>
-        <select value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-          <option value="January">January</option>
-          <option value="February">February</option>
-          <option value="March">March</option>
-          <option value="April">April</option>
-          <option value="May">May</option>
-          <option value="June">June</option>
-          <option value="July">July</option>
-          <option value="August">August</option>
-          {/* Tambahkan bulan lainnya sesuai kebutuhan */}
-        </select>
-      </div>
-      <div style={{ border: "1px solid #ccc", borderRadius: "10px", padding: "20px", marginTop: "20px" }}>
-        <h3>{selectedMonth}</h3>
-        <Line data={data} options={options} />
+    <div className="p-10 space-y-6">
+      <h1 className="text-2xl font-bold">Financial Reports</h1>
+
+      {/* Outlet List */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+        {outlets.map((outlet) => (
+          <div
+            key={outlet.id}
+            className="bg-white shadow-md rounded-lg p-4 hover:bg-gray-100 transition flex items-center justify-between"
+          >
+            <div>
+              <h4 className="text-lg font-bold">{outlet.name}</h4>
+              <p className="text-sm text-gray-600">{`ID: ${outlet.id}`}</p>
+              <p className="text-sm text-gray-600">{outlet.address}</p>
+              <p className="text-sm text-gray-600">{outlet.phoneNumber}</p>
+            </div>
+            {/* Link to the details page */}
+            <Link
+              href={`/financialReports/${outlet.id}`} // Link to the outlet details page using dynamic routing
+              passHref
+            >
+              <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+                Detail
+              </button>
+            </Link>
+          </div>
+        ))}
       </div>
     </div>
   );

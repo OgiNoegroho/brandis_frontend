@@ -1,9 +1,7 @@
-// src/app/redux/store.ts
-
+// src/redux/store.ts
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import globalReducer from "@/redux/state";  // Global reducer
-import authReducer from "@/redux/authReducer";  // Correct path for auth reducer
-import { setupListeners } from "@reduxjs/toolkit/query";  // Keep this import if needed for other RTK setup
+import globalReducer from "@/redux/slices/globalSlice";
+import authReducer from "@/redux/slices/authSlice";
 import {
   persistReducer,
   FLUSH,
@@ -15,7 +13,6 @@ import {
 } from "redux-persist";
 import createWebStorage from "redux-persist/lib/storage/createWebStorage";
 
-// No-op storage for SSR (Server-Side Rendering)
 const createNoopStorage = () => ({
   getItem() {
     return Promise.resolve(null);
@@ -28,44 +25,38 @@ const createNoopStorage = () => ({
   },
 });
 
-// Use web storage in the browser
 const storage =
   typeof window !== "undefined" ? createWebStorage("local") : createNoopStorage();
+
+const PERSIST_WHITELIST = ["global", "auth"];
 
 const persistConfig = {
   key: "root",
   version: 1,
   storage,
-  whitelist: ["global"], // Only persist specific slices (e.g., global state)
+  whitelist: PERSIST_WHITELIST,
 };
 
-// Combine reducers (auth, global)
 const rootReducer = combineReducers({
   global: globalReducer,
-  auth: authReducer, // Add auth reducer here
+  auth: authReducer,
 });
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
-
 export const makeStore = () => {
-  const store = configureStore({
-    reducer: persistedReducer, // Use persistedReducer instead of rootReducer directly
+  return configureStore({
+    reducer: persistedReducer,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
         serializableCheck: {
-          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER], // Ignore these actions for serialization
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
         },
       }),
-    devTools: process.env.NODE_ENV !== "production", // Enable Redux DevTools in development
+    devTools: process.env.NODE_ENV !== "production",
   });
-
-  // Setup listeners (if using RTK Query or other middleware that needs listeners)
-  setupListeners(store.dispatch);
-
-  return store;
 };
 
-// Export types for store, state, and dispatch
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
 export type AppStore = ReturnType<typeof makeStore>;
 export type RootState = ReturnType<AppStore["getState"]>;
 export type AppDispatch = AppStore["dispatch"];

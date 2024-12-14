@@ -41,7 +41,7 @@ const ProductsPage = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:3008/api/products", {
+        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -92,7 +92,7 @@ const ProductsPage = () => {
           formData.append("image", newProduct.image);
         }
 
-        const response = await fetch("http://localhost:3008/api/products", {
+        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -144,7 +144,7 @@ const ProductsPage = () => {
         {products.map((product) => {
           const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
           return (
-            <Link href={`/productDetail/${product.id}`} key={product.id}>
+            <Link key={product.id} href={`/products/${product.id}`}>
               <div className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer">
                 <img
                   src={primaryImage ? primaryImage.url : "/images/default-product.png"}
