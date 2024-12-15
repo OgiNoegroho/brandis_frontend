@@ -26,10 +26,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isDarkMode]);
 
-  const isAuthPage = pathname === "/signIn"; // Check if the route is `/signIn`
+  const isAuthPage = pathname === "/logIn"; // Check if the route is `/logIn`
 
   if (isAuthPage) {
-    // Render only the children for the `/signIn` page
+    // Render only the children for the `/logIn` page
     return <div className="flex items-center justify-center min-h-screen bg-gray-100">{children}</div>;
   }
 

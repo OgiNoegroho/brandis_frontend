@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
 import { setToken } from "@/redux/slices/authSlice"; // Use Redux Toolkit slice
 
-const SignIn = () => {
+const LogIn = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
 
@@ -18,7 +18,7 @@ const SignIn = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/users/login", {
+      const response = await fetch("http://localhost:3008/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,4 +108,4 @@ const SignIn = () => {
   );
 };
 
-export default SignIn;
+export default LogIn;

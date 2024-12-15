@@ -60,7 +60,7 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/inventory/batch", {
+      const response = await fetch("http://localhost:3008/api/inventory/batch", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ const BatchManagement: React.FC = () => {
   // Fetch Products
   const fetchProducts = async () => {
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+      const response = await fetch("http://localhost:3008/api/products", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/inventory/batch", {
+      const response = await fetch("http://localhost:3008/api/inventory/batch", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +137,7 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/inventory/batch/${selectedBatch.batch_id}`, {
+      const response = await fetch(`http://localhost:3008/api/inventory/batch/${selectedBatch.batch_id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -172,7 +172,7 @@ const BatchManagement: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`https://brandis-backend.vercel.app/api/inventory/batch/${batchId}`, {
+        const response = await fetch(`http://localhost:3008/api/inventory/batch/${batchId}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -195,7 +195,7 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/inventory/batch/${batchId}`, {
+      const response = await fetch(`http://localhost:3008/api/inventory/batch/${batchId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -279,8 +279,9 @@ const BatchManagement: React.FC = () => {
     fetchProducts();
   }, [token]);
 
+  
   return (
-    <div className="p-4 sm:p-8 bg-gray-50 min-h-screen">
+    <div className="p-12 sm:p-8 bg-gray-50 min-h-screen">
       {/* Error Handling */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
@@ -289,14 +290,16 @@ const BatchManagement: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-xl sm:text-2xl font-semibold">Batch Management</h1>
+      <h2 className="text-2xl font-bold mb-2">Manajemen Batch</h2>
+
+      {/* Add Product Button */}
+      <div className="flex justify-end mb-6">
         <button
           className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
           onClick={handleAddNewBatch}
           disabled={loading}
         >
-          Add New Batch
+          Tambah Batch
         </button>
       </div>
 
@@ -304,9 +307,9 @@ const BatchManagement: React.FC = () => {
 {showAddModal && (
   <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
     <div className="bg-white rounded-lg p-6 w-96">
-      <h3 className="text-lg font-semibold mb-4">Add New Batch</h3>
+      <h3 className="text-lg font-semibold mb-4">Tambah Batch</h3>
       <div className="space-y-4">
-        <label className="text-sm">Batch Name</label>
+        <label className="text-sm">Nama Batch</label>
         <input
           type="text"
           value={batchName}
@@ -314,21 +317,21 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <label className="text-sm">Product</label>
+        <label className="text-sm">Produk</label>
         <select
           value={productId}
           onChange={(e) => setProductId(e.target.value)}
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         >
-          <option value="">Select Product</option>
+          <option value="">Pilih Produk</option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
               {product.nama}
             </option>
           ))}
         </select>
-        <label className="text-sm">Production Date</label>
+        <label className="text-sm">Tanggal Produksi</label>
         <input
           type="date"
           value={productionDate}
@@ -336,7 +339,7 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <label className="text-sm">Quantity</label>
+        <label className="text-sm">Kuantitas</label>
         <input
           type="number"
           value={quantity}
@@ -344,7 +347,7 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <label className="text-sm">Expiration Date</label>
+        <label className="text-sm">Tanggal Kedaluwarsa</label>
         <input
           type="date"
           value={expirationDate}
@@ -352,20 +355,20 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex justify-end gap-3">
           <button
-            className="bg-gray-300 px-4 py-2 rounded-lg"
+            className="bg-red-500 text-white py-2 px-4 rounded-lg"
             onClick={closeAddModal}
             disabled={loading}
           >
-            Cancel
+            Batal
           </button>
           <button
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
             onClick={addBatch}
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save"}
+            {loading ? "Saving..." : "Simpan"}
           </button>
         </div>
       </div>
@@ -381,7 +384,7 @@ const BatchManagement: React.FC = () => {
     <div className="bg-white rounded-lg p-6 w-96">
       <h3 className="text-lg font-semibold mb-4">Edit Batch</h3>
       <div className="space-y-4">
-        <label className="text-sm">Batch Name</label>
+        <label className="text-sm">Nama Batch</label>
         <input
           type="text"
           value={batchName}
@@ -389,21 +392,21 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <label className="text-sm">Product</label>
+        <label className="text-sm">Produk</label>
         <select
           value={productId}
           onChange={(e) => setProductId(e.target.value)}
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         >
-          <option value="">Select Product</option>
+          <option value="">Pilih Produk</option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
               {product.nama}
             </option>
           ))}
         </select>
-        <label className="text-sm">Production Date</label>
+        <label className="text-sm">Tanggal Produksi</label>
         <input
           type="date"
           value={productionDate}
@@ -411,7 +414,7 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <label className="text-sm">Quantity</label>
+        <label className="text-sm">Kuantitas</label>
         <input
           type="number"
           value={quantity}
@@ -419,7 +422,7 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <label className="text-sm">Expiration Date</label>
+        <label className="text-sm">Tanggal Kedaluwarsa</label>
         <input
           type="date"
           value={expirationDate}
@@ -427,20 +430,20 @@ const BatchManagement: React.FC = () => {
           className="border rounded-lg p-2 w-full"
           disabled={loading}
         />
-        <div className="mt-6 flex justify-between">
+        <div className="mt-6 flex justify-end gap-3">
           <button
-            className="bg-gray-300 px-4 py-2 rounded-lg"
+            className="bg-red-500 text-white py-2 px-4 rounded-lg"
             onClick={closeEditModal}
             disabled={loading}
           >
-            Cancel
+            Batal
           </button>
           <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg"
             onClick={updateBatch}
             disabled={loading}
           >
-            {loading ? "Updating..." : "Save"}
+            {loading ? "Updating..." : "Simpan"}
           </button>
         </div>
       </div>
@@ -453,7 +456,7 @@ const BatchManagement: React.FC = () => {
 {showDetailModal && selectedBatch && (
   <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
     <div className="bg-white rounded-lg p-6 w-[500px]">
-      <h3 className="text-xl font-semibold mb-6">Batch Details</h3>
+      <h3 className="text-xl font-semibold mb-6"> Detail Batch</h3>
       <div className="w-full">
         <table className="w-full">
           <tbody>
@@ -462,27 +465,27 @@ const BatchManagement: React.FC = () => {
               <td className="px-4 py-2">{selectedBatch.batch_id}</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-semibold">Batch Name</td>
+              <td className="px-4 py-2 font-semibold">Nama Batch</td>
               <td className="px-4 py-2">{selectedBatch.nama_batch}</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-semibold">Product Name</td>
+              <td className="px-4 py-2 font-semibold">Nama Produk</td>
               <td className="px-4 py-2">{selectedBatch.nama_produk}</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-semibold">Production Date</td>
+              <td className="px-4 py-2 font-semibold">Tanggal Produksi</td>
               <td className="px-4 py-2">{selectedBatch.dibuat_pada}</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-semibold">Expiration Date</td>
+              <td className="px-4 py-2 font-semibold">Tanggal Kedaluwarsa</td>
               <td className="px-4 py-2">{selectedBatch.tanggal_kadaluarsa}</td>
             </tr>
             <tr>
-              <td className="px-4 py-2 font-semibold">Quantity</td>
+              <td className="px-4 py-2 font-semibold">Kuantitas</td>
               <td className="px-4 py-2">{selectedBatch.kuantitas}</td>
             </tr>
              <tr>
-              <td className="px-4 py-2 font-semibold">Last Updated</td>
+              <td className="px-4 py-2 font-semibold">Terakhir Diperbarui</td>
               <td className="px-4 py-2">{selectedBatch.diperbarui_pada}</td>
             </tr>
           </tbody>
@@ -492,7 +495,7 @@ const BatchManagement: React.FC = () => {
             className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
             onClick={closeDetailModal}
           >
-            Done
+            Selesai
           </button>
         </div>
       </div>
@@ -514,12 +517,12 @@ const BatchManagement: React.FC = () => {
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableColumn>Batch Name</TableColumn>
-                  <TableColumn>Product Name</TableColumn>
-                  <TableColumn>Quantity</TableColumn>
-                  <TableColumn>Production Date</TableColumn>
-                  <TableColumn>Expiration Date</TableColumn>
-                  <TableColumn>Actions</TableColumn>
+                  <TableColumn>Nama Batch</TableColumn>
+                  <TableColumn>Nama Produk</TableColumn>
+                  <TableColumn>Kuantitas</TableColumn>
+                  <TableColumn>Tanggal Produksi</TableColumn>
+                  <TableColumn>Tanggal Kedaluwarsa</TableColumn>
+                  <TableColumn>Aksi</TableColumn>
                 </TableHeader>
                 <TableBody>
   {batches.map((batch) => (
@@ -532,25 +535,25 @@ const BatchManagement: React.FC = () => {
       <TableCell>
         <div className="flex space-x-2">
           <button
-            className="bg-blue-500 text-white py-1 px-3 rounded-lg"
+            className="bg-blue-500 text-white py-2 px-4 rounded-lg"
             onClick={() => fetchBatchDetails(batch.batch_id)}
             disabled={loading}
           >
-            Details
+            Detail
           </button>
           <button
-            className="bg-yellow-500 text-white py-1 px-3 rounded-lg"
+            className="bg-yellow-500 text-white py-2 px-4 rounded-lg"
             onClick={() => handleEditBatch(batch)}
             disabled={loading}
           >
             Edit
           </button>
           <button
-            className="bg-red-500 text-white py-1 px-3 rounded-lg"
+            className="bg-red-500 text-white py-2 px-4 rounded-lg"
             onClick={() => deleteBatch(batch.batch_id)}
             disabled={loading}
           >
-            Delete
+            Hapus
           </button>
         </div>
       </TableCell>

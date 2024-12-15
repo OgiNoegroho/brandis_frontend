@@ -50,7 +50,7 @@ const Outlet = () => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
+      const response = await fetch("http://localhost:3008/api/outlet", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -109,7 +109,7 @@ const Outlet = () => {
       if (!token) throw new Error("Authentication token not found");
 
       // In the handleAddOutlet
-const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
+const response = await fetch("http://localhost:3008/api/outlet", {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
@@ -152,7 +152,7 @@ const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
 
       // In the handleEditOutlet
 const response = await fetch(
-  `https://brandis-backend.vercel.app/api/outlet/${selectedOutlet.id}`,
+  `http://localhost:3008/api/outlet/${selectedOutlet.id}`,
   {
     method: "PUT",
     headers: {
@@ -195,7 +195,7 @@ const response = await fetch(
     try {
       if (!token) throw new Error("Authentication token not found");
 
-      const response = await fetch(`https://brandis-backend.vercel.app/api/outlet/${id}`, {
+      const response = await fetch(`http://localhost:3008/api/outlet/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -249,15 +249,19 @@ const response = await fetch(
   }
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Outlets</h1>
-      <button
-        className="bg-blue-500 text-white py-2 px-4 rounded mb-4 hover:bg-blue-600 transition"
-        onClick={() => setShowCreateModal(true)}
-      >
-        Add Outlet
-      </button>
+    <div className="pl-12">
       
+        <h1 className="text-2xl font-bold mb-2">Outlet</h1>
+        <div className="flex justify-end mb-6">
+        <button
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
+          onClick={() => setShowCreateModal(true)}
+        >
+          Tambah Outlet
+        </button>
+      </div>
+
+
       {outlets.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           No outlets found. Add your first outlet to get started.
@@ -267,31 +271,31 @@ const response = await fetch(
           {outlets.map((outlet) => (
             <div
               key={outlet.id}
-              className="flex justify-between items-center border-b p-4 hover:bg-gray-100 transition"
+              className="flex justify-between items-center border-b p-5 hover:bg-gray-100 transition"
             >
               <div>
                 <h2 className="text-lg font-semibold">{outlet.nama}</h2>
                 <p className="text-sm text-gray-600">{outlet.alamat}</p>
                 <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
               </div>
-              <div className="flex space-x-4">
+              <div className="flex space-x-2">
                 <button
-                  className="text-blue-500 hover:text-blue-700"
+                  onClick={() => handleViewDetails(outlet.id)}
+                  className="bg-blue-500 text-white py-1 px-3 rounded-lg"
+                >
+                  Detail
+                </button>
+                <button
                   onClick={() => handleOpenEditModal(outlet)}
+                  className="bg-yellow-500 text-white py-1 px-3 rounded-lg"
                 >
                   Edit
                 </button>
                 <button
-                  className="text-red-500 hover:text-red-700"
                   onClick={() => handleDeleteOutlet(outlet.id)}
+                  className="bg-red-500 text-white py-1 px-3 rounded-lg"
                 >
-                  Delete
-                </button>
-                <button
-                  className="text-green-500 hover:text-green-700"
-                  onClick={() => handleViewDetails(outlet.id)}
-                >
-                  View Details
+                  Hapus
                 </button>
               </div>
             </div>
@@ -301,57 +305,45 @@ const response = await fetch(
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
-            <h2 className="text-xl font-semibold mb-4">Add New Outlet</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Outlet Name
-              </label>
-              <input
-                type="text"
-                name="outletName"
-                value={formData.outletName}
-                onChange={(e) => handleInputChange(e, setFormData)}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={formData.address}
-                onChange={(e) => handleInputChange(e, setFormData)}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={formData.phone}
-                onChange={(e) => handleInputChange(e, setFormData)}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h2 className="text-xl font-semibold mb-4">Tambah Outlet Baru</h2>
+            <input
+              type="text"
+              name="Nama Outlet"
+              placeholder="Nama Outlet"
+              value={formData.outletName}
+              onChange={(e) => handleInputChange(e, setFormData)}
+              className="w-full p-2 mb-4 border rounded"
+            />
+            <input
+              type="text"
+              name="Alamat"
+              placeholder="Alamat"
+              value={formData.address}
+              onChange={(e) => handleInputChange(e, setFormData)}
+              className="w-full p-2 mb-4 border rounded"
+            />
+            <input
+              type="text"
+              name="Nomor Telepon"
+              placeholder="Nomor Telepon"
+              value={formData.phone}
+              onChange={(e) => handleInputChange(e, setFormData)}
+              className="w-full p-2 mb-4 border rounded"
+            />
+            <div className="mt-6 flex justify-end gap-3">
               <button
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
                 onClick={() => setShowCreateModal(false)}
+                className="bg-red-500 text-white py-2 px-4 rounded-lg"
               >
-                Cancel
+                Batal
               </button>
               <button
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
                 onClick={handleAddOutlet}
+                className="bg-blue-500 text-white py-2 px-4 rounded-lg"
               >
-                Add
+                Tambah
               </button>
             </div>
           </div>
@@ -360,57 +352,45 @@ const response = await fetch(
 
       {/* Edit Modal */}
       {showEditModal && selectedOutlet && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-96">
             <h2 className="text-xl font-semibold mb-4">Edit Outlet</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Outlet Name
-              </label>
-              <input
-                type="text"
-                name="outletName"
-                value={editFormData.outletName}
-                onChange={(e) => handleInputChange(e, setEditFormData)}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
-              <input
-                type="text"
-                name="address"
-                value={editFormData.address}
-                onChange={(e) => handleInputChange(e, setEditFormData)}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-              />
-            </div>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                name="phone"
-                value={editFormData.phone}
-                onChange={(e) => handleInputChange(e, setEditFormData)}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-              />
-            </div>
-            <div className="flex justify-end space-x-2">
+            <input
+              type="text"
+              name="outletName"
+              placeholder="Nama Outlet"
+              value={editFormData.outletName}
+              onChange={(e) => handleInputChange(e, setEditFormData)}
+              className="w-full p-2 mb-4 border rounded"
+            />
+            <input
+              type="text"
+              name="address"
+              placeholder="Alamat"
+              value={editFormData.address}
+              onChange={(e) => handleInputChange(e, setEditFormData)}
+              className="w-full p-2 mb-4 border rounded"
+            />
+            <input
+              type="text"
+              name="phone"
+              placeholder="Nomor Telepon"
+              value={editFormData.phone}
+              onChange={(e) => handleInputChange(e, setEditFormData)}
+              className="w-full p-2 mb-4 border rounded"
+            />
+            <div className="flex justify-end space-x-4">
               <button
-                className="bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600"
                 onClick={() => setShowEditModal(false)}
+                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
               >
-                Cancel
+                Batal
               </button>
               <button
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
                 onClick={handleEditOutlet}
+                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
               >
-                Update
+                Simpan 
               </button>
             </div>
           </div>

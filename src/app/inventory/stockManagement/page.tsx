@@ -58,7 +58,7 @@ const StockManagement: React.FC = () => {
       }
 
       try {
-        const response = await fetch("https://brandis-backend.vercel.app/api/inventory", {
+        const response = await fetch("http://localhost:3008/api/inventory", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ const StockManagement: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/inventory/${produkId}`,
+        `http://localhost:3008/api/inventory/${produkId}`,
         {
           method: "GET",
           headers: {
@@ -140,7 +140,7 @@ const StockManagement: React.FC = () => {
   return (
     <div className="p-10 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-semibold">Stock Management</h1>
+        <h1 className="text-2xl font-semibold">Manajemen Stok</h1>
       </div>
 
       {/* Top Summary Cards */}
@@ -148,7 +148,7 @@ const StockManagement: React.FC = () => {
         <Card className="shadow-lg">
           <CardBody>
             <div className="px-3">
-              <h4 className="font-semibold">Total Products</h4>
+              <h4 className="font-semibold">Total Produk</h4>
               <b>{products.length}</b>
             </div>
           </CardBody>
@@ -156,7 +156,7 @@ const StockManagement: React.FC = () => {
         <Card className="shadow-lg">
           <CardBody>
             <div className="px-3">
-              <h4 className="font-semibold">Low Stocks</h4>
+              <h4 className="font-semibold">Stok Rendah</h4>
               <b>
                 {products.filter((p) => p.ketersediaan === "Low stock").length}
               </b>
@@ -166,7 +166,7 @@ const StockManagement: React.FC = () => {
         <Card className="shadow-lg">
           <CardBody>
             <div className="px-3">
-              <h4 className="font-semibold">Out of Stock</h4>
+              <h4 className="font-semibold">Stok Habis</h4>
               <b>
                 {products.filter((p) => p.ketersediaan === "Out of stock").length}
               </b>
@@ -179,10 +179,10 @@ const StockManagement: React.FC = () => {
       <Card className="shadow-lg">
         <Table aria-label="Stock Management Table" className="bg-white rounded-lg">
           <TableHeader>
-            <TableColumn>Product Name</TableColumn>
-            <TableColumn>Quantity</TableColumn>
+            <TableColumn>Nama produk</TableColumn>
+            <TableColumn>kuantitas</TableColumn>
             <TableColumn>Status</TableColumn>
-            <TableColumn>Actions</TableColumn>
+            <TableColumn>Aksi</TableColumn>
           </TableHeader>
           <TableBody>
             {products.map((product) => (
@@ -193,7 +193,7 @@ const StockManagement: React.FC = () => {
                 <TableCell>
                   <Button
                     onClick={() => handleDetailClick(product)}
-                    className="px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                    className="px-3 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
                   >
                     Detail
                   </Button>
@@ -221,16 +221,16 @@ const StockManagement: React.FC = () => {
             {batchDetails.map((batch, index) => (
               <li key={batch.batch_id} className="mb-4">
                 <p>
-                  <strong>Batch Name:</strong> {batch.nama_batch}
+                  <strong>Nama Bacth:</strong> {batch.nama_batch}
                 </p>
                 <p>
-                  <strong>Quantity:</strong> {batch.kuantitas_batch}
+                  <strong>Kuantitas:</strong> {batch.kuantitas_batch}
                 </p>
                 <p>
-                  <strong>Production Date:</strong> {formatDate(batch.produksi_pada)}
+                  <strong>Tanggal Produksi:</strong> {formatDate(batch.produksi_pada)}
                 </p>
                 <p>
-                  <strong>Expiry Date:</strong> {formatDate(batch.tanggal_kadaluarsa)}
+                  <strong>Tanggal Kedaluwarsa:</strong> {formatDate(batch.tanggal_kadaluarsa)}
                 </p>
                 {/* Add a line separator between batches */}
                 {index < batchDetails.length - 1 && <hr className="my-4" />}
@@ -246,7 +246,7 @@ const StockManagement: React.FC = () => {
           onClick={closeModal}
           className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
         >
-          Close
+          Tutup
         </button>
       </div>
     </div>

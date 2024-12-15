@@ -31,7 +31,7 @@ const UserManagement: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("https://brandis-backend.vercel.app/api/users/", {
+        const response = await fetch("http://localhost:3008/api/users/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -62,7 +62,7 @@ const UserManagement: React.FC = () => {
   // Handle updating user
   const handleUpdateUser = async () => {
     if (selectedUser) {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/users/${selectedUser.email}`, {
+      const response = await fetch(`http://localhost:3008/api/users/${selectedUser.email}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -89,7 +89,7 @@ const UserManagement: React.FC = () => {
   // Handle adding new user
   const handleAddUser = async () => {
     if (newUser.id && newUser.nama && newUser.email && newUser.peran) {
-      const response = await fetch("https://brandis-backend.vercel.app/api/users", {
+      const response = await fetch("http://localhost:3008/api/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,7 +115,7 @@ const UserManagement: React.FC = () => {
   const handleDeleteUser = async (email: string) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this user?");
     if (confirmDelete) {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/users/${email}`, {
+      const response = await fetch(`http://localhost:3008/api/users/${email}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -133,15 +133,15 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-12">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Daftar User</h1>
+        <h1 className="text-xl font-bold">Daftar Pengguna</h1>
         <button
           className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded shadow-lg"
           onClick={handleOpenAddUserModal}
         >
-          Add User
+          Tambah Pengguna
         </button>
       </div>
 
@@ -152,7 +152,7 @@ const UserManagement: React.FC = () => {
           <TableColumn>Nama</TableColumn>
           <TableColumn>Email</TableColumn>
           <TableColumn>Peran</TableColumn>
-          <TableColumn>Actions</TableColumn>
+          <TableColumn>Aksi</TableColumn>
         </TableHeader>
         <TableBody>
           {users.map((user) => (
@@ -161,9 +161,19 @@ const UserManagement: React.FC = () => {
               <TableCell>{user.nama}</TableCell>
               <TableCell>{user.email}</TableCell>
               <TableCell>{user.peran}</TableCell>
-              <TableCell>
-                <Button onClick={() => handleOpenUpdateUserModal(user)}>Update</Button>
-                <Button onClick={() => handleDeleteUser(user.email)}>Delete</Button>
+              <TableCell className="flex space-x-2">
+                <button
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"
+                  onClick={() => handleOpenUpdateUserModal(user)}
+                >
+                  Edit
+                </button>
+                <button
+                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                  onClick={() => handleDeleteUser(user.email)}
+                >
+                  Hapus
+                </button>
               </TableCell>
             </TableRow>
           ))}
@@ -174,12 +184,12 @@ const UserManagement: React.FC = () => {
       {isAddUserModalOpen && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg w-1/3 p-6">
-            <h2 className="text-lg font-bold mb-4">Tambah User</h2>
+            <h2 className="text-lg font-bold mb-4">Tambah Pengguna</h2>
             <div className="mb-4">
-              <label className="block mb-1 font-medium">ID User</label>
+              <label className="block mb-1 font-medium">ID Pengguna</label>
               <input
                 type="text"
-                placeholder="Masukkan ID User"
+                placeholder="Masukkan ID Pengguna"
                 className="w-full border px-4 py-2 rounded"
                 value={newUser.id}
                 onChange={(e) => setNewUser({ ...newUser, id: e.target.value })}
@@ -223,16 +233,16 @@ const UserManagement: React.FC = () => {
             </div>
             <div className="flex justify-end space-x-4">
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                 onClick={() => setIsAddUserModalOpen(false)}
               >
-                Cancel
+                Batal
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
                 onClick={handleAddUser}
               >
-                Confirm
+                Konfirmasi
               </button>
             </div>
           </div>
@@ -243,7 +253,7 @@ const UserManagement: React.FC = () => {
       {isUpdateUserModalOpen && selectedUser && (
         <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg w-1/3 p-6">
-            <h2 className="text-lg font-bold mb-4">Update User</h2>
+            <h2 className="text-lg font-bold mb-4">Perbarui Pengguna</h2>
             <div className="mb-4">
               <label className="block mb-1 font-medium">Nama</label>
               <input
@@ -280,18 +290,19 @@ const UserManagement: React.FC = () => {
                 }
               />
             </div>
+            {/* Aligning the buttons to the right */}
             <div className="flex justify-end space-x-4">
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
                 onClick={() => setIsUpdateUserModalOpen(false)}
               >
-                Cancel
+                Batal
               </button>
               <button
-                className="bg-blue-500 text-white px-4 py-2 rounded"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
                 onClick={handleUpdateUser}
               >
-                Update
+                Perbarui
               </button>
             </div>
           </div>

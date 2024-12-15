@@ -1,105 +1,91 @@
 import React, { useState, useEffect } from "react";
 import { Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
-
-// Type for Batch Data
-type BatchData = {
-  batchName: string;
-  quantity: number;
-  productionDate: string;
-  expirationDate: string;
-};
+import { useAppSelector } from "@/redux/hooks"; // Import the selector
+import { RootState } from "@/redux/store"; // Import RootState
 
 // Type for Product Data
 type ProductData = {
-  outletStocksId: string;
   productName: string;
   quantity: number;
   price: number;
-  batches: BatchData[];
-};
-
-// Type for Sold Stock Entry
-type SoldStockEntry = {
-  productName: string;
-  quantity: string;
-  date: string;
-};
-
-// Type for Product Entry (for Distribution)
-type ProductEntry = {
-  productName: string;
-  batchName: string;
-  quantity: string;
-  distributionDate: string;
-};
-
-type SavedDistribution = {
-  invoiceCode: string;
-  products: ProductEntry[];
 };
 
 interface StockOverviewProps {
-  savedDistributions: SavedDistribution[]; // Received from parent or API
-  fetchStockData: () => Promise<ProductData[]>; // Function to fetch stock data from API
+  outletId: string; // Pass outletId from parent (OutletDetail)
 }
 
-const StockOverview = ({ savedDistributions, fetchStockData }: StockOverviewProps) => {
-  const [stockData, setStockData] = useState<ProductData[]>([]);
-  const [soldStockEntries, setSoldStockEntries] = useState<SoldStockEntry[]>([]);
-  const [newSoldStock, setNewSoldStock] = useState<SoldStockEntry>({
-    productName: "",
-    quantity: "",
-    date: "",
-  });
-  const [isModalOpen, setIsModalOpen] = useState(false);
+interface StockOverviewResponse {
+  nama_produk: string;
+  harga_produk: string;
+  kuantitas_stok: number;
+}
 
-  // Fetch the stock data from the API or another source
+const StockOverview = ({ outletId }: StockOverviewProps) => {
+  const [stockData, setStockData] = useState<ProductData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Get token from Redux state
+  const token = useAppSelector((state: RootState) => state.auth.token);
+
+  // Fetch the stock data from the API
   useEffect(() => {
-    const fetchData = async () => {
-      const data = await fetchStockData(); // Fetch stock data
-      setStockData(data);
+    const fetchStockData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`http://localhost:3008/api/outlet/${outletId}/stock-overview`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`, // Add token to Authorization header
+          },
+        });
+
+        if (!response.ok) {
+          const errorDetails = await response.text();
+          throw new Error(`Failed to fetch stock data: ${response.status} - ${errorDetails}`);
+        }
+
+        const data: StockOverviewResponse[] = await response.json();
+
+        // Transform the data to match ProductData structure
+        const transformedData = data.map((item) => ({
+          productName: item.nama_produk, // Map "nama_produk" to productName
+          price: parseFloat(item.harga_produk), // Parse price as float
+          quantity: item.kuantitas_stok, // Use kuantitas_stok directly as it is a number
+        }));
+        
+
+        setStockData(transformedData); // Update stock data
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+        console.error("Error fetching stock data:", err);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchData();
-  }, [fetchStockData]);
-
-  // Update stock quantities based on saved distributions
-  useEffect(() => {
-    if (Array.isArray(savedDistributions)) {
-      savedDistributions.forEach((distribution) => {
-        if (Array.isArray(distribution.products)) {
-          distribution.products.forEach((productEntry) => {
-            updateStockQuantity(productEntry);
-          });
-        }
-      });
+    if (outletId) {
+      fetchStockData();
     }
-  }, [savedDistributions]);
+  }, [outletId, token]); // Ensure the effect re-runs when token changes
 
-  const updateStockQuantity = (productEntry: ProductEntry) => {
-    // Find the stock item that matches the product name and batch name
-    const stockItem = stockData.find((item) => item.productName === productEntry.productName);
-    if (stockItem) {
-      const batch = stockItem.batches.find((batch) => batch.batchName === productEntry.batchName);
-      if (batch && batch.quantity >= Number(productEntry.quantity)) {
-        batch.quantity -= Number(productEntry.quantity); // Reduce the batch quantity
-      }
-    }
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse text-lg">Loading...</div>
+      </div>
+    );
+  }
 
-  const handleAddSoldStock = () => {
-    if (!newSoldStock.productName || !newSoldStock.quantity || !newSoldStock.date) {
-      return; // Don't add if any field is empty
-    }
-    setSoldStockEntries([...soldStockEntries, newSoldStock]);
-    setNewSoldStock({ productName: "", quantity: "", date: "" });
-    setIsModalOpen(false);
-  };
-
-  const handleSaveSoldStock = () => {
-    console.log("Sold stock saved:", soldStockEntries);
-    setSoldStockEntries([]); // Clear sold stock entries after saving
-  };
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-red-600">
+        <div>Error: {error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -113,114 +99,15 @@ const StockOverview = ({ savedDistributions, fetchStockData }: StockOverviewProp
             <TableColumn>Quantity</TableColumn>
           </TableHeader>
           <TableBody>
-            {stockData.map((item) => (
-              <TableRow key={item.outletStocksId}>
+            {stockData.map((item, index) => (
+              <TableRow key={index}>
                 <TableCell>{item.productName}</TableCell>
-                <TableCell>${item.price.toFixed(2)}</TableCell>
+                <TableCell>Rp.{item.price.toLocaleString()}</TableCell>
                 <TableCell>{item.quantity}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Sold Stock Table */}
-      <div className="bg-white shadow-md p-4 rounded-lg">
-        <h3 className="text-lg font-semibold mb-4">Sold Stock</h3>
-
-        {/* Add Product Button */}
-        <div className="flex justify-end mb-4">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-          >
-            Add Product
-          </button>
-        </div>
-
-        {/* Modal for Adding Sold Stock */}
-        {isModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-              <div className="border-b px-6 py-4">
-                <h3 className="text-xl font-semibold">Add Sold Stock</h3>
-              </div>
-              <div className="px-6 py-4 space-y-4">
-                {/* Dropdown for Product Name */}
-                <select
-                  value={newSoldStock.productName}
-                  onChange={(e) => setNewSoldStock({ ...newSoldStock, productName: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                >
-                  <option value="">Select Product</option>
-                  {stockData.map((item) => (
-                    <option key={item.outletStocksId} value={item.productName}>
-                      {item.productName}
-                    </option>
-                  ))}
-                </select>
-
-                <input
-                  type="number"
-                  placeholder="Quantity"
-                  value={newSoldStock.quantity}
-                  onChange={(e) => setNewSoldStock({ ...newSoldStock, quantity: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-                <input
-                  type="date"
-                  value={newSoldStock.date}
-                  onChange={(e) => setNewSoldStock({ ...newSoldStock, date: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-md"
-                />
-              </div>
-              <div className="border-t px-6 py-4 flex justify-end space-x-3">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddSoldStock}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md"
-                >
-                  Save
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Sold Stock Entries Table */}
-        {soldStockEntries.length > 0 && (
-          <>
-            <Table aria-label="Sold stock entries">
-              <TableHeader>
-                <TableColumn>Product Name</TableColumn>
-                <TableColumn>Quantity</TableColumn>
-                <TableColumn>Date</TableColumn>
-              </TableHeader>
-              <TableBody>
-                {soldStockEntries.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{item.productName}</TableCell>
-                    <TableCell>{item.quantity}</TableCell>
-                    <TableCell>{item.date}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={handleSaveSoldStock}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md"
-              >
-                Save Sold Stock
-              </button>
-            </div>
-          </>
-        )}
       </div>
     </div>
   );

@@ -41,7 +41,7 @@ const ProductsPage = () => {
       }
 
       try {
-        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+        const response = await fetch("http://localhost:3008/api/products", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -92,7 +92,7 @@ const ProductsPage = () => {
           formData.append("image", newProduct.image);
         }
 
-        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+        const response = await fetch("http://localhost:3008/api/products", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -124,15 +124,15 @@ const ProductsPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="pl-12">
       {/* Header and Add Product Button */}
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Products</h2>
+        <h2 className="text-2xl font-bold">Produk</h2>
         <button
           className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
           onClick={() => setIsModalOpen(true)}
         >
-          Add Product
+          Tambah Produk
         </button>
       </div>
 
@@ -145,15 +145,17 @@ const ProductsPage = () => {
           const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
           return (
             <Link key={product.id} href={`/products/${product.id}`}>
-              <div className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer">
-                <img
-                  src={primaryImage ? primaryImage.url : "/images/default-product.png"}
-                  alt={product.nama}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="p-4">
+              <div className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full">
+                <div className="w-full aspect-[5/4] overflow-hidden">
+                  <img
+                    src={primaryImage ? primaryImage.url : "/images/default-product.png"}
+                    alt={product.nama}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-4 flex-grow">
                   <h3 className="text-lg font-semibold mb-1">{product.nama}</h3>
-                  <p className="text-sm text-gray-500">Category: {product.kategori}</p>
+                  <p className="text-sm text-gray-500">kategori: {product.kategori}</p>
                   <p className="text-blue-600 font-semibold">Rp. {product.harga}</p>
                 </div>
               </div>
@@ -166,7 +168,7 @@ const ProductsPage = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4">New Product</h2>
+            <h2 className="text-xl font-bold mb-4">Produk</h2>
             <form className="space-y-4">
               {/* Image Upload */}
               <div className="flex flex-col items-center border-dashed border-2 border-gray-300 w-full p-4">
@@ -194,7 +196,7 @@ const ProductsPage = () => {
                 )}
 
                 <p className="text-sm text-gray-500">
-                  Drag image here or{" "}
+                  Letak Foto disini atau{" "}
                   <input
                     type="file"
                     accept="image/*"
@@ -208,50 +210,50 @@ const ProductsPage = () => {
               <input
                 type="text"
                 className="w-full p-2 border rounded"
-                placeholder="Product Name"
+                placeholder="Nama Produk"
                 value={newProduct.nama}
                 onChange={(e) => setNewProduct({ ...newProduct, nama: e.target.value })}
               />
               <input
                 type="text"
                 className="w-full p-2 border rounded"
-                placeholder="Category"
+                placeholder="Kategori"
                 value={newProduct.kategori}
                 onChange={(e) => setNewProduct({ ...newProduct, kategori: e.target.value })}
               />
               <input
                 type="text"
                 className="w-full p-2 border rounded"
-                placeholder="Price"
+                placeholder="Harga"
                 value={newProduct.harga}
                 onChange={(e) => setNewProduct({ ...newProduct, harga: e.target.value })}
               />
               <textarea
                 className="w-full p-2 border rounded"
-                placeholder="Composition"
+                placeholder="Komposisi"
                 value={newProduct.komposisi}
                 onChange={(e) => setNewProduct({ ...newProduct, komposisi: e.target.value })}
               />
               <textarea
                 className="w-full p-2 border rounded"
-                placeholder="Description"
+                placeholder="Deskripsi"
                 value={newProduct.deskripsi}
                 onChange={(e) => setNewProduct({ ...newProduct, deskripsi: e.target.value })}
               />
-              <div className="flex justify-between">
+              <div className="flex justify-end space-x-4">
                 <button
                   type="button"
-                  className="bg-gray-200 text-gray-600 py-2 px-4 rounded hover:bg-gray-300"
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400"
                   onClick={() => setIsModalOpen(false)}
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="button"
                   className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
                   onClick={handleAddProduct}
                 >
-                  Add
+                  Tambah
                 </button>
               </div>
             </form>

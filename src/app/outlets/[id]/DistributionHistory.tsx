@@ -130,7 +130,7 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
   // Fetch products from API
   const fetchProducts = async () => {
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+      const response = await fetch("http://localhost:3008/api/products", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -150,7 +150,7 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
   const fetchBatches = async (productId: string) => {
     setLoadingBatches(true);
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/inventory/${productId}`, {
+      const response = await fetch(`http://localhost:3008/api/inventory/${productId}`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -188,7 +188,7 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
         throw new Error("Invalid outlet ID");
       }
 
-      const response = await fetch(`https://brandis-backend.vercel.app/api/distribusi/${outletIdNumber}`, {
+      const response = await fetch(`http://localhost:3008/api/distribusi/${outletIdNumber}`, {
         method: "GET",
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -223,7 +223,7 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
 
   const handleViewDetail = async (distributionId: number) => {
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/distribusi/detail/${distributionId}`, {
+      const response = await fetch(`http://localhost:3008/api/distribusi/detail/${distributionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -252,7 +252,7 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
   
   const handleViewFaktur = async (distributionId: number) => {
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/faktur/${distributionId}`, {
+      const response = await fetch(`http://localhost:3008/api/faktur/${distributionId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -385,7 +385,7 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
     console.log("Payload being sent:", JSON.stringify(distribusiData, null, 2));
   
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/distribusi", {
+      const response = await fetch("http://localhost:3008/api/distribusi", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -610,20 +610,17 @@ const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
           </TableBody>
         </Table>
 
-        <div className="flex justify-end mt-4">
-  <button
-    onClick={() => {
-      if (productEntries.length > 0) {
-        setIsSaveModalOpen(true);
-      } else {
-        alert("Please add products before saving distribution.");
-      }
-    }}
-    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-  >
-    Save Distribution
-  </button>
-</div>
+        {productEntries.length > 0 && (
+  <div className="flex justify-end mt-4">
+    <button
+      onClick={() => setIsSaveModalOpen(true)}
+      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+    >
+      Save Distribution
+    </button>
+  </div>
+)}
+
       </div>
 
       <div className="bg-white shadow-md p-4 rounded-lg mb-6">

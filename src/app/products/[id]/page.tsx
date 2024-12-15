@@ -41,7 +41,7 @@ const ProductDetail = () => {
       setError("");
 
       try {
-        const response = await fetch(`https://brandis-backend.vercel.app/api/products/${id}`, {
+        const response = await fetch(`http://localhost:3008/api/products/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
