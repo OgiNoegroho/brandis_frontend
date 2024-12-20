@@ -1,60 +1,117 @@
-"use client"
+"use client";
 
-import React from "react";
-import Link from "next/link"; // Next.js Link for navigation
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/redux/hooks"; // Importing the useAppSelector hook
+import { RootState } from "@/redux/store"; // Importing RootState to access global state
+import {
+  Button,
+} from "@nextui-org/react";
 
-type Outlet = {
+interface Outlet {
   id: string;
-  name: string;
-  address: string;
-  phoneNumber: string;
-};
+  nama: string;
+  alamat: string;
+  nomor_telepon: string;
+}
 
-const FinancialReports: React.FC = () => {
-  const outlets: Outlet[] = [
-    {
-      id: "1",
-      name: "Outlet A",
-      address: "123 Main St",
-      phoneNumber: "123-456-7890",
-    },
-    {
-      id: "2",
-      name: "Outlet B",
-      address: "456 Elm St",
-      phoneNumber: "987-654-3210",
-    },
-  ];
+const FinancialReports = () => {
+  const router = useRouter();
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Access the token from Redux state
+  const token = useAppSelector((state: RootState) => state.auth.token);
+
+  // Fetch outlets with proper error handling
+  const fetchOutlets = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      if (!token) {
+        throw new Error("Authentication token not found");
+      }
+
+      const response = await fetch("http://localhost:3008/api/outlet", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setOutlets(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+      console.error("Error fetching outlets:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOutlets();
+  }, [token]); // Re-fetch outlets if token changes
+
+  
+  const handleViewDetails = (id: string) => {
+    router.push(`/financialReports/${id}`);
+  };
+
+  if (isLoading) {
+    return <div className="p-6 text-center">Loading outlets...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-600">
+        Error: {error}
+        <Button
+          onClick={fetchOutlets}
+          className="ml-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-10 space-y-6">
-      <h1 className="text-2xl font-bold">Financial Reports</h1>
+    <div className="pl-12">
+      <h1 className="text-2xl font-bold mb-2">Financial Reports</h1>
 
-      {/* Outlet List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-        {outlets.map((outlet) => (
-          <div
-            key={outlet.id}
-            className="bg-white shadow-md rounded-lg p-4 hover:bg-gray-100 transition flex items-center justify-between"
-          >
-            <div>
-              <h4 className="text-lg font-bold">{outlet.name}</h4>
-              <p className="text-sm text-gray-600">{`ID: ${outlet.id}`}</p>
-              <p className="text-sm text-gray-600">{outlet.address}</p>
-              <p className="text-sm text-gray-600">{outlet.phoneNumber}</p>
-            </div>
-            {/* Link to the details page */}
-            <Link
-              href={`/financialReports/${outlet.id}`} // Link to the outlet details page using dynamic routing
-              passHref
+      {outlets.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">No outlets found.</div>
+      ) : (
+        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          {outlets.map((outlet) => (
+            <div
+              key={outlet.id}
+              className="flex justify-between items-center border-b p-5 hover:bg-gray-100 transition"
             >
-              <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
-                Detail
-              </button>
-            </Link>
-          </div>
-        ))}
-      </div>
+              <div>
+                <h2 className="text-lg font-semibold">{outlet.nama}</h2>
+                <p className="text-sm text-gray-600">{outlet.alamat}</p>
+                <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
+              </div>
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => handleViewDetails(outlet.id)}
+                  className="bg-blue-500 text-white py-1 px-3 rounded-lg"
+                >
+                  Detail
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -1,145 +1,355 @@
 "use client";
 
-import React, { useRef } from "react";
-import { useParams } from "next/navigation"; // Use useParams from next/navigation
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Button,
+  Divider
+} from "@nextui-org/react";
+import { PhoneCall, MapPin } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
 
-type DistributionEntry = {
-  invoiceCode: string;
-  saleDate: string;
-  productName: string;
-  batchName: string;
-  quantity: string;
-  outletName: string;
-  outletId: string;
+type DistributionTableEntry = {
+  distribusi_id: number;
+  distribusi_created_at: string;
+  faktur_id: string;
+};
+
+type DistributionDetailEntry = {
+  batch_id: number;
+  batch_name: string;
+  product_name: string;
+  quantity: number;
+};
+
+type FakturEntry = {
+  invoice_number: string;
+  invoice_date: string;
+  due_date: string;
+  outlet_name: string;
+  outlet_address: string;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  total_price: number;
+  grand_total: number;
+  amount_paid: number;
+  balance_due: number;
+  payment_status: "Lunas" | "Menunggu";
 };
 
 type Outlet = {
   id: string;
-  name: string;
-  address: string;
-  phoneNumber: string;
-  distributions: DistributionEntry[];
+  nama: string;
+  alamat: string;
+  nomor_telepon: string;
 };
 
 const FinancialReportsDetails: React.FC = () => {
-  const { id } = useParams(); // Get outletId from route parameter
-  const printRef = useRef<HTMLDivElement>(null); // Reference to the print container
+  const { id } = useParams();
+  const [selectedOutlet, setSelectedOutlet] = useState<Outlet | null>(null);
+  const [distributions, setDistributions] = useState<DistributionTableEntry[]>(
+    []
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [detailData, setDetailData] = useState<
+    DistributionDetailEntry[] | null
+  >(null);
+  const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
 
-  // Sample data (This would normally come from an API or database)
-  const outlets: Outlet[] = [
-    {
-      id: "1",
-      name: "Outlet A",
-      address: "123 Main St",
-      phoneNumber: "123-456-7890",
-      distributions: [
-        {
-          invoiceCode: "INV-001",
-          saleDate: "2024-12-01",
-          productName: "Product A",
-          batchName: "Batch A",
-          quantity: "50",
-          outletName: "Outlet A",
-          outletId: "OUT001",
-        },
-      ],
-    },
-    {
-      id: "2",
-      name: "Outlet B",
-      address: "456 Elm St",
-      phoneNumber: "987-654-3210",
-      distributions: [
-        {
-          invoiceCode: "INV-002",
-          saleDate: "2024-12-02",
-          productName: "Product B",
-          batchName: "Batch B",
-          quantity: "30",
-          outletName: "Outlet B",
-          outletId: "OUT002",
-        },
-        {
-          invoiceCode: "INV-003",
-          saleDate: "2024-12-03",
-          productName: "Product C",
-          batchName: "Batch C",
-          quantity: "70",
-          outletName: "Outlet B",
-          outletId: "OUT002",
-        },
-      ],
-    },
-  ];
+  const token = useAppSelector((state: RootState) => state.auth.token);
 
-  // Find the outlet based on the outletId from URL params
-  const selectedOutlet = outlets.find((outlet) => outlet.id === id);
+  // Fetch outlet details
+  const fetchOutletDetails = async () => {
+    try {
+      const response = await fetch(`http://localhost:3008/api/outlet/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch outlet details");
 
-  if (!selectedOutlet) {
-    return <div>Outlet not found</div>;
-  }
-
-  // Function to handle printing of the invoice section
-  const handlePrint = () => {
-    const printWindow = window.open("", "_blank");
-    if (printWindow && printRef.current) {
-      printWindow.document.write(`
-        <html>
-          <head><title>Invoice</title></head>
-          <body>
-            <div>${printRef.current.innerHTML}</div>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.print();
+      const outletData: Outlet = await response.json();
+      setSelectedOutlet(outletData);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An error occurred");
     }
   };
 
+  useEffect(() => {
+    if (id) {
+      fetchOutletDetails();
+      fetchDistributions(); // Fetch distributions after outlet details
+    }
+  }, [id, token]);
+
+  const fetchDistributions = async () => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `http://localhost:3008/api/distribusi/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch distributions");
+
+      const data: DistributionTableEntry[] = await response.json();
+      setDistributions(data);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "An error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleViewDetail = async (distributionId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3008/api/distribusi/detail/${distributionId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch distribution details");
+
+      const data: DistributionDetailEntry[] = await response.json();
+      setDetailData(data);
+    } catch (error) {
+      console.error("Error fetching distribution details:", error);
+    }
+  };
+
+  const handleViewFaktur = async (distributionId: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:3008/api/faktur/${distributionId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (!response.ok) throw new Error("Failed to fetch invoice details");
+
+      const data: FakturEntry[] = await response.json();
+      setFakturData(data);
+    } catch (error) {
+      console.error("Error fetching invoice details:", error);
+    }
+  };
+
+  const closeDetailModal = () => setDetailData(null);
+  const closeFakturModal = () => setFakturData(null);
+
   return (
-    <div className="p-6 bg-gray-50 rounded-lg shadow-md">
+    <div>
       {/* Outlet Details */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-semibold text-gray-800">{selectedOutlet.name}</h1>
-        <p className="text-sm text-gray-600">{selectedOutlet.address}</p>
-        <p className="text-sm text-gray-600">{selectedOutlet.phoneNumber}</p>
-      </div>
-
-      {/* Print Container with Distribution Details */}
-      <div ref={printRef} className="bg-white p-6 rounded-lg shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-gray-800">Distributions</h2>
-          {/* Print Invoice Button */}
-          <button
-            onClick={handlePrint}
-            className="bg-blue-500 text-white py-2 px-6 rounded-lg hover:bg-blue-600 transition"
-          >
-            Print Invoice
-          </button>
+      {selectedOutlet ? (
+        <Card className="mb-4">
+          <CardHeader>
+            <h1 className="text-3xl font-bold">{selectedOutlet.nama}</h1>
+          </CardHeader>
+          <Divider />
+          <div className="grid grid-cols-1 gap-2 p-2">
+            <div className="flex items-center gap-2 text-gray-600 mb-2">
+              <MapPin className="h-5 w-5" />
+              <span>{selectedOutlet.alamat}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <PhoneCall className="h-5 w-5" />
+              <span>{selectedOutlet.nomor_telepon}</span>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <div className="text-center text-gray-500">
+          Loading outlet details...
         </div>
+      )}
 
-        {/* Table with Distribution Details */}
-        <table className="min-w-full bg-white rounded-lg shadow-md">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="px-6 py-3 text-left text-sm text-gray-600">Invoice Code</th>
-              <th className="px-6 py-3 text-left text-sm text-gray-600">Sale Date</th>
-              <th className="px-6 py-3 text-left text-sm text-gray-600">Batch Name</th>
-              <th className="px-6 py-3 text-left text-sm text-gray-600">Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {selectedOutlet.distributions.map((distribution, index) => (
-              <tr key={index} className="border-t hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-800">{distribution.invoiceCode}</td>
-                <td className="px-6 py-4 text-sm text-gray-800">{distribution.saleDate}</td>
-                <td className="px-6 py-4 text-sm text-gray-800">{distribution.batchName}</td>
-                <td className="px-6 py-4 text-sm text-gray-800">{distribution.quantity}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card className="mb-4">
+        <CardBody>
+          <h3 className="text-lg font-semibold">Financial Report</h3>
+          <Divider className="mb-2" />
+          <Table aria-label="Distribution Table">
+            <TableHeader>
+              <TableColumn>No Faktur</TableColumn>
+              <TableColumn>No Didtibusi</TableColumn>
+              <TableColumn>Dibuat pada</TableColumn>
+              <TableColumn>Aksi</TableColumn>
+            </TableHeader>
+            <TableBody items={distributions}>
+              {(item) => (
+                <TableRow key={item.distribusi_id}>
+                  <TableCell>{item.faktur_id}</TableCell>
+                  <TableCell>{item.distribusi_id}</TableCell>
+                  <TableCell>
+                    {new Date(item.distribusi_created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => handleViewDetail(item.distribusi_id)}
+                      className="py-1 px-3"
+                      variant="flat"
+                      color="primary"
+                    >
+                      Detail
+                    </Button>
+                    <Button
+                      onClick={() => handleViewFaktur(item.distribusi_id)}
+                      className="py-1 px-3"
+                      variant="flat"
+                      color="success"
+                    >
+                      Lihat Faktur
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
+
+      {detailData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-4">
+            <div className="flex justify-between items-center border-b pb-2 mb-4">
+              <h3 className="text-xl font-semibold">Detail Distribusi</h3>
+              <button
+                onClick={closeDetailModal}
+                className="text-red-500 hover:text-red-700"
+              >
+                Tutup
+              </button>
+            </div>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="border-b text-left px-4 py-2">Nama Batch</th>
+                  <th className="border-b text-left px-4 py-2">Nama Produk</th>
+                  <th className="border-b text-left px-4 py-2">Kuantitas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detailData.map((detail) => (
+                  <tr key={detail.batch_id}>
+                    <td className="border-t px-4 py-2">{detail.batch_name}</td>
+                    <td className="border-t px-4 py-2">
+                      {detail.product_name}
+                    </td>
+                    <td className="border-t px-4 py-2">{detail.quantity}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {fakturData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-4">
+            <div className="flex justify-between items-center border-b pb-2 mb-4">
+              <h3 className="text-xl font-semibold">Detail Faktur</h3>
+              <Button
+                onClick={closeFakturModal}
+                className="text-red-500 hover:text-red-700"
+              >
+                Close
+              </Button>
+            </div>
+            <div className="space-y-2">
+              <p>
+                <strong>Nomor Faktur:</strong> {fakturData[0].invoice_number}
+              </p>
+              <p>
+                <strong>Tanggal Faktur:</strong>{" "}
+                {new Date(fakturData[0].invoice_date).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Tanggal Jatuh Tempo:</strong>{" "}
+                {new Date(fakturData[0].due_date).toLocaleDateString()}
+              </p>
+              <p>
+                <strong>Outlet Name:</strong> {fakturData[0].outlet_name}
+              </p>
+              <p>
+                <strong>Outlet Address:</strong> {fakturData[0].outlet_address}
+              </p>
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="border-b text-left px-4 py-2">
+                      Nama Produk
+                    </th>
+                    <th className="border-b text-left px-4 py-2">Kuantitas</th>
+                    <th className="border-b text-left px-4 py-2">
+                      Harga Satuan
+                    </th>
+                    <th className="border-b text-left px-4 py-2">
+                      Total Harga
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {fakturData.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="border-t px-4 py-2">
+                        {item.product_name}
+                      </td>
+                      <td className="border-t px-4 py-2">{item.quantity}</td>
+                      <td className="border-t px-4 py-2">
+                        {Number(item.unit_price).toLocaleString("id-ID", {
+                          minimumFractionDigits: 0,
+                        })}
+                      </td>
+                      <td className="border-t px-4 py-2">
+                        {Number(item.total_price).toLocaleString("id-ID", {
+                          minimumFractionDigits: 0,
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="mt-4 space-y-2">
+                <p>
+                  <strong>Grand Total:</strong>{" "}
+                  {Number(fakturData[0].grand_total).toLocaleString("id-ID", {
+                    minimumFractionDigits: 0,
+                  })}
+                </p>
+                <p>
+                  <strong>Amount Paid:</strong>{" "}
+                  {Number(fakturData[0].amount_paid).toLocaleString("id-ID", {
+                    minimumFractionDigits: 0,
+                  })}
+                </p>
+                <p>
+                  <strong>Balance Due:</strong>{" "}
+                  {Number(fakturData[0].balance_due).toLocaleString("id-ID", {
+                    minimumFractionDigits: 0,
+                  })}
+                </p>
+                <p>
+                  <strong>Status Pembayaran:</strong>{" "}
+                  {fakturData[0].payment_status}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

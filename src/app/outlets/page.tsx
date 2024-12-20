@@ -4,6 +4,16 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/redux/hooks"; // Importing the useAppSelector hook
 import { RootState } from "@/redux/store"; // Importing RootState to access global state
+import {
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Input,
+} from "@nextui-org/react";
+
 
 interface Outlet {
   id: string;
@@ -109,19 +119,18 @@ const Outlet = () => {
       if (!token) throw new Error("Authentication token not found");
 
       // In the handleAddOutlet
-const response = await fetch("http://localhost:3008/api/outlet", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    nama: formData.outletName, // map outletName to nama
-    alamat: formData.address,   // map address to alamat
-    nomor_telepon: formData.phone, // map phone to nomor_telepon
-  }),
-});
-
+      const response = await fetch("http://localhost:3008/api/outlet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          nama: formData.outletName, // map outletName to nama
+          alamat: formData.address, // map address to alamat
+          nomor_telepon: formData.phone, // map phone to nomor_telepon
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -140,7 +149,7 @@ const response = await fetch("http://localhost:3008/api/outlet", {
 
   const handleEditOutlet = async () => {
     if (!selectedOutlet) return;
-    
+
     try {
       const errors = validateForm(editFormData);
       if (errors.length > 0) {
@@ -151,22 +160,21 @@ const response = await fetch("http://localhost:3008/api/outlet", {
       if (!token) throw new Error("Authentication token not found");
 
       // In the handleEditOutlet
-const response = await fetch(
-  `http://localhost:3008/api/outlet/${selectedOutlet.id}`,
-  {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      nama: editFormData.outletName, // map outletName to nama
-      alamat: editFormData.address,   // map address to alamat
-      nomor_telepon: editFormData.phone, // map phone to nomor_telepon
-    })
-  }
-);
-
+      const response = await fetch(
+        `http://localhost:3008/api/outlet/${selectedOutlet.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nama: editFormData.outletName, // map outletName to nama
+            alamat: editFormData.address, // map address to alamat
+            nomor_telepon: editFormData.phone, // map phone to nomor_telepon
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -206,7 +214,7 @@ const response = await fetch(
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      setOutlets((prevOutlets) => 
+      setOutlets((prevOutlets) =>
         prevOutlets.filter((outlet) => outlet.id !== id)
       );
       alert("Outlet successfully deleted!");
@@ -238,29 +246,27 @@ const response = await fetch(
     return (
       <div className="p-6 text-center text-red-600">
         Error: {error}
-        <button
+        <Button
           onClick={fetchOutlets}
           className="ml-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
         >
           Retry
-        </button>
+        </Button>
       </div>
     );
   }
 
   return (
     <div className="pl-12">
-      
-        <h1 className="text-2xl font-bold mb-2">Outlet</h1>
-        <div className="flex justify-end mb-6">
-        <button
+      <h1 className="text-2xl font-bold mb-2">Outlet</h1>
+      <div className="flex justify-end mb-6">
+        <Button
           className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
           onClick={() => setShowCreateModal(true)}
         >
           Tambah Outlet
-        </button>
+        </Button>
       </div>
-
 
       {outlets.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
@@ -279,24 +285,24 @@ const response = await fetch(
                 <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
               </div>
               <div className="flex space-x-2">
-                <button
+                <Button
                   onClick={() => handleViewDetails(outlet.id)}
                   className="bg-blue-500 text-white py-1 px-3 rounded-lg"
                 >
                   Detail
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => handleOpenEditModal(outlet)}
                   className="bg-yellow-500 text-white py-1 px-3 rounded-lg"
                 >
                   Edit
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => handleDeleteOutlet(outlet.id)}
                   className="bg-red-500 text-white py-1 px-3 rounded-lg"
                 >
                   Hapus
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -304,97 +310,75 @@ const response = await fetch(
       )}
 
       {/* Create Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Tambah Outlet Baru</h2>
-            <input
-              type="text"
-              name="Nama Outlet"
-              placeholder="Nama Outlet"
+      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
+        <ModalContent>
+          <ModalHeader>Tambah Outlet Baru</ModalHeader>
+          <ModalBody>
+            <Input
+              label="Nama Outlet"
+              name="outletName"
               value={formData.outletName}
               onChange={(e) => handleInputChange(e, setFormData)}
-              className="w-full p-2 mb-4 border rounded"
             />
-            <input
-              type="text"
-              name="Alamat"
-              placeholder="Alamat"
+            <Input
+              label="Alamat"
+              name="address"
               value={formData.address}
               onChange={(e) => handleInputChange(e, setFormData)}
-              className="w-full p-2 mb-4 border rounded"
             />
-            <input
-              type="text"
-              name="Nomor Telepon"
-              placeholder="Nomor Telepon"
+            <Input
+              label="Nomor Telepon"
+              name="phone"
               value={formData.phone}
               onChange={(e) => handleInputChange(e, setFormData)}
-              className="w-full p-2 mb-4 border rounded"
             />
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="bg-red-500 text-white py-2 px-4 rounded-lg"
-              >
-                Batal
-              </button>
-              <button
-                onClick={handleAddOutlet}
-                className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-              >
-                Tambah
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </ModalBody>
+          <ModalFooter>
+            <Button color="danger" onClick={() => setShowCreateModal(false)}>
+              Batal
+            </Button>
+            <Button color="primary" onClick={handleAddOutlet}>
+              Tambah
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Edit Modal */}
       {showEditModal && selectedOutlet && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-96">
-            <h2 className="text-xl font-semibold mb-4">Edit Outlet</h2>
-            <input
-              type="text"
-              name="outletName"
-              placeholder="Nama Outlet"
-              value={editFormData.outletName}
-              onChange={(e) => handleInputChange(e, setEditFormData)}
-              className="w-full p-2 mb-4 border rounded"
-            />
-            <input
-              type="text"
-              name="address"
-              placeholder="Alamat"
-              value={editFormData.address}
-              onChange={(e) => handleInputChange(e, setEditFormData)}
-              className="w-full p-2 mb-4 border rounded"
-            />
-            <input
-              type="text"
-              name="phone"
-              placeholder="Nomor Telepon"
-              value={editFormData.phone}
-              onChange={(e) => handleInputChange(e, setEditFormData)}
-              className="w-full p-2 mb-4 border rounded"
-            />
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-              >
+        <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)}>
+          <ModalContent>
+            <ModalHeader>Edit Outlet</ModalHeader>
+            <ModalBody>
+              <Input
+                label="Nama Outlet"
+                name="outletName"
+                value={editFormData.outletName}
+                onChange={(e) => handleInputChange(e, setEditFormData)}
+              />
+              <Input
+                label="Alamat"
+                name="address"
+                value={editFormData.address}
+                onChange={(e) => handleInputChange(e, setEditFormData)}
+              />
+              <Input
+                label="Nomor Telepon"
+                name="phone"
+                value={editFormData.phone}
+                onChange={(e) => handleInputChange(e, setEditFormData)}
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button color="danger" onClick={() => setShowEditModal(false)}>
                 Batal
-              </button>
-              <button
-                onClick={handleEditOutlet}
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-              >
-                Simpan 
-              </button>
-            </div>
-          </div>
-        </div>
+              </Button>
+              <Button color="primary" onClick={handleEditOutlet}>
+                Simpan
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
     </div>
   );

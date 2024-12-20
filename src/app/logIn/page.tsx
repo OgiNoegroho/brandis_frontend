@@ -46,18 +46,33 @@ const LogIn = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 responsive-margin">
       <div className="w-full max-w-[1600px] bg-white shadow-lg rounded-lg overflow-hidden flex flex-col lg:flex-row">
         <div className="w-full lg:w-1/2 bg-gray-200 border-r-4 border-gray-300 flex flex-col items-center justify-center px-8 sm:px-16 py-12 sm:py-20">
-          <img src="/brandis_logo.png" alt="Brand Logo" className="h-28 sm:h-36 lg:h-48 mb-4 sm:mb-6" />
+          <img
+            src="/brandis_logo.png"
+            alt="Brand Logo"
+            className="h-28 sm:h-36 lg:h-48 mb-4 sm:mb-6"
+          />
           <p className="text-gray-700 text-center text-sm sm:text-lg lg:text-xl font-semibold mt-4">
             Selamat Datang di Brandis!
           </p>
         </div>
         <div className="w-full lg:w-1/2 px-8 sm:px-16 py-12 sm:py-20 flex flex-col justify-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-6 sm:mb-8">Login</h2>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 text-center mb-4 sm:mb-6">Silahkan Login Disini</p>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-6 sm:mb-8">
+            Login
+          </h2>
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 text-center mb-4 sm:mb-6">
+            Silahkan Login Disini
+          </p>
           {error && <p className="text-red-500 text-center mb-4">{error}</p>}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6" autoComplete="off">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4 sm:space-y-6"
+            autoComplete="off"
+          >
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-600">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-600"
+              >
                 Email
               </label>
               <input
@@ -72,7 +87,10 @@ const LogIn = () => {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-600">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-600"
+              >
                 Password
               </label>
               <div className="relative">

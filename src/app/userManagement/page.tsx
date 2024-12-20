@@ -1,7 +1,15 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
-import { Button, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from "@nextui-org/react";
+import {
+  Button,
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@nextui-org/react";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 
@@ -13,7 +21,7 @@ interface User {
 }
 
 const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]); 
+  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
@@ -41,7 +49,7 @@ const UserManagement: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          setUsers(data); 
+          setUsers(data);
         } else {
           console.error("Failed to fetch users");
         }
@@ -62,14 +70,17 @@ const UserManagement: React.FC = () => {
   // Handle updating user
   const handleUpdateUser = async () => {
     if (selectedUser) {
-      const response = await fetch(`http://localhost:3008/api/users/${selectedUser.email}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Add Bearer token to the header
-        },
-        body: JSON.stringify(selectedUser),
-      });
+      const response = await fetch(
+        `http://localhost:3008/api/users/${selectedUser.email}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add Bearer token to the header
+          },
+          body: JSON.stringify(selectedUser),
+        }
+      );
 
       if (response.ok) {
         const updatedUsers = await response.json();
@@ -113,7 +124,9 @@ const UserManagement: React.FC = () => {
 
   // Handle deleting a user
   const handleDeleteUser = async (email: string) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this user?");
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this user?"
+    );
     if (confirmDelete) {
       const response = await fetch(`http://localhost:3008/api/users/${email}`, {
         method: "DELETE",
@@ -125,7 +138,7 @@ const UserManagement: React.FC = () => {
 
       if (response.ok) {
         const updatedUsers = users.filter((user) => user.email !== email);
-        setUsers(updatedUsers); 
+        setUsers(updatedUsers);
       } else {
         console.error("Failed to delete user");
       }

@@ -10,6 +10,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Button,
 } from "@nextui-org/react";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
@@ -34,10 +35,6 @@ const BatchManagement: React.FC = () => {
   // Redux selector for token
   const token = useAppSelector((state: RootState) => state.auth.token);
 
-
- 
-  
-
   // State Management
   const [batches, setBatches] = useState<Batch[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -60,20 +57,25 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:3008/api/inventory/batch", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
+      const response = await fetch(
+        "http://localhost:3008/api/inventory/batch",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!response.ok) throw new Error("Failed to fetch batches");
-      
+
       const data = await response.json();
       setBatches(data);
     } catch (error) {
       console.error(error);
-      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -88,9 +90,9 @@ const BatchManagement: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (!response.ok) throw new Error("Failed to fetch products");
-      
+
       const data = await response.json();
       setProducts(data);
     } catch (error) {
@@ -103,19 +105,22 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:3008/api/inventory/batch", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nama: batchName,
-          produk_id: productId,
-          kuantitas: quantity,
-          tanggal_kadaluarsa: expirationDate,
-        }),
-      });
+      const response = await fetch(
+        "http://localhost:3008/api/inventory/batch",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nama: batchName,
+            produk_id: productId,
+            kuantitas: quantity,
+            tanggal_kadaluarsa: expirationDate,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to add batch");
 
@@ -124,7 +129,9 @@ const BatchManagement: React.FC = () => {
       closeAddModal();
     } catch (error) {
       console.error(error);
-      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -137,30 +144,37 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:3008/api/inventory/batch/${selectedBatch.batch_id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nama: batchName,
-          produk_id: productId,
-          kuantitas: quantity,
-          tanggal_kadaluarsa: expirationDate,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:3008/api/inventory/batch/${selectedBatch.batch_id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nama: batchName,
+            produk_id: productId,
+            kuantitas: quantity,
+            tanggal_kadaluarsa: expirationDate,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Failed to update batch");
 
       const updatedBatch = await response.json();
-      setBatches(batches.map(batch => 
-        batch.batch_id === selectedBatch.batch_id ? updatedBatch : batch
-      ));
+      setBatches(
+        batches.map((batch) =>
+          batch.batch_id === selectedBatch.batch_id ? updatedBatch : batch
+        )
+      );
       closeEditModal();
     } catch (error) {
       console.error(error);
-      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
@@ -172,19 +186,24 @@ const BatchManagement: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`http://localhost:3008/api/inventory/batch/${batchId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `http://localhost:3008/api/inventory/batch/${batchId}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) throw new Error("Failed to delete batch");
 
-        setBatches(batches.filter(batch => batch.batch_id !== batchId));
+        setBatches(batches.filter((batch) => batch.batch_id !== batchId));
       } catch (error) {
         console.error(error);
-        setError(error instanceof Error ? error.message : "An unknown error occurred");
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred"
+        );
       } finally {
         setLoading(false);
       }
@@ -195,15 +214,18 @@ const BatchManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`http://localhost:3008/api/inventory/batch/${batchId}`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
+      const response = await fetch(
+        `http://localhost:3008/api/inventory/batch/${batchId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!response.ok) throw new Error("Failed to fetch batch details");
-  
+
       const [data] = await response.json(); // Assuming the API returns an array
       setSelectedBatch({
         batch_id: data.batch_id,
@@ -217,14 +239,13 @@ const BatchManagement: React.FC = () => {
       setShowDetailModal(true);
     } catch (error) {
       console.error(error);
-      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
     } finally {
       setLoading(false);
     }
   };
-  
-  
-  
 
   // Modal Handlers
   const handleAddNewBatch = () => {
@@ -246,7 +267,6 @@ const BatchManagement: React.FC = () => {
     setExpirationDate(formatDate(batch.tanggal_kadaluarsa));
     setShowEditModal(true);
   };
-  
 
   const closeEditModal = () => {
     setShowEditModal(false);
@@ -267,7 +287,6 @@ const BatchManagement: React.FC = () => {
     setExpirationDate("");
   };
 
-
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toISOString().split("T")[0]; // Extract only the 'YYYY-MM-DD' part
@@ -279,12 +298,14 @@ const BatchManagement: React.FC = () => {
     fetchProducts();
   }, [token]);
 
-  
   return (
     <div className="p-12 sm:p-8 bg-gray-50 min-h-screen">
       {/* Error Handling */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
           <span className="block sm:inline">{error}</span>
         </div>
       )}
@@ -294,217 +315,218 @@ const BatchManagement: React.FC = () => {
 
       {/* Add Product Button */}
       <div className="flex justify-end mb-6">
-        <button
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+        <Button
+          className=""
+          color="success"
+          variant="flat"
           onClick={handleAddNewBatch}
           disabled={loading}
         >
           Tambah Batch
-        </button>
+        </Button>
       </div>
 
-  {/* Add Batch Modal */}
-{showAddModal && (
-  <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-96">
-      <h3 className="text-lg font-semibold mb-4">Tambah Batch</h3>
-      <div className="space-y-4">
-        <label className="text-sm">Nama Batch</label>
-        <input
-          type="text"
-          value={batchName}
-          onChange={(e) => setBatchName(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <label className="text-sm">Produk</label>
-        <select
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        >
-          <option value="">Pilih Produk</option>
-          {products.map((product) => (
-            <option key={product.id} value={product.id}>
-              {product.nama}
-            </option>
-          ))}
-        </select>
-        <label className="text-sm">Tanggal Produksi</label>
-        <input
-          type="date"
-          value={productionDate}
-          onChange={(e) => setProductionDate(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <label className="text-sm">Kuantitas</label>
-        <input
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <label className="text-sm">Tanggal Kedaluwarsa</label>
-        <input
-          type="date"
-          value={expirationDate}
-          onChange={(e) => setExpirationDate(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg"
-            onClick={closeAddModal}
-            disabled={loading}
-          >
-            Batal
-          </button>
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
-            onClick={addBatch}
-            disabled={loading}
-          >
-            {loading ? "Saving..." : "Simpan"}
-          </button>
+      {/* Add Batch Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">Tambah Batch</h3>
+            <div className="space-y-4">
+              {/* Removed Nama Batch input */}
+              <label className="text-sm">Produk</label>
+              <select
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              >
+                <option value="">Pilih Produk</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.nama}
+                  </option>
+                ))}
+              </select>
+              <label className="text-sm">Tanggal Produksi</label>
+              <input
+                type="date"
+                value={productionDate}
+                onChange={(e) => setProductionDate(e.target.value)}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              />
+              <label className="text-sm">Kuantitas</label>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              />
+              <label className="text-sm">Tanggal Kedaluwarsa</label>
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              />
+              <div className="mt-6 flex justify-end gap-3">
+                <Button
+                  className=""
+                  color="danger"
+                  variant="flat"
+                  onClick={closeAddModal}
+                  disabled={loading}
+                >
+                  Batal
+                </Button>
+                <Button
+                  className=""
+                  color="primary"
+                  variant="flat"
+                  onClick={addBatch}
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Simpan"}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
-
-
-    {/* Edit Batch Modal */}
-{showEditModal && selectedBatch && (
-  <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-96">
-      <h3 className="text-lg font-semibold mb-4">Edit Batch</h3>
-      <div className="space-y-4">
-        <label className="text-sm">Nama Batch</label>
-        <input
-          type="text"
-          value={batchName}
-          onChange={(e) => setBatchName(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <label className="text-sm">Produk</label>
-        <select
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        >
-          <option value="">Pilih Produk</option>
-          {products.map((product) => (
-            <option key={product.id} value={product.id}>
-              {product.nama}
-            </option>
-          ))}
-        </select>
-        <label className="text-sm">Tanggal Produksi</label>
-        <input
-          type="date"
-          value={productionDate}
-          onChange={(e) => setProductionDate(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <label className="text-sm">Kuantitas</label>
-        <input
-          type="number"
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <label className="text-sm">Tanggal Kedaluwarsa</label>
-        <input
-          type="date"
-          value={expirationDate}
-          onChange={(e) => setExpirationDate(e.target.value)}
-          className="border rounded-lg p-2 w-full"
-          disabled={loading}
-        />
-        <div className="mt-6 flex justify-end gap-3">
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg"
-            onClick={closeEditModal}
-            disabled={loading}
-          >
-            Batal
-          </button>
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-            onClick={updateBatch}
-            disabled={loading}
-          >
-            {loading ? "Updating..." : "Simpan"}
-          </button>
+      {/* Edit Batch Modal */}
+      {showEditModal && selectedBatch && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96">
+            <h3 className="text-lg font-semibold mb-4">Edit Batch</h3>
+            <div className="space-y-4">
+              {/* Removed Nama Batch input */}
+              <label className="text-sm">Produk</label>
+              <select
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              >
+                <option value="">Pilih Produk</option>
+                {products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.nama}
+                  </option>
+                ))}
+              </select>
+              <label className="text-sm">Tanggal Produksi</label>
+              <input
+                type="date"
+                value={productionDate}
+                onChange={(e) => setProductionDate(e.target.value)}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              />
+              <label className="text-sm">Kuantitas</label>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              />
+              <label className="text-sm">Tanggal Kedaluwarsa</label>
+              <input
+                type="date"
+                value={expirationDate}
+                onChange={(e) => setExpirationDate(e.target.value)}
+                className="border rounded-lg p-2 w-full"
+                disabled={loading}
+              />
+              <div className="mt-6 flex justify-end gap-3">
+                <Button
+                  className=""
+                  color="danger"
+                  variant="flat"
+                  onClick={closeEditModal}
+                  disabled={loading}
+                >
+                  Batal
+                </Button>
+                <Button
+                  className=""
+                  color="primary"
+                  variant="flat"
+                  onClick={updateBatch}
+                  disabled={loading}
+                >
+                  {loading ? "Updating..." : "Simpan"}
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
-
-
-{showDetailModal && selectedBatch && (
-  <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-[500px]">
-      <h3 className="text-xl font-semibold mb-6"> Detail Batch</h3>
-      <div className="w-full">
-        <table className="w-full">
-          <tbody>
-            <tr>
-              <td className="px-4 py-2 font-semibold">Batch ID</td>
-              <td className="px-4 py-2">{selectedBatch.batch_id}</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2 font-semibold">Nama Batch</td>
-              <td className="px-4 py-2">{selectedBatch.nama_batch}</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2 font-semibold">Nama Produk</td>
-              <td className="px-4 py-2">{selectedBatch.nama_produk}</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2 font-semibold">Tanggal Produksi</td>
-              <td className="px-4 py-2">{selectedBatch.dibuat_pada}</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2 font-semibold">Tanggal Kedaluwarsa</td>
-              <td className="px-4 py-2">{selectedBatch.tanggal_kadaluarsa}</td>
-            </tr>
-            <tr>
-              <td className="px-4 py-2 font-semibold">Kuantitas</td>
-              <td className="px-4 py-2">{selectedBatch.kuantitas}</td>
-            </tr>
-             <tr>
-              <td className="px-4 py-2 font-semibold">Terakhir Diperbarui</td>
-              <td className="px-4 py-2">{selectedBatch.diperbarui_pada}</td>
-            </tr>
-          </tbody>
-        </table>
-        <div className="mt-6 flex justify-end">
-          <button
-            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-            onClick={closeDetailModal}
-          >
-            Selesai
-          </button>
+      {showDetailModal && selectedBatch && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[500px]">
+            <h3 className="text-xl font-semibold mb-6"> Detail Batch</h3>
+            <div className="w-full">
+              <table className="w-full">
+                <tbody>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">Batch ID</td>
+                    <td className="px-4 py-2">{selectedBatch.batch_id}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">Nama Batch</td>
+                    <td className="px-4 py-2">{selectedBatch.nama_batch}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">Nama Produk</td>
+                    <td className="px-4 py-2">{selectedBatch.nama_produk}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">
+                      Tanggal Produksi
+                    </td>
+                    <td className="px-4 py-2">{selectedBatch.dibuat_pada}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">
+                      Tanggal Kedaluwarsa
+                    </td>
+                    <td className="px-4 py-2">
+                      {selectedBatch.tanggal_kadaluarsa}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">Kuantitas</td>
+                    <td className="px-4 py-2">{selectedBatch.kuantitas}</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-2 font-semibold">
+                      Terakhir Diperbarui
+                    </td>
+                    <td className="px-4 py-2">
+                      {selectedBatch.diperbarui_pada}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div className="mt-6 flex justify-end">
+                <Button
+                  className=""
+                  color="primary"
+                  variant="flat"
+                  onClick={closeDetailModal}
+                >
+                  Selesai
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-)}
-
-
-
+      )}
 
       {/* Batch Table */}
       <Card>
@@ -525,42 +547,49 @@ const BatchManagement: React.FC = () => {
                   <TableColumn>Aksi</TableColumn>
                 </TableHeader>
                 <TableBody>
-  {batches.map((batch) => (
-    <TableRow key={batch.batch_id}>
-      <TableCell>{batch.nama_batch}</TableCell>
-      <TableCell>{batch.nama_produk}</TableCell>
-      <TableCell>{batch.kuantitas}</TableCell>
-      <TableCell>{formatDate(batch.dibuat_pada)}</TableCell>
-      <TableCell>{formatDate(batch.tanggal_kadaluarsa)}</TableCell>
-      <TableCell>
-        <div className="flex space-x-2">
-          <button
-            className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-            onClick={() => fetchBatchDetails(batch.batch_id)}
-            disabled={loading}
-          >
-            Detail
-          </button>
-          <button
-            className="bg-yellow-500 text-white py-2 px-4 rounded-lg"
-            onClick={() => handleEditBatch(batch)}
-            disabled={loading}
-          >
-            Edit
-          </button>
-          <button
-            className="bg-red-500 text-white py-2 px-4 rounded-lg"
-            onClick={() => deleteBatch(batch.batch_id)}
-            disabled={loading}
-          >
-            Hapus
-          </button>
-        </div>
-      </TableCell>
-    </TableRow>
-  ))}
-</TableBody>
-
+                  {batches.map((batch) => (
+                    <TableRow key={batch.batch_id}>
+                      <TableCell>{batch.nama_batch}</TableCell>
+                      <TableCell>{batch.nama_produk}</TableCell>
+                      <TableCell>{batch.kuantitas}</TableCell>
+                      <TableCell>{formatDate(batch.dibuat_pada)}</TableCell>
+                      <TableCell>
+                        {formatDate(batch.tanggal_kadaluarsa)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            className=""
+                            color="primary"
+                            variant="flat"
+                            onClick={() => fetchBatchDetails(batch.batch_id)}
+                            disabled={loading}
+                          >
+                            Detail
+                          </Button>
+                          <Button
+                            className=""
+                            color="warning"
+                            variant="flat"
+                            onClick={() => handleEditBatch(batch)}
+                            disabled={loading}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            className=""
+                            color="danger"
+                            variant="flat"
+                            onClick={() => deleteBatch(batch.batch_id)}
+                            disabled={loading}
+                          >
+                            Hapus
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
               </Table>
             </div>
           )}

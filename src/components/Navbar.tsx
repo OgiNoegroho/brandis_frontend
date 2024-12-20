@@ -1,21 +1,30 @@
 "use client";
 
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { setIsDarkMode, setIsSidebarCollapsed } from "@/redux/slices/globalSlice";
-import { Bell, Menu, Moon, Settings, Sun, Search } from "lucide-react";
-import Link from "next/link";
+import {
+  setIsDarkMode,
+  setIsSidebarCollapsed,
+} from "@/redux/slices/globalSlice";
+import { removeToken } from "@/redux/slices/authSlice";
+import { Bell, Menu, Moon, Sun, Search, Settings, LogOut } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { Role } from "@/types/auth"; // Import Role type
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from "@nextui-org/react";
+import { Role } from "@/types/auth";
+import { useRouter } from "next/navigation";
 
 const Navbar = () => {
   const dispatch = useAppDispatch();
+  const router = useRouter();
 
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
-
-  // Get the user's role from the Redux store and type it as Role
   const userRole: Role | null = useAppSelector((state) => state.auth.role);
 
   const [isMenuClicked, setIsMenuClicked] = useState(false);
@@ -26,13 +35,9 @@ const Navbar = () => {
       setIsMobile(window.innerWidth < 768);
     };
 
-    // Check initial width
     checkMobile();
-
-    // Add event listener for window resize
     window.addEventListener("resize", checkMobile);
 
-    // Cleanup listener
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
@@ -49,11 +54,15 @@ const Navbar = () => {
     toggleSidebar();
   };
 
+  const handleLogout = () => {
+    dispatch(removeToken());
+    router.push("/logIn");
+  };
+
   return (
     <div className="flex justify-between items-center w-full mb-7 transition-all duration-300 px-4 md:px-0">
       {/* LEFT SIDE - MENU AND SEARCH */}
       <div className="flex items-center space-x-4 w-full">
-        {/* Hamburger Menu */}
         <button
           className={`
             p-3 rounded-full transition-all duration-300 
@@ -78,7 +87,6 @@ const Navbar = () => {
           />
         </button>
 
-        {/* Search Input */}
         <div
           className={`
             relative flex-grow max-w-md
@@ -101,19 +109,6 @@ const Navbar = () => {
       {/* RIGHT SIDE */}
       <div className="flex items-center space-x-5">
         <div className="hidden md:flex items-center space-x-5">
-          {/* Dark Mode Toggle */}
-          <button
-            onClick={toggleDarkMode}
-            className="hover:text-blue-500"
-            aria-label="Toggle Dark Mode"
-          >
-            {isDarkMode ? (
-              <Sun className="cursor-pointer text-gray-500" size={24} />
-            ) : (
-              <Moon className="cursor-pointer text-gray-500" size={24} />
-            )}
-          </button>
-
           {/* Notifications */}
           <div className="relative">
             <Bell className="cursor-pointer text-gray-500" size={24} />
@@ -122,21 +117,40 @@ const Navbar = () => {
             </span>
           </div>
 
-          {/* User Profile */}
-          <div className="flex items-center space-x-3 cursor-pointer">           
-            <span className="font-semibold">
-              {userRole ?? "Guest"}
-            </span>
+          {/* User Role Display */}
+          <div className="flex items-center space-x-3 cursor-pointer">
+            <span className="font-semibold">{userRole ?? "Guest"}</span>
           </div>
         </div>
 
-        {/* Settings Icon */}
-        <Link href="/settings">
-          <Settings
-            className="cursor-pointer text-gray-500 hover:text-blue-500"
-            size={24}
-          />
-        </Link>
+        {/* Dropdown Menu for Settings */}
+        <Dropdown>
+          <DropdownTrigger>
+            <button className="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full hover:bg-blue-100">
+              <Settings className="text-gray-500" size={24} />
+            </button>
+          </DropdownTrigger>
+          <DropdownMenu aria-label="Settings Menu">
+            <DropdownItem key="theme" onClick={toggleDarkMode}>
+              <div className="flex items-center space-x-2">
+                {isDarkMode ? (
+                  <Sun className="cursor-pointer text-gray-500" size={20} />
+                ) : (
+                  <Moon className="cursor-pointer text-gray-500" size={20} />
+                )}
+                <span className="text-gray-500">
+                  {isDarkMode ? "Light Mode" : "Dark Mode"}
+                </span>
+              </div>
+            </DropdownItem>
+            <DropdownItem key="logout" color="danger" onClick={handleLogout}>
+              <div className="flex items-center space-x-2">
+                <LogOut className="text-gray-500" size={20} />
+                <span>Log Out</span>
+              </div>
+            </DropdownItem>
+          </DropdownMenu>
+        </Dropdown>
       </div>
     </div>
   );

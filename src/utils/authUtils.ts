@@ -40,7 +40,7 @@ export const getTokenFromLocalStorage = (): string | null => {
 export const getRoleFromToken = (token: string): Role | null => {
   try {
     const decoded = jwt.decode(token) as { peran?: Role };
-    
+
     // Validate that the role is one of the allowed types
     if (decoded?.peran && isValidRole(decoded.peran)) {
       return decoded.peran;

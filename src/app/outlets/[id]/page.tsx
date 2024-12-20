@@ -1,8 +1,15 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { Card, CardHeader, CardBody, Tabs, Tab } from "@nextui-org/react";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Tabs,
+  Tab,
+  Divider,
+} from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
 import StockOverview from "./StockOverview";
 import DistributionHistory from "./DistributionHistory";
@@ -21,6 +28,7 @@ const OutletDetail = () => {
   const [outletData, setOutletData] = useState<OutletData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  
 
   useEffect(() => {
     const fetchOutletDetails = async () => {
@@ -80,94 +88,52 @@ const OutletDetail = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <Card className="mb-6">
+      <Card className="mb-4">
         <CardHeader>
           <h1 className="text-3xl font-bold">{outletData.nama}</h1>
-          </CardHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div className="flex items-center gap-2 text-gray-600">
-              <MapPin className="h-5 w-5" />
-              <span>{outletData.alamat}</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <PhoneCall className="h-5 w-5" />
-              <span>{outletData.nomor_telepon}</span>
-            </div>
+        </CardHeader>
+        <Divider />
+        <div className="grid grid-cols-1 gap-2 p-2">
+          <div className="flex items-center gap-2 text-gray-600 mb-2">
+            <MapPin className="h-5 w-5" />
+            <span>{outletData.alamat}</span>
           </div>
-        
+          <div className="flex items-center gap-2 text-gray-600">
+            <PhoneCall className="h-5 w-5" />
+            <span>{outletData.nomor_telepon}</span>
+          </div>
+        </div>
       </Card>
 
       <Tabs
-        aria-label="Outlet Details Tabs"
-        selectedKey={activeTab}
+        aria-label="options"
         onSelectionChange={(key) => setActiveTab(String(key))}
-        className="gap-4"
+        className="flex w-10/12 flex-col"
+        variant="light"
       >
-        <Tab
-          key="stock"
-          title={
-            <div
-              className={`px-6 py-2 rounded-lg ${
-                activeTab === "stock"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              Stock Overview
-            </div>
-          }
-        >
+        <Tab key="stock" title={<div>Stok</div>}>
           <Card>
             <CardBody>
-              {/* Pass outletId to StockOverview */}
-              {outletData && <StockOverview outletId={outletData.id} />}
+              <StockOverview outletId={outletData.id} />
             </CardBody>
           </Card>
         </Tab>
 
-        <Tab
-          key="distribution"
-          title={
-            <div
-              className={`px-6 py-2 rounded-lg ${
-                activeTab === "distribution"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              Distribution History
-            </div>
-          }
-        >
+        <Tab key="distribution" title={<div>Distribusi</div>}>
           <Card>
             <CardBody>
-              {typeof id === "string" ? <DistributionHistory outletId={id} /> : null}
+              <DistributionHistory outletId={outletData.id} />
             </CardBody>
           </Card>
         </Tab>
 
-        <Tab
-  key="returns"
-  title={
-    <div
-      className={`px-6 py-2 rounded-lg ${
-        activeTab === "returns"
-          ? "bg-green-500 text-white"
-          : "bg-gray-100 hover:bg-gray-200"
-      }`}
-    >
-      Return Management
-    </div>
-  }
->
-  <Card>
-    <CardBody>
-
-      {typeof id === "string" ? 
-      <ReturnManagement outletId={id} /> : null}
-    </CardBody>
-  </Card>
-</Tab>
+        <Tab key="returns" title={<div>Retur</div>}>
+          <Card>
+            <CardBody>
+              <ReturnManagement outletId={outletData.id} />
+            </CardBody>
+          </Card>
+        </Tab>
       </Tabs>
     </div>
   );

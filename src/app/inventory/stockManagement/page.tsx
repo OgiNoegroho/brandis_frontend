@@ -1,23 +1,30 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAppSelector } from "@/redux/hooks"; // Adjust the import based on your project's structure
-import { RootState } from "@/redux/store"; // Adjust the import based on your project's structure
+import { Info } from "lucide-react"; 
+import { useAppSelector } from "@/redux/hooks"; 
+import { RootState } from "@/redux/store"; 
 import {
   Card,
   CardBody,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
   Table,
   TableHeader,
   TableColumn,
   TableBody,
   TableRow,
   TableCell,
+  Chip,
   Button,
+  Divider
 } from "@nextui-org/react";
 
-
 type Product = {
-  produk_id: number; // Added product ID
+  produk_id: number; 
   nama_produk: string;
   kuantitas: number;
   ketersediaan: "In stock" | "Low stock" | "Out of stock";
@@ -38,23 +45,18 @@ const StockManagement: React.FC = () => {
   const [batchDetails, setBatchDetails] = useState<BatchDetail[]>([]);
   const [loadingBatchDetails, setLoadingBatchDetails] = useState(false);
 
-  // Fetch token from Redux store
   const token = useAppSelector((state: RootState) => state.auth.token);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toISOString().split("T")[0]; // Extract only the 'YYYY-MM-DD' part
+    return date.toISOString().split("T")[0];
   };
-  
 
-
-
-  // Fetch inventory data from the backend
   useEffect(() => {
     const fetchInventory = async () => {
       if (!token) {
         console.error("No token available");
-        return; // If no token, do not attempt to fetch data
+        return;
       }
 
       try {
@@ -70,14 +72,14 @@ const StockManagement: React.FC = () => {
         }
 
         const data = await response.json();
-        setProducts(data); // Update the state with fetched products
+        setProducts(data);
       } catch (error) {
         console.error("Error fetching inventory:", error);
       }
     };
 
     fetchInventory();
-  }, [token]); // Depend on `token`, so the effect runs again when it changes
+  }, [token]);
 
   const fetchInventoryDetail = async (produkId: number) => {
     if (!token) {
@@ -103,7 +105,7 @@ const StockManagement: React.FC = () => {
       }
 
       const data = await response.json();
-      setBatchDetails(data); // Update the state with fetched batch details
+      setBatchDetails(data);
     } catch (error) {
       console.error("Error fetching batch details:", error);
       setBatchDetails([]);
@@ -115,11 +117,31 @@ const StockManagement: React.FC = () => {
   const getStatus = (status: Product["ketersediaan"]) => {
     switch (status) {
       case "In stock":
-        return <span className="text-green-600">In Stock</span>;
+        return (
+          <Chip color="success" variant="dot" className="capitalize text-green-500 bg-green-50">
+            In Stock
+          </Chip>
+        );
       case "Out of stock":
-        return <span className="text-red-600">Out of Stock</span>;
+        return (
+          <Chip
+            color="danger"
+            variant="dot"
+            className="capitalize text-red-500 bg-red-50"
+          >
+            Out of Stock
+          </Chip>
+        );
       case "Low stock":
-        return <span className="text-yellow-600">Low Stock</span>;
+        return (
+          <Chip
+            color="warning"
+            variant="dot"
+            className="capitalize text-yellow-500 bg-red-50"
+          >
+            Low Stock
+          </Chip>
+        );
       default:
         return null;
     }
@@ -128,7 +150,7 @@ const StockManagement: React.FC = () => {
   const handleDetailClick = async (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
-    await fetchInventoryDetail(product.produk_id); // Pass the correct product ID
+    await fetchInventoryDetail(product.produk_id);
   };
 
   const closeModal = () => {
@@ -143,44 +165,39 @@ const StockManagement: React.FC = () => {
         <h1 className="text-2xl font-semibold">Manajemen Stok</h1>
       </div>
 
-      {/* Top Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
         <Card className="shadow-lg">
           <CardBody>
-            <div className="px-3">
-              <h4 className="font-semibold">Total Produk</h4>
-              <b>{products.length}</b>
-            </div>
+            <h4 className="font-semibold">Total Produk</h4>
+            <b>{products.length}</b>
           </CardBody>
         </Card>
         <Card className="shadow-lg">
           <CardBody>
-            <div className="px-3">
-              <h4 className="font-semibold">Stok Rendah</h4>
-              <b>
-                {products.filter((p) => p.ketersediaan === "Low stock").length}
-              </b>
-            </div>
+            <h4 className="font-semibold">Stok Rendah</h4>
+            <b>
+              {products.filter((p) => p.ketersediaan === "Low stock").length}
+            </b>
           </CardBody>
         </Card>
         <Card className="shadow-lg">
           <CardBody>
-            <div className="px-3">
-              <h4 className="font-semibold">Stok Habis</h4>
-              <b>
-                {products.filter((p) => p.ketersediaan === "Out of stock").length}
-              </b>
-            </div>
+            <h4 className="font-semibold">Stok Habis</h4>
+            <b>
+              {products.filter((p) => p.ketersediaan === "Out of stock").length}
+            </b>
           </CardBody>
         </Card>
       </div>
 
-      {/* Products Table */}
       <Card className="shadow-lg">
-        <Table aria-label="Stock Management Table" className="bg-white rounded-lg">
+        <Table
+          aria-label="Stock Management Table"
+          className="bg-white rounded-lg"
+        >
           <TableHeader>
             <TableColumn>Nama produk</TableColumn>
-            <TableColumn>kuantitas</TableColumn>
+            <TableColumn>Kuantitas</TableColumn>
             <TableColumn>Status</TableColumn>
             <TableColumn>Aksi</TableColumn>
           </TableHeader>
@@ -193,7 +210,8 @@ const StockManagement: React.FC = () => {
                 <TableCell>
                   <Button
                     onClick={() => handleDetailClick(product)}
-                    className="px-3 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded-lg shadow focus:outline-none focus:ring focus:ring-blue-300"
+                    color="primary"
+                    variant="flat"
                   >
                     Detail
                   </Button>
@@ -205,53 +223,63 @@ const StockManagement: React.FC = () => {
       </Card>
 
       {/* Modal */}
-      {isModalOpen && selectedProduct && (
-  <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-    <div className="bg-white w-full max-w-2xl rounded-lg shadow-lg overflow-hidden">
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-semibold">
-          {selectedProduct.nama_produk}
-        </h2>
-      </div>
-      <div className="p-6">
-        {loadingBatchDetails ? (
-          <p>Loading batch details...</p>
-        ) : batchDetails.length > 0 ? (
-          <ul>
-            {batchDetails.map((batch, index) => (
-              <li key={batch.batch_id} className="mb-4">
-                <p>
-                  <strong>Nama Bacth:</strong> {batch.nama_batch}
-                </p>
-                <p>
-                  <strong>Kuantitas:</strong> {batch.kuantitas_batch}
-                </p>
-                <p>
-                  <strong>Tanggal Produksi:</strong> {formatDate(batch.produksi_pada)}
-                </p>
-                <p>
-                  <strong>Tanggal Kedaluwarsa:</strong> {formatDate(batch.tanggal_kadaluarsa)}
-                </p>
-                {/* Add a line separator between batches */}
-                {index < batchDetails.length - 1 && <hr className="my-4" />}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No batch details available.</p>
-        )}
-      </div>
-      <div className="p-4 border-t border-gray-200 flex justify-end">
-        <button
-          onClick={closeModal}
-          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300"
-        >
-          Tutup
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+      <Modal
+        isOpen={isModalOpen}
+        scrollBehavior="inside" // Ensures scrollable content inside the modal
+        placement="center" // Centers the modal
+        onOpenChange={(open) => {
+          if (!open) closeModal(); // Close modal when the state changes
+        }}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                {selectedProduct
+                  ? selectedProduct.nama_produk
+                  : "Detail Produk"}
+              </ModalHeader>
+              <ModalBody>
+                {loadingBatchDetails ? (
+                  <p>Loading batch details...</p>
+                ) : batchDetails.length > 0 ? (
+                  <ul>
+                    {batchDetails.map((batch) => (
+                      <li key={batch.batch_id} className="mb-4">
+                        <p>
+                          <strong>Nama Batch:</strong> {batch.nama_batch}
+                        </p>
+                        <p>
+                          <strong>Kuantitas:</strong> {batch.kuantitas_batch}
+                        </p>
+                        <p>
+                          <strong>Tanggal Produksi:</strong>{" "}
+                          {formatDate(batch.produksi_pada)}
+                        </p>
+                        <p>
+                          <strong>Tanggal Kedaluwarsa:</strong>{" "}
+                          {formatDate(batch.tanggal_kadaluarsa)}
+                        </p>
+                        <Divider className="my-4" />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No batch details available.</p>
+                )}
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Tutup
+                </Button>
+                <Button color="primary" onPress={onClose}>
+                  OK
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

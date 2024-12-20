@@ -26,7 +26,9 @@ const createNoopStorage = () => ({
 });
 
 const storage =
-  typeof window !== "undefined" ? createWebStorage("local") : createNoopStorage();
+  typeof window !== "undefined"
+    ? createWebStorage("local")
+    : createNoopStorage();
 
 const PERSIST_WHITELIST = ["global", "auth"];
 

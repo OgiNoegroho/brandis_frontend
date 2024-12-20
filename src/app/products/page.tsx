@@ -1,14 +1,26 @@
 "use client";
 
-import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  Input,
+  Textarea,
+} from "@nextui-org/react";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 
 interface Product {
   id: string;
   nama: string;
-  kategori: string;
   harga: number;
   komposisi: string;
   deskripsi: string;
@@ -22,7 +34,6 @@ const ProductsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState({
     nama: "",
-    kategori: "",
     harga: "",
     komposisi: "",
     deskripsi: "",
@@ -73,18 +84,29 @@ const ProductsPage = () => {
     setImagePreview(null);
   };
 
+  // Format harga with thousand separators
+  const formatHarga = (value: string) => {
+    const numberValue = value.replace(/[^\d]/g, ""); // Remove non-digit characters
+    return new Intl.NumberFormat("id-ID").format(Number(numberValue));
+  };
+
+  // Handle harga input change
+  const handleHargaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^\d]/g, ""); // Remove non-digit characters
+    setNewProduct({ ...newProduct, harga: rawValue });
+  };
+
   const handleAddProduct = async () => {
     if (!token) {
       setError("No token found. Please log in.");
       return;
     }
 
-    if (newProduct.nama && newProduct.kategori && newProduct.harga) {
+    if (newProduct.nama && newProduct.harga) {
       try {
         const formData = new FormData();
         formData.append("nama", newProduct.nama);
-        formData.append("kategori", newProduct.kategori);
-        formData.append("harga", newProduct.harga);
+        formData.append("harga", newProduct.harga); // Send raw harga without formatting
         formData.append("komposisi", newProduct.komposisi);
         formData.append("deskripsi", newProduct.deskripsi);
 
@@ -106,7 +128,6 @@ const ProductsPage = () => {
         setProducts([...products, addedProduct]);
         setNewProduct({
           nama: "",
-          kategori: "",
           harga: "",
           komposisi: "",
           deskripsi: "",
@@ -140,36 +161,49 @@ const ProductsPage = () => {
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
         {products.map((product) => {
-          const primaryImage = product.images?.find((img) => img.isPrimary) || product.images?.[0];
+          const primaryImage =
+            product.images?.find((img) => img.isPrimary) || product.images?.[0];
           return (
-            <Link key={product.id} href={`/products/${product.id}`}>
-              <div className="border rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col h-full">
-                <div className="w-full aspect-[5/4] overflow-hidden">
+            <Link key={product.id} href={`/products/${product.id}`} passHref>
+              <Card className="w-full">
+                {/* Product Image */}
+                <CardBody className="overflow-visible p-0">
                   <img
-                    src={primaryImage ? primaryImage.url : "/images/default-product.png"}
+                    src={
+                      primaryImage
+                        ? primaryImage.url
+                        : "/images/default-product.png"
+                    }
                     alt={product.nama}
-                    className="w-full h-full object-cover"
+                    className="w-full h-[140px] object-cover rounded-lg shadow-sm"
                   />
-                </div>
-                <div className="p-4 flex-grow">
-                  <h3 className="text-lg font-semibold mb-1">{product.nama}</h3>
-                  <p className="text-sm text-gray-500">kategori: {product.kategori}</p>
-                  <p className="text-blue-600 font-semibold">Rp. {product.harga}</p>
-                </div>
-              </div>
+                </CardBody>
+
+                {/* Product Details */}
+                <CardFooter>
+                  <div className="flex flex-col justify-between w-full">
+                    <b className="truncate max-w-[140px]">{product.nama}</b>
+                    <p className="text-sm font-medium mt-1">
+                      Rp. {new Intl.NumberFormat("id-ID").format(product.harga)}
+                    </p>
+                  </div>
+                </CardFooter>
+              </Card>
             </Link>
           );
         })}
       </div>
 
-      {/* Modal for Adding Product */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
-            <h2 className="text-xl font-bold mb-4">Produk</h2>
-            <form className="space-y-4">
+      {/* Add Product Modal */}
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+        <ModalContent>
+          <ModalHeader>
+            <h2 className="text-xl font-bold">Tambah Produk</h2>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
               {/* Image Upload */}
               <div className="flex flex-col items-center border-dashed border-2 border-gray-300 w-full p-4">
                 {imagePreview && (
@@ -188,78 +222,70 @@ const ProductsPage = () => {
                     </button>
                   </div>
                 )}
-
                 {!imagePreview && (
-                  <span role="img" aria-label="camera" className="text-gray-500 text-2xl mb-2">
+                  <span
+                    role="img"
+                    aria-label="camera"
+                    className="text-gray-500 text-2xl mb-2"
+                  >
                     📷
                   </span>
                 )}
-
-                <p className="text-sm text-gray-500">
-                  Letak Foto disini atau{" "}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="cursor-pointer"
-                    onChange={handleImageChange}
-                  />
-                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="cursor-pointer"
+                  onChange={handleImageChange}
+                />
               </div>
 
-              {/* Product Form Inputs */}
-              <input
-                type="text"
-                className="w-full p-2 border rounded"
-                placeholder="Nama Produk"
+              {/* Form Inputs */}
+              <Input
+                label="Nama Produk"
+                placeholder="Masukkan nama produk"
                 value={newProduct.nama}
-                onChange={(e) => setNewProduct({ ...newProduct, nama: e.target.value })}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, nama: e.target.value })
+                }
               />
-              <input
-                type="text"
-                className="w-full p-2 border rounded"
-                placeholder="Kategori"
-                value={newProduct.kategori}
-                onChange={(e) => setNewProduct({ ...newProduct, kategori: e.target.value })}
+              <Input
+                label="Harga"
+                placeholder="Masukkan harga produk"
+                value={`Rp. ${formatHarga(newProduct.harga)}`}
+                onChange={handleHargaChange}
               />
-              <input
-                type="text"
-                className="w-full p-2 border rounded"
-                placeholder="Harga"
-                value={newProduct.harga}
-                onChange={(e) => setNewProduct({ ...newProduct, harga: e.target.value })}
-              />
-              <textarea
-                className="w-full p-2 border rounded"
-                placeholder="Komposisi"
+              <Textarea
+                label="Komposisi"
+                placeholder="Masukkan komposisi"
                 value={newProduct.komposisi}
-                onChange={(e) => setNewProduct({ ...newProduct, komposisi: e.target.value })}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, komposisi: e.target.value })
+                }
               />
-              <textarea
-                className="w-full p-2 border rounded"
-                placeholder="Deskripsi"
+              <Textarea
+                label="Deskripsi"
+                placeholder="Masukkan deskripsi"
                 value={newProduct.deskripsi}
-                onChange={(e) => setNewProduct({ ...newProduct, deskripsi: e.target.value })}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, deskripsi: e.target.value })
+                }
               />
-              <div className="flex justify-end space-x-4">
-                <button
-                  type="button"
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-400"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Batal
-                </button>
-                <button
-                  type="button"
-                  className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-                  onClick={handleAddProduct}
-                >
-                  Tambah
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="secondary"
+              onPress={() => setIsModalOpen(false)}
+              className="mr-2"
+            >
+              Batal
+            </Button>
+            <Button color="primary" onPress={handleAddProduct}>
+              Tambah Produk
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

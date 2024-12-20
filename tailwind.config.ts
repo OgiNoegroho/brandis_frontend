@@ -1,4 +1,4 @@
-import {nextui} from '@nextui-org/theme';
+import { nextui } from "@nextui-org/theme";
 import type { Config } from "tailwindcss";
 import { createThemes } from "tw-colors";
 import colors from "tailwindcss/colors";
@@ -60,7 +60,7 @@ const config: Config = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@nextui-org/theme/dist/components/(table|checkbox|spacer).js"
+    "./node_modules/@nextui-org/theme/dist/components/**/*.js",
   ],
   theme: {
     extend: {
@@ -71,7 +71,35 @@ const config: Config = {
       },
     },
   },
-  plugins: [createThemes(themes),nextui()],
+  plugins: [
+    createThemes(themes), // Custom color themes with inverted shades
+    nextui({
+      themes: {
+        light: {
+          colors: {
+            primary: "#0072F5", // Customize the primary color
+            secondary: "#9750DD", // Customize the secondary color
+            success: "#17C964", // Customize the success color
+            warning: "#F5A524", // Customize the warning color
+            danger: "#F31260", // Customize the error color
+            background: "#FFFFFF", // Light theme background
+            foreground: "#000000", // Light theme foreground
+          },
+        },
+        dark: {
+          colors: {
+            primary: "#4B78E5", // Adjust for dark mode
+            secondary: "#BB86FC",
+            success: "#03DAC6",
+            warning: "#FBC02D",
+            danger: "#CF6679",
+            background: "#121212", // Dark theme background
+            foreground: "#E0E0E0", // Dark theme foreground
+          },
+        },
+      },
+    }),
+  ],
 };
 
 export default config;

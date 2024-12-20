@@ -62,11 +62,9 @@ const SidebarLink = ({
       >
         <Icon className={`${isSubLink ? "w-4 h-4" : "w-6 h-6"}`} />
         <span
-          className={`${
-            isCollapsed ? "hidden" : "block"
-          } font-medium ${isActive && isSubLink ? "font-bold" : ""} ${
-            isSubLink ? "text-xs text-left" : ""
-          }`}
+          className={`${isCollapsed ? "hidden" : "block"} font-medium ${
+            isActive && isSubLink ? "font-bold" : ""
+          } ${isSubLink ? "text-xs text-left" : ""}`}
         >
           {label}
         </span>
@@ -91,27 +89,27 @@ const Sidebar = () => {
   useEffect(() => {
     const checkMobileSize = () => {
       const mobile = window.innerWidth <= 768;
-      
+
       if (mobile !== isMobile) {
         if (mobile && !isSidebarCollapsed) {
           setWasOpenBeforeMobile(true);
           dispatch(setIsSidebarCollapsed(true));
         }
-        
+
         if (!mobile && wasOpenBeforeMobile) {
           dispatch(setIsSidebarCollapsed(false));
           setWasOpenBeforeMobile(false);
         }
-        
+
         setIsMobile(mobile);
       }
     };
 
     checkMobileSize();
-    window.addEventListener('resize', checkMobileSize);
+    window.addEventListener("resize", checkMobileSize);
 
     return () => {
-      window.removeEventListener('resize', checkMobileSize);
+      window.removeEventListener("resize", checkMobileSize);
     };
   }, [dispatch, isMobile, isSidebarCollapsed, wasOpenBeforeMobile]);
 
@@ -121,7 +119,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     dispatch(removeToken());
-    router.push('/logIn');
+    router.push("/logIn");
   };
 
   const toggleInventoryDropdown = (e: React.MouseEvent) => {
@@ -155,18 +153,34 @@ const Sidebar = () => {
     }
   }, [pathname]);
 
-  const isActiveTab = (tabPath: string): boolean => pathname === tabPath;
-  
+  const isActiveTab = (tabPath: string): boolean => {
+    if (tabPath.startsWith("/dashboard")) {
+      const dashboardLinks: Record<Role, string> = {
+        Pimpinan: "/dashboard/pimpinan",
+        Manajer: "/dashboard/manajer",
+        Pemasaran: "/dashboard/pemasaran",
+        Bendahara: "/dashboard/bendahara",
+      };
+      return pathname === dashboardLinks[role!];
+    }
+
+    return pathname === tabPath;
+  };
+
+
   const isInventoryActive = (): boolean =>
     pathname.startsWith("/inventory/stockManagement") ||
     pathname.startsWith("/inventory/batchManagement");
 
   const getSidebarLinks = (): SidebarLink[] => {
+    const dashboardLinks: Record<Role, string> = {
+      Pimpinan: "/dashboard/pimpinan",
+      Manajer: "/dashboard/manajer",
+      Pemasaran: "/dashboard/pemasaran",
+      Bendahara: "/dashboard/bendahara",
+    };
+
     const links: SidebarLink[] = [
-
-
-
-
       {
         href: "/userManagement",
         icon: Users,
@@ -174,7 +188,7 @@ const Sidebar = () => {
         roles: ["Pimpinan"],
       },
       {
-        href: "/dashboard",
+        href: dashboardLinks[role!], // Dynamically assign the href based on role
         icon: Layout,
         label: "Dashboard",
         roles: ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"],
@@ -185,9 +199,6 @@ const Sidebar = () => {
         label: "Products",
         roles: ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"],
       },
-      
-     
-     
       {
         href: "/outlets",
         icon: House,
@@ -203,9 +214,10 @@ const Sidebar = () => {
     ];
 
     if (!role) return [];
-    
+
     return links.filter((link) => link.roles.includes(role));
   };
+
 
   const CollapsedSubmenu: React.FC = () => (
     <div className="absolute left-16 top-0 bg-white shadow-lg rounded-lg w-48 py-2 z-50">
@@ -290,60 +302,71 @@ const Sidebar = () => {
 
       {/* LINKS */}
       <div className="flex-grow mt-8">
-        {getSidebarLinks().map((link) => (
-          <SidebarLink
-            key={link.href}
-            href={link.href}
-            icon={link.icon}
-            label={link.label}
-            isCollapsed={isSidebarCollapsed}
-            isActive={isActiveTab(link.href)}
-            isSubLink={link.isSubLink}
-          />
-        ))}
+        {getSidebarLinks().map((link) => {
+          // Render sidebar links up to Products
+          const isProductLink = link.href === "/products";
+          return (
+            <React.Fragment key={link.href}>
+              <SidebarLink
+                href={link.href}
+                icon={link.icon}
+                label={link.label}
+                isCollapsed={isSidebarCollapsed}
+                isActive={isActiveTab(link.href)}
+                isSubLink={link.isSubLink}
+              />
+              {/* Add Inventory section immediately after Products */}
+              {isProductLink && (role === "Pimpinan" || role === "Manajer") && (
+                <div ref={inventoryRef} className="relative">
+                  <div
+                    onClick={toggleInventoryDropdown}
+                    className={`cursor-pointer flex items-center ${
+                      isSidebarCollapsed ? "justify-center" : "justify-between"
+                    } ${
+                      isSidebarCollapsed ? "py-4" : "px-8 py-4"
+                    } hover:text-blue-500 hover:bg-blue-100 gap-3 transition-colors ${
+                      isInventoryActive()
+                        ? "bg-blue-200 text-blue-700"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Archive className="w-6 h-6" />
+                      {!isSidebarCollapsed && (
+                        <span className="font-medium">Inventory</span>
+                      )}
+                    </div>
+                    {!isSidebarCollapsed && (
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          isInventoryOpen ? "rotate-180" : ""
+                        }`}
+                      />
+                    )}
+                  </div>
 
-        {/* Inventory Section */}
-        {(role === "Pimpinan" || role === "Manajer") && (
-          <div ref={inventoryRef} className="relative">
-            <div
-              onClick={toggleInventoryDropdown}
-              className={`cursor-pointer flex items-center ${
-                isSidebarCollapsed ? "justify-center" : "justify-between"
-              } ${isSidebarCollapsed ? "py-4" : "px-8 py-4"} hover:text-blue-500 hover:bg-blue-100 gap-3 transition-colors ${
-                isInventoryActive() ? "bg-blue-200 text-blue-700" : "text-gray-700"
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Archive className="w-6 h-6" />
-                {!isSidebarCollapsed && (
-                  <span className="font-medium">Inventory</span>
-                )}
-              </div>
-              {!isSidebarCollapsed && (
-                <ChevronDown
-                  className={`w-4 h-4 transition-transform ${
-                    isInventoryOpen ? "rotate-180" : ""
-                  }`}
-                />
+                  {isInventoryOpen &&
+                    (isSidebarCollapsed ? (
+                      <CollapsedSubmenu />
+                    ) : (
+                      <ExpandedSubmenu />
+                    ))}
+                </div>
               )}
-            </div>
-
-            {isInventoryOpen &&
-              (isSidebarCollapsed ? <CollapsedSubmenu /> : <ExpandedSubmenu />)}
-          </div>
-        )}
+            </React.Fragment>
+          );
+        })}
       </div>
 
-      {/* FOOTER with Logout Button */}
-      <div className={`${isSidebarCollapsed ? "hidden" : "flex flex-col"} mb-10 px-8`}>
-        <button
-          onClick={handleLogout}
-          className="w-full flex gap-3 py-3 text-red-600 hover:bg-red-50 transition-colors"
-        >
-          <LogOut className="w-5 h-5" />
-          <span className="font-medium">Logout</span>
-        </button>
-        <p className="text-center text-xs text-gray-500 mt-2">&copy; 2024 Brandis</p>
+      {/* FOOTER */}
+      <div
+        className={`${
+          isSidebarCollapsed ? "hidden" : "flex flex-col"
+        } mb-10 px-8`}
+      >
+        <p className="text-center text-xs text-gray-500 mt-2">
+          &copy; 2024 Brandis
+        </p>
       </div>
     </div>
   );

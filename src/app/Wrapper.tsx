@@ -30,7 +30,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   if (isAuthPage) {
     // Render only the children for the `/logIn` page
-    return <div className="flex items-center justify-center min-h-screen bg-gray-100">{children}</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        {children}
+      </div>
+    );
   }
 
   return (
