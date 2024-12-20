@@ -1,101 +1,216 @@
+"use client";
 
-"use client"
+import React, { useEffect, useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
+import {
+  FaBoxOpen,
+  FaWarehouse,
+  FaExclamationTriangle,
+  FaArrowAltCircleUp,
+  FaRecycle,
+  FaProductHunt,
+  FaFill,
+  FaIndustry,
+  FaPlusSquare,
+  FaUndo,
+} from "react-icons/fa";
 
-import React from "react";
+const DashboardManajer: React.FC = () => {
+  const [gudangData, setGudangData] = useState<any[]>([]);
+  const [totalStokGudang, setTotalStokGudang] = useState<number | null>(null);
+  const [batchKadaluarsa, setBatchKadaluarsa] = useState<number | null>(null);
+  const [batchDiproduksiBulanIni, setBatchDiproduksiBulanIni] = useState<
+    number | null
+  >(null);
+  const [stokRendahGudang, setStokRendahGudang] = useState<any[]>([]);
+  const [totalPengembalianProduk, setTotalPengembalianProduk] = useState<
+    number | null
+  >(null);
+  const [error, setError] = useState<string | null>(null);
 
-const Manajer: React.FC = () => {
-  // Dummy Data
+  const token = useAppSelector((state: RootState) => state.auth.token);
 
-  // Admin Gudang Data
-  const totalProdukDanJenisGudang = {
-    total_macam_produk: 10,
-    total_jenis_kategori: 4,
+  const fetchData = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const gudangRes = await fetch(
+        "http://localhost:3008/api/dashboard/produk",
+        { headers }
+      );
+      const gudangData = await gudangRes.json();
+      setGudangData(gudangData);
+
+      const stokGudangRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalStokGudang",
+        { headers }
+      );
+      const stokGudangData = await stokGudangRes.json();
+      setTotalStokGudang(stokGudangData[0]?.total_stok_gudang || 0);
+
+      const kadaluarsaRes = await fetch(
+        "http://localhost:3008/api/dashboard/batchKadaluarsa",
+        { headers }
+      );
+      const kadaluarsaData = await kadaluarsaRes.json();
+      setBatchKadaluarsa(kadaluarsaData[0]?.total_batch_kadaluarsa || 0);
+
+      const diproduksiRes = await fetch(
+        "http://localhost:3008/api/dashboard/batchDiproduksiBulanIni",
+        { headers }
+      );
+      const diproduksiData = await diproduksiRes.json();
+      setBatchDiproduksiBulanIni(diproduksiData[0]?.batch_diproduksi || 0);
+
+      const stokRendahRes = await fetch(
+        "http://localhost:3008/api/dashboard/stokRendahDiGudang",
+        { headers }
+      );
+      const stokRendahData = await stokRendahRes.json();
+      setStokRendahGudang(stokRendahData);
+
+      const pengembalianRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalPengembalianProduk",
+        { headers }
+      );
+      const pengembalianData = await pengembalianRes.json();
+      setTotalPengembalianProduk(
+        pengembalianData[0]?.total_produk_dikembalikan || 0
+      );
+    } catch (err: any) {
+      setError(err.message || "Error fetching data");
+    }
   };
 
-  const gudangData = [
-    {
-      produk_id: 1,
-      nama_produk: "Sabun Herbal",
-      total_kuantitas_gudang: 200,
-      total_kuantitas_outlet: 150,
-      total_kuantitas: 350,
-    },
-    {
-      produk_id: 2,
-      nama_produk: "Minuman Jamu",
-      total_kuantitas_gudang: 100,
-      total_kuantitas_outlet: 50,
-      total_kuantitas: 150,
-    },
-    {
-      produk_id: 3,
-      nama_produk: "Body Lotion",
-      total_kuantitas_gudang: 300,
-      total_kuantitas_outlet: 200,
-      total_kuantitas: 500,
-    },
-  ];
-
-  // Admin Produksi Data
-  const totalProdukDanJenisProduksi = {
-    total_macam_produk: 10,
-    total_jenis_kategori: 4,
-  };
-
-  const batchStatus = {
-    total_batch_dibuat: 50,
-    total_batch_belum_habis: 30,
-  };
+  useEffect(() => {
+    fetchData();
+  }, [token]);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dashboard Manajer</h1>
+    <div className="p-5 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-10 text-center text-indigo-600">
+        Dashboard Manajer
+      </h1>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      {/* Admin Gudang Section */}
-      <section>
-        <h2>Admin Gudang</h2>
-        <div>
-          <p>Total Macam Produk: {totalProdukDanJenisGudang.total_macam_produk}</p>
-          <p>Total Jenis Kategori: {totalProdukDanJenisGudang.total_jenis_kategori}</p>
-        </div>
-        <table border={1} cellPadding="10" style={{ width: "100%", marginBottom: "20px" }}>
-          <thead>
-            <tr>
-              <th>Produk ID</th>
-              <th>Nama Produk</th>
-              <th>Total Kuantitas Gudang</th>
-              <th>Total Kuantitas Outlet</th>
-              <th>Total Kuantitas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {gudangData.map((item) => (
-              <tr key={item.produk_id}>
-                <td>{item.produk_id}</td>
-                <td>{item.nama_produk}</td>
-                <td>{item.total_kuantitas_gudang}</td>
-                <td>{item.total_kuantitas_outlet}</td>
-                <td>{item.total_kuantitas}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+        {/* Total Stok Gudang */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaWarehouse className="text-blue-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Total Stok Gudang
+              </h2>
+              <p className="text-lg text-gray-600">
+                {totalStokGudang !== null ? totalStokGudang : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {/* Admin Produksi Section */}
-      <section>
-        <h2>Admin Produksi</h2>
-        <div>
-          <p>Total Macam Produk: {totalProdukDanJenisProduksi.total_macam_produk}</p>
-          <p>Total Jenis Kategori: {totalProdukDanJenisProduksi.total_jenis_kategori}</p>
-        </div>
-        <div>
-          <p>Total Batch Dibuat: {batchStatus.total_batch_dibuat}</p>
-          <p>Total Batch Belum Habis: {batchStatus.total_batch_belum_habis}</p>
+        {/* Batch Kadaluarsa */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaExclamationTriangle className="text-red-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Batch Kadaluarsa
+              </h2>
+              <p className="text-lg text-gray-600">
+                {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Batch Diproduksi Bulan Ini */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaPlusSquare className="text-green-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Batch Diproduksi Bulan Ini
+              </h2>
+              <p className="text-lg text-gray-600">
+                {batchDiproduksiBulanIni !== null
+                  ? batchDiproduksiBulanIni
+                  : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Total Pengembalian Produk */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaUndo className="text-yellow-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Total Pengembalian Produk
+              </h2>
+              <p className="text-lg text-gray-600">
+                {totalPengembalianProduk !== null
+                  ? totalPengembalianProduk
+                  : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Stok Rendah di Gudang */}
+      <section className="bg-white rounded-lg shadow-lg p-6 mb-8 hover:shadow-xl transition-shadow">
+        <div className="flex justify-center items-center">
+          <div className="w-full">
+            <h2 className="text-xl font-semibold text-gray-700 text-center mb-4">
+              Stok Rendah di Gudang
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full text-center border-collapse border border-gray-200 bg-transparent">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 border border-gray-200">
+                      Nama Produk
+                    </th>
+                    <th className="px-4 py-2 border border-gray-200">
+                      Kuantitas
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stokRendahGudang.length > 0 ? (
+                    stokRendahGudang.map((item, index) => (
+                      <tr
+                        key={index}
+                        className={`${
+                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                        }`}
+                      >
+                        <td className="px-4 py-2 border border-gray-200">
+                          {item.nama}
+                        </td>
+                        <td className="px-4 py-2 border border-gray-200">
+                          {item.kuantitas}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={2} className="text-center py-4">
+                        No low stock items
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
     </div>
   );
 };
 
-export default Manajer;
+export default DashboardManajer;

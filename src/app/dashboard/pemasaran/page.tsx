@@ -1,96 +1,193 @@
+"use client";
 
-"use client"
-
-import React from "react";
-import { Bar } from "react-chartjs-2";
-import "chart.js/auto";
+import React, { useEffect, useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
+import { FaWarehouse, FaArrowDown, FaTrophy, FaUndo } from "react-icons/fa";
 
 const Pemasaran: React.FC = () => {
-  // Dummy Data
+  const [totalStokOutlet, setTotalStokOutlet] = useState<number | null>(null);
+  const [outletStokRendah, setOutletStokRendah] = useState<any[]>([]);
+  const [outletTerbaik, setOutletTerbaik] = useState<any>(null);
+  const [outletTerendah, setOutletTerendah] = useState<any>(null);
+  const [totalProdukDikembalikan, setTotalProdukDikembalikan] = useState<
+    number | null
+  >(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Total Macam Produk dan Jenisnya
-  const totalProdukDanJenis = {
-    total_macam_produk: 15,
-    total_jenis_kategori: 5,
+  const token = useAppSelector((state: RootState) => state.auth.token);
+
+  const fetchData = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Total Stok Outlet
+      const stokOutletRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalStokOutlet",
+        { headers }
+      );
+      const stokOutletData = await stokOutletRes.json();
+      setTotalStokOutlet(stokOutletData[0]?.total_stok_outlet || 0);
+
+      // Outlet dengan Stok Rendah
+      const stokRendahRes = await fetch(
+        "http://localhost:3008/api/dashboard/outletStokRendah",
+        { headers }
+      );
+      const stokRendahData = await stokRendahRes.json();
+      setOutletStokRendah(stokRendahData);
+
+      // Penjualan Outlet Terbaik
+      const outletTerbaikRes = await fetch(
+        "http://localhost:3008/api/dashboard/outletTerbaik",
+        { headers }
+      );
+      const outletTerbaikData = await outletTerbaikRes.json();
+      setOutletTerbaik(outletTerbaikData[0]);
+
+      // Penjualan Outlet Terendah
+      const outletTerendahRes = await fetch(
+        "http://localhost:3008/api/dashboard/outletTerendah",
+        { headers }
+      );
+      const outletTerendahData = await outletTerendahRes.json();
+      setOutletTerendah(outletTerendahData[0]);
+
+      // Total Produk Dikembalikan
+      const produkDikembalikanRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalProdukDikembalikan",
+        { headers }
+      );
+      const produkDikembalikanData = await produkDikembalikanRes.json();
+      setTotalProdukDikembalikan(
+        produkDikembalikanData[0]?.total_produk_dikembalikan || 0
+      );
+    } catch (err: any) {
+      console.error("Error fetching data:", err);
+      setError(err.message || "Error fetching data");
+    }
   };
 
-  // Grafik Penjualan Setiap Outlet (per Hari)
-  const grafikPenjualanOutlet = [
-    { nama_outlet: "Outlet Utama", tanggal: "2024-12-08", total_penjualan: 120 },
-    { nama_outlet: "Outlet Cabang 1", tanggal: "2024-12-08", total_penjualan: 80 },
-    { nama_outlet: "Outlet Utama", tanggal: "2024-12-07", total_penjualan: 100 },
-    { nama_outlet: "Outlet Cabang 1", tanggal: "2024-12-07", total_penjualan: 70 },
-  ];
-
-  // Batch Produk yang 30 Hari Menuju Kadaluarsa
-  const batchKadaluarsa = [
-    { nama_batch: "Batch A", nama_produk: "Sabun Herbal", tanggal_kadaluarsa: "2024-12-20" },
-    { nama_batch: "Batch B", nama_produk: "Minuman Jamu", tanggal_kadaluarsa: "2024-12-25" },
-    { nama_batch: "Batch C", nama_produk: "Body Lotion", tanggal_kadaluarsa: "2024-12-30" },
-  ];
-
-  // Chart Data for Grafik Penjualan
-  const chartData = {
-    labels: [...new Set(grafikPenjualanOutlet.map((item) => item.tanggal))],
-    datasets: [
-      {
-        label: "Outlet Utama",
-        data: grafikPenjualanOutlet
-          .filter((item) => item.nama_outlet === "Outlet Utama")
-          .map((item) => item.total_penjualan),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-      },
-      {
-        label: "Outlet Cabang 1",
-        data: grafikPenjualanOutlet
-          .filter((item) => item.nama_outlet === "Outlet Cabang 1")
-          .map((item) => item.total_penjualan),
-        backgroundColor: "rgba(153, 102, 255, 0.6)",
-      },
-    ],
-  };
+  useEffect(() => {
+    fetchData();
+  }, [token]);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dashboard Pemasaran</h1>
+    <div className="p-5 bg-white min-h-screen">
+      <h1 className="text-3xl font-extrabold mb-8 text-center text-indigo-600 drop-shadow-sm">
+        Dashboard Pemasaran
+      </h1>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      {/* Total Macam Produk dan Jenisnya */}
-      <section>
-        <h2>Total Produk</h2>
-        <div>
-          <p>Total Macam Produk: {totalProdukDanJenis.total_macam_produk}</p>
-          <p>Total Jenis Kategori: {totalProdukDanJenis.total_jenis_kategori}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Total Stok Outlet */}
+        <div className="bg-gray-50 rounded-lg shadow-lg p-6 text-center">
+          <FaWarehouse className="text-indigo-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-700">
+            Total Stok Outlet
+          </h2>
+          <p className="text-3xl font-bold text-indigo-800 mt-2">
+            {totalStokOutlet !== null ? totalStokOutlet : "Loading..."}
+          </p>
         </div>
-      </section>
 
-      {/* Grafik Penjualan */}
-      <section>
-        <h2>Grafik Penjualan Setiap Outlet (per Hari)</h2>
-        <Bar data={chartData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />
-      </section>
+        {/* Outlet dengan Stok Rendah */}
+        <div className="bg-gray-50 rounded-lg shadow-lg p-6">
+          <FaArrowDown className="text-red-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-700 text-center mb-4">
+            Outlet dengan Stok Rendah
+          </h2>
+          {outletStokRendah && outletStokRendah.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full text-sm text-center border-collapse">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 border border-gray-200">
+                      Nama Outlet
+                    </th>
+                    <th className="px-4 py-2 border border-gray-200">Stok</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {outletStokRendah.map((outlet, index) => (
+                    <tr
+                      key={index}
+                      className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}
+                    >
+                      <td className="px-4 py-2 border border-gray-200">
+                        {outlet.outlet_nama}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-200">
+                        {outlet.stok}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="text-center text-gray-500">
+              No outlet with low stock found.
+            </p>
+          )}
+        </div>
 
-      {/* Batch Kadaluarsa */}
-      <section>
-        <h2>Batch Produk Mendekati Kadaluarsa</h2>
-        <table border={1} cellPadding="10" style={{ width: "100%", marginTop: "20px" }}>
-          <thead>
-            <tr>
-              <th>Nama Batch</th>
-              <th>Nama Produk</th>
-              <th>Tanggal Kadaluarsa</th>
-            </tr>
-          </thead>
-          <tbody>
-            {batchKadaluarsa.map((batch, index) => (
-              <tr key={index}>
-                <td>{batch.nama_batch}</td>
-                <td>{batch.nama_produk}</td>
-                <td>{batch.tanggal_kadaluarsa}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+        {/* Penjualan Outlet Terbaik */}
+        <div className="bg-gray-50 rounded-lg shadow-lg p-6 text-center">
+          <FaTrophy className="text-yellow-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-700">
+            Penjualan Outlet Terbaik
+          </h2>
+          {outletTerbaik ? (
+            <>
+              <p className="text-xl font-bold text-indigo-800">
+                {outletTerbaik.outlet_nama}
+              </p>
+              <p className="text-lg text-gray-600 mt-2">
+                {outletTerbaik.total_terjual} Terjual
+              </p>
+            </>
+          ) : (
+            <p className="text-gray-500">No best selling outlet found.</p>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Two Containers */}
+      <div className="flex justify-center gap-6 mt-8">
+        {/* Penjualan Outlet Terendah */}
+        <div className="bg-gray-50 rounded-lg shadow-lg p-6 text-center">
+          <FaArrowDown className="text-gray-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-700">
+            Penjualan Outlet Terendah
+          </h2>
+          {outletTerendah ? (
+            <>
+              <p className="text-xl font-bold text-red-800">
+                {outletTerendah.outlet_nama}
+              </p>
+              <p className="text-lg text-gray-600 mt-2">
+                {outletTerendah.total_terjual} Terjual
+              </p>
+            </>
+          ) : (
+            <p className="text-gray-500">No lowest selling outlet found.</p>
+          )}
+        </div>
+
+        {/* Total Produk Dikembalikan */}
+        <div className="bg-gray-50 rounded-lg shadow-lg p-6 text-center">
+          <FaUndo className="text-indigo-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-lg font-semibold text-gray-700">
+            Total Produk Dikembalikan
+          </h2>
+          <p className="text-3xl font-bold text-indigo-800 mt-2">
+            {totalProdukDikembalikan !== null
+              ? totalProdukDikembalikan
+              : "Loading..."}
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

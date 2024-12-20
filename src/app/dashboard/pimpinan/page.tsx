@@ -1,140 +1,195 @@
-"use client"
+"use client";
 
-import React from "react";
-import { Bar } from "react-chartjs-2";
-import "chart.js/auto";
+import React, { useEffect, useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
+import {
+  FaChartBar,
+  FaBoxOpen,
+  FaWarehouse,
+  FaCalendarAlt,
+  FaCar,
+  FaShippingFast,
+} from "react-icons/fa";
 
-const Pimpinan: React.FC = () => {
-  // Dummy data based on the query
-  const produkData = [
-    { id: 1, nama: "Sabun Herbal", gudang: 200, outlet: 150, total: 350 },
-    { id: 2, nama: "Minuman Jamu", gudang: 100, outlet: 50, total: 150 },
-    { id: 3, nama: "Body Lotion", gudang: 300, outlet: 100, total: 400 },
-  ];
+const PimpinanDashboard: React.FC = () => {
+  const [totalPenjualan, setTotalPenjualan] = useState<number | null>(null);
+  const [totalDistribusi, setTotalDistribusi] = useState<number | null>(null);
+  const [topProdukTerlaris, setTopProdukTerlaris] = useState<any[]>([]);
+  const [totalStokGudang, setTotalStokGudang] = useState<number | null>(null);
+  const [batchKadaluarsa, setBatchKadaluarsa] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const penjualanMingguan = [
-    { outlet: "Outlet Utama", minggu: "2024-12-02", total: 500 },
-    { outlet: "Outlet Cabang 1", minggu: "2024-12-02", total: 300 },
-    { outlet: "Outlet Cabang 2", minggu: "2024-12-02", total: 200 },
-  ];
+  const token = useAppSelector((state: RootState) => state.auth.token);
 
-  const grafikPenjualan = [
-    { outlet: "Outlet Utama", tanggal: "2024-12-08", total: 100 },
-    { outlet: "Outlet Cabang 1", tanggal: "2024-12-08", total: 80 },
-    { outlet: "Outlet Utama", tanggal: "2024-12-07", total: 120 },
-  ];
+  const fetchData = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
 
-  const userRoles = [
-    { role: "Admin Produksi", total: 2 },
-    { role: "Admin Gudang", total: 3 },
-    { role: "Marketing", total: 4 },
-    { role: "Bendahara", total: 1 },
-    { role: "Reseller", total: 10 },
-  ];
+      const totalPenjualanRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalPenjualan",
+        { headers }
+      );
+      const totalPenjualanData = await totalPenjualanRes.json();
+      setTotalPenjualan(totalPenjualanData[0]?.total_penjualan || 0);
 
-  // Chart Data for Grafik Penjualan
-  const chartData = {
-    labels: grafikPenjualan.map((item) => item.tanggal),
-    datasets: [
-      {
-        label: "Penjualan Outlet Utama",
-        data: grafikPenjualan
-          .filter((item) => item.outlet === "Outlet Utama")
-          .map((item) => item.total),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-      },
-      {
-        label: "Penjualan Outlet Cabang 1",
-        data: grafikPenjualan
-          .filter((item) => item.outlet === "Outlet Cabang 1")
-          .map((item) => item.total),
-        backgroundColor: "rgba(153, 102, 255, 0.6)",
-      },
-    ],
+      const totalDistribusiRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalDistribusi",
+        { headers }
+      );
+      const totalDistribusiData = await totalDistribusiRes.json();
+      setTotalDistribusi(totalDistribusiData[0]?.total_distribusi || 0);
+
+      const topProdukTerlarisRes = await fetch(
+        "http://localhost:3008/api/dashboard/topProdukTerlaris",
+        { headers }
+      );
+      const topProdukTerlarisData = await topProdukTerlarisRes.json();
+      setTopProdukTerlaris(topProdukTerlarisData);
+
+      const totalStokGudangRes = await fetch(
+        "http://localhost:3008/api/dashboard/totalStokGudang",
+        { headers }
+      );
+      const totalStokGudangData = await totalStokGudangRes.json();
+      setTotalStokGudang(totalStokGudangData[0]?.total_stok_gudang || 0);
+
+      const batchKadaluarsaRes = await fetch(
+        "http://localhost:3008/api/dashboard/batchKadaluarsa",
+        { headers }
+      );
+      const batchKadaluarsaData = await batchKadaluarsaRes.json();
+      setBatchKadaluarsa(batchKadaluarsaData[0]?.total_batch_kadaluarsa || 0);
+    } catch (err: any) {
+      setError(err.message || "Error fetching data");
+    }
   };
 
+  useEffect(() => {
+    fetchData();
+  }, [token]);
+
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dashboard Brandis</h1>
+    <div className="p-5 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-10 text-center text-indigo-600">
+        Dashboard Pimpinan
+      </h1>
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      {/* Total Produk */}
-      <section>
-        <h2>Total Kuantitas Produk</h2>
-        <table border={1} cellPadding="10" style={{ width: "100%", marginBottom: "20px" }}>
-          <thead>
-            <tr>
-              <th>Produk ID</th>
-              <th>Nama Produk</th>
-              <th>Kuantitas Gudang</th>
-              <th>Kuantitas Outlet</th>
-              <th>Total Kuantitas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {produkData.map((produk) => (
-              <tr key={produk.id}>
-                <td>{produk.id}</td>
-                <td>{produk.nama}</td>
-                <td>{produk.gudang}</td>
-                <td>{produk.outlet}</td>
-                <td>{produk.total}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+      {/* Dashboard Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
+        {/* Total Penjualan */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaChartBar className="text-indigo-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Total Penjualan (Bulan Ini)
+              </h2>
+              <p className="text-lg text-gray-600">
+                {totalPenjualan !== null ? totalPenjualan : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {/* Penjualan Mingguan */}
-      <section>
-        <h2>Penjualan Mingguan</h2>
-        <table border={1} cellPadding="10" style={{ width: "100%", marginBottom: "20px" }}>
-          <thead>
-            <tr>
-              <th>Nama Outlet</th>
-              <th>Minggu</th>
-              <th>Total Penjualan</th>
-            </tr>
-          </thead>
-          <tbody>
-            {penjualanMingguan.map((penjualan, index) => (
-              <tr key={index}>
-                <td>{penjualan.outlet}</td>
-                <td>{penjualan.minggu}</td>
-                <td>{penjualan.total}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
+        {/* Total Distribusi */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaShippingFast className="text-green-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Total Kuantitas Produk Didistribusi (Bulan Ini)
+              </h2>
+              <p className="text-lg text-gray-600">
+                {totalDistribusi !== null ? totalDistribusi : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {/* Grafik Penjualan */}
-      <section>
-        <h2>Grafik Penjualan</h2>
-        <Bar data={chartData} options={{ responsive: true }} />
-      </section>
+        {/* Total Stok Gudang */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaWarehouse className="text-blue-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Total Stok di Gudang
+              </h2>
+              <p className="text-lg text-gray-600">
+                {totalStokGudang !== null ? totalStokGudang : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
 
-      {/* User per Role */}
-      <section>
-        <h2>Total User per Role</h2>
-        <table border={1} cellPadding="10" style={{ width: "100%" }}>
-          <thead>
-            <tr>
-              <th>Role</th>
-              <th>Total User</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userRoles.map((role, index) => (
-              <tr key={index}>
-                <td>{role.role}</td>
-                <td>{role.total}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {/* Batch Kadaluarsa */}
+        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="flex items-center space-x-4">
+            <FaCalendarAlt className="text-red-600 text-4xl" />
+            <div>
+              <h2 className="text-xl font-semibold text-gray-700">
+                Batch 1 Bulan Mendekati Kadaluarsa
+              </h2>
+              <p className="text-lg text-gray-600">
+                {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      {/* Top 5 Produk Terlaris (Centered and Full Width) */}
+      <section className="bg-white rounded-lg shadow-lg p-6 mb-8 hover:shadow-xl transition-shadow">
+        <div className="flex justify-center items-center">
+          <div className="w-full">
+            <h2 className="text-xl font-semibold text-gray-700 text-center mb-4">
+              Produk Terlaris Bulan ini
+            </h2>
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full text-center border-collapse border border-gray-200 bg-transparent">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 border border-gray-200">
+                      Nama Produk
+                    </th>
+                    <th className="px-4 py-2 border border-gray-200">
+                      Total Terjual
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topProdukTerlaris.length > 0 ? (
+                    topProdukTerlaris.map((produk, index) => (
+                      <tr
+                        key={index}
+                        className={`${
+                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                        }`}
+                      >
+                        <td className="px-4 py-2 border border-gray-200">
+                          {produk.nama_produk}
+                        </td>
+                        <td className="px-4 py-2 border border-gray-200">
+                          {produk.total_terjual}
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={2} className="text-center py-4">
+                        No data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </section>
     </div>
   );
 };
 
-export default Pimpinan;
+export default PimpinanDashboard;

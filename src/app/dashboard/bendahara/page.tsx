@@ -1,95 +1,128 @@
+"use client";
 
-"use client"
-
-import React from "react";
-import { Bar } from "react-chartjs-2";
-import "chart.js/auto";
+import React, { useEffect, useState } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
 
 const Bendahara: React.FC = () => {
-  // Dummy Data
+  const [ringkasanFaktur, setRingkasanFaktur] = useState<any[]>([]);
+  const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
+    null
+  );
+  const [fakturJatuhTempo, setFakturJatuhTempo] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Total Penjualan Mingguan dari Setiap Outlet
-  const penjualanMingguan = [
-    { nama_outlet: "Outlet Utama", minggu: "2024-12-02", total_penjualan_mingguan: 1000 },
-    { nama_outlet: "Outlet Cabang 1", minggu: "2024-12-02", total_penjualan_mingguan: 700 },
-    { nama_outlet: "Outlet Cabang 2", minggu: "2024-12-02", total_penjualan_mingguan: 500 },
-  ];
+  const token = useAppSelector((state: RootState) => state.auth.token);
 
-  // Total Macam Produk dan Jenisnya
-  const totalProdukDanJenis = {
-    total_macam_produk: 20,
-    total_jenis_kategori: 6,
+  const fetchData = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const ringkasanRes = await fetch(
+        "http://localhost:3008/api/dashboard/ringkasanFaktur",
+        { headers }
+      );
+      const ringkasanData = await ringkasanRes.json();
+      setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
+
+      const pendapatanRes = await fetch(
+        "http://localhost:3008/api/dashboard/pendapatanBulanIni",
+        { headers }
+      );
+      const pendapatanData = await pendapatanRes.json();
+      setPendapatanBulanIni(pendapatanData[0]?.total_pendapatan || 0);
+
+      const jatuhTempoRes = await fetch(
+        "http://localhost:3008/api/dashboard/fakturJatuhTempo",
+        { headers }
+      );
+      const jatuhTempoData = await jatuhTempoRes.json();
+      setFakturJatuhTempo(jatuhTempoData[0]?.faktur_jatuh_tempo || 0);
+    } catch (err: any) {
+      setError(err.message || "Error fetching data");
+    }
   };
 
-  // Grafik Penjualan Setiap Outlet (per Hari)
-  const grafikPenjualanOutlet = [
-    { nama_outlet: "Outlet Utama", tanggal: "2024-12-08", total_penjualan: 300 },
-    { nama_outlet: "Outlet Cabang 1", tanggal: "2024-12-08", total_penjualan: 200 },
-    { nama_outlet: "Outlet Utama", tanggal: "2024-12-07", total_penjualan: 250 },
-    { nama_outlet: "Outlet Cabang 1", tanggal: "2024-12-07", total_penjualan: 150 },
-  ];
-
-  // Chart Data for Grafik Penjualan
-  const chartData = {
-    labels: [...new Set(grafikPenjualanOutlet.map((item) => item.tanggal))],
-    datasets: [
-      {
-        label: "Outlet Utama",
-        data: grafikPenjualanOutlet
-          .filter((item) => item.nama_outlet === "Outlet Utama")
-          .map((item) => item.total_penjualan),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-      },
-      {
-        label: "Outlet Cabang 1",
-        data: grafikPenjualanOutlet
-          .filter((item) => item.nama_outlet === "Outlet Cabang 1")
-          .map((item) => item.total_penjualan),
-        backgroundColor: "rgba(153, 102, 255, 0.6)",
-      },
-    ],
-  };
+  useEffect(() => {
+    fetchData();
+  }, [token]);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1>Dashboard Bendahara</h1>
+    <div className="p-5 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl font-bold mb-5 text-center text-indigo-600">
+        Dashboard Bendahara
+      </h1>
+      {error && <p className="text-red-500 text-center">{error}</p>}
 
-      {/* Total Penjualan Mingguan */}
-      <section>
-        <h2>Total Penjualan Mingguan dari Setiap Outlet</h2>
-        <table border={1} cellPadding="10" style={{ width: "100%", marginBottom: "20px" }}>
-          <thead>
-            <tr>
-              <th>Nama Outlet</th>
-              <th>Minggu</th>
-              <th>Total Penjualan Mingguan</th>
-            </tr>
-          </thead>
-          <tbody>
-            {penjualanMingguan.map((penjualan, index) => (
-              <tr key={index}>
-                <td>{penjualan.nama_outlet}</td>
-                <td>{penjualan.minggu}</td>
-                <td>{penjualan.total_penjualan_mingguan}</td>
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Ringkasan Faktur Distribusi
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-200 text-center">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 border border-gray-200">
+                  Status Pembayaran
+                </th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Total Tagihan
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </section>
-
-      {/* Total Produk */}
-      <section>
-        <h2>Total Produk</h2>
-        <div>
-          <p>Total Macam Produk: {totalProdukDanJenis.total_macam_produk}</p>
-          <p>Total Jenis Kategori: {totalProdukDanJenis.total_jenis_kategori}</p>
+            </thead>
+            <tbody>
+              {ringkasanFaktur.length > 0 ? (
+                ringkasanFaktur.map((item, index) => (
+                  <tr
+                    key={index}
+                    className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                  >
+                    <td className="px-4 py-2 border border-gray-200">
+                      {item.status_pembayaran}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {item.total_tagihan}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={2} className="py-4">
+                    No data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
 
-      {/* Grafik Penjualan */}
-      <section>
-        <h2>Grafik Penjualan Setiap Outlet (per Hari)</h2>
-        <Bar data={chartData} options={{ responsive: true, plugins: { legend: { position: "top" } } }} />
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Pendapatan Bulan Ini
+        </h2>
+        <div className="p-6 bg-indigo-50 rounded-md text-center">
+          <p className="text-3xl font-bold text-indigo-800">
+            {pendapatanBulanIni !== null ? pendapatanBulanIni : "Loading..."}
+          </p>
+          <p className="text-lg text-gray-600 mt-2">
+            Total pendapatan yang diterima pada bulan ini
+          </p>
+        </div>
+      </section>
+
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Faktur Jatuh Tempo Hari Ini
+        </h2>
+        <div className="p-6 bg-red-50 rounded-md text-center">
+          <p className="text-3xl font-bold text-red-800">
+            {fakturJatuhTempo !== null ? fakturJatuhTempo : "Loading..."}
+          </p>
+          <p className="text-lg text-gray-600 mt-2">
+            Jumlah faktur yang harus dilunasi hari ini
+          </p>
+        </div>
       </section>
     </div>
   );
