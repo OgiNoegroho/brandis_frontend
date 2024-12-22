@@ -27,35 +27,35 @@ const PimpinanDashboard: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const totalPenjualanRes = await fetch(
-        "http://localhost:3008/api/dashboard/totalPenjualan",
+        "https://brandis-backend.vercel.app/api/dashboard/totalPenjualan",
         { headers }
       );
       const totalPenjualanData = await totalPenjualanRes.json();
       setTotalPenjualan(totalPenjualanData[0]?.total_penjualan || 0);
 
       const totalDistribusiRes = await fetch(
-        "http://localhost:3008/api/dashboard/totalDistribusi",
+        "https://brandis-backend.vercel.app/api/dashboard/totalDistribusi",
         { headers }
       );
       const totalDistribusiData = await totalDistribusiRes.json();
       setTotalDistribusi(totalDistribusiData[0]?.total_distribusi || 0);
 
       const topProdukTerlarisRes = await fetch(
-        "http://localhost:3008/api/dashboard/topProdukTerlaris",
+        "https://brandis-backend.vercel.app/api/dashboard/topProdukTerlaris",
         { headers }
       );
       const topProdukTerlarisData = await topProdukTerlarisRes.json();
       setTopProdukTerlaris(topProdukTerlarisData);
 
       const totalStokGudangRes = await fetch(
-        "http://localhost:3008/api/dashboard/totalStokGudang",
+        "https://brandis-backend.vercel.app/api/dashboard/totalStokGudang",
         { headers }
       );
       const totalStokGudangData = await totalStokGudangRes.json();
       setTotalStokGudang(totalStokGudangData[0]?.total_stok_gudang || 0);
 
       const batchKadaluarsaRes = await fetch(
-        "http://localhost:3008/api/dashboard/batchKadaluarsa",
+        "https://brandis-backend.vercel.app/api/dashboard/batchKadaluarsa",
         { headers }
       );
       const batchKadaluarsaData = await batchKadaluarsaRes.json();
@@ -70,122 +70,94 @@ const PimpinanDashboard: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="p-5 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-10 text-center text-indigo-600">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Pimpinan
       </h1>
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-        {/* Total Penjualan */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaChartBar className="text-indigo-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Total Penjualan (Bulan Ini)
-              </h2>
-              <p className="text-lg text-gray-600">
-                {totalPenjualan !== null ? totalPenjualan : "Loading..."}
-              </p>
-            </div>
-          </div>
-        </section>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {/* Example Card */}
+        <div className="bg-gradient-to-br from-indigo-500 to-blue-600 text-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform">
+          <FaChartBar className="text-4xl mb-4 mx-auto" />
+          <h2 className="text-lg font-semibold mb-2 text-center">
+            Total Penjualan (Bulan Ini)
+          </h2>
+          <p className="text-center text-2xl font-bold">
+            {totalPenjualan !== null ? totalPenjualan : "Loading..."}
+          </p>
+        </div>
 
         {/* Total Distribusi */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaShippingFast className="text-green-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Total Kuantitas Produk Didistribusi (Bulan Ini)
-              </h2>
-              <p className="text-lg text-gray-600">
-                {totalDistribusi !== null ? totalDistribusi : "Loading..."}
-              </p>
-            </div>
-          </div>
-        </section>
+        <div className="bg-gradient-to-br from-green-500 to-teal-600 text-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform">
+          <FaShippingFast className="text-4xl mb-4 mx-auto" />
+          <h2 className="text-lg font-semibold mb-2 text-center">
+            Total Distribusi (Bulan Ini)
+          </h2>
+          <p className="text-center text-2xl font-bold">
+            {totalDistribusi !== null ? totalDistribusi : "Loading..."}
+          </p>
+        </div>
 
         {/* Total Stok Gudang */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaWarehouse className="text-blue-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Total Stok di Gudang
-              </h2>
-              <p className="text-lg text-gray-600">
-                {totalStokGudang !== null ? totalStokGudang : "Loading..."}
-              </p>
-            </div>
-          </div>
-        </section>
+        <div className="bg-gradient-to-br from-blue-500 to-purple-600 text-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform">
+          <FaWarehouse className="text-4xl mb-4 mx-auto" />
+          <h2 className="text-lg font-semibold mb-2 text-center">
+            Total Stok Gudang
+          </h2>
+          <p className="text-center text-2xl font-bold">
+            {totalStokGudang !== null ? totalStokGudang : "Loading..."}
+          </p>
+        </div>
 
         {/* Batch Kadaluarsa */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaCalendarAlt className="text-red-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Batch 1 Bulan Mendekati Kadaluarsa
-              </h2>
-              <p className="text-lg text-gray-600">
-                {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
-              </p>
-            </div>
-          </div>
-        </section>
+        <div className="bg-gradient-to-br from-red-500 to-pink-600 text-white p-6 rounded-lg shadow-lg hover:scale-105 transition-transform">
+          <FaCalendarAlt className="text-4xl mb-4 mx-auto" />
+          <h2 className="text-lg font-semibold mb-2 text-center">
+            Batch Mendekati Kadaluarsa
+          </h2>
+          <p className="text-center text-2xl font-bold">
+            {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
+          </p>
+        </div>
       </div>
 
-      {/* Top 5 Produk Terlaris (Centered and Full Width) */}
-      <section className="bg-white rounded-lg shadow-lg p-6 mb-8 hover:shadow-xl transition-shadow">
-        <div className="flex justify-center items-center">
-          <div className="w-full">
-            <h2 className="text-xl font-semibold text-gray-700 text-center mb-4">
-              Produk Terlaris Bulan ini
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="table-auto w-full text-center border-collapse border border-gray-200 bg-transparent">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 border border-gray-200">
-                      Nama Produk
-                    </th>
-                    <th className="px-4 py-2 border border-gray-200">
-                      Total Terjual
-                    </th>
+      {/* Tabel */}
+      <section className="bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Produk Terlaris Bulan Ini
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full border border-gray-200 rounded-lg overflow-hidden">
+            <thead>
+              <tr className="bg-gray-100">
+                <th className="px-4 py-2">Nama Produk</th>
+                <th className="px-4 py-2">Total Terjual</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topProdukTerlaris.length > 0 ? (
+                topProdukTerlaris.map((produk, index) => (
+                  <tr
+                    key={index}
+                    className={`${
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-gray-100`}
+                  >
+                    <td className="px-4 py-2">{produk.nama_produk}</td>
+                    <td className="px-4 py-2">{produk.total_terjual}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {topProdukTerlaris.length > 0 ? (
-                    topProdukTerlaris.map((produk, index) => (
-                      <tr
-                        key={index}
-                        className={`${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        }`}
-                      >
-                        <td className="px-4 py-2 border border-gray-200">
-                          {produk.nama_produk}
-                        </td>
-                        <td className="px-4 py-2 border border-gray-200">
-                          {produk.total_terjual}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={2} className="text-center py-4">
-                        No data available
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={2} className="text-center py-4">
+                    No data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

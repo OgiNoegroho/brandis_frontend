@@ -36,42 +36,42 @@ const DashboardManajer: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const gudangRes = await fetch(
-        "http://localhost:3008/api/dashboard/produk",
+        "https://brandis-backend.vercel.app/api/dashboard/produk",
         { headers }
       );
       const gudangData = await gudangRes.json();
       setGudangData(gudangData);
 
       const stokGudangRes = await fetch(
-        "http://localhost:3008/api/dashboard/totalStokGudang",
+        "https://brandis-backend.vercel.app/api/dashboard/totalStokGudang",
         { headers }
       );
       const stokGudangData = await stokGudangRes.json();
       setTotalStokGudang(stokGudangData[0]?.total_stok_gudang || 0);
 
       const kadaluarsaRes = await fetch(
-        "http://localhost:3008/api/dashboard/batchKadaluarsa",
+        "https://brandis-backend.vercel.app/api/dashboard/batchKadaluarsa",
         { headers }
       );
       const kadaluarsaData = await kadaluarsaRes.json();
       setBatchKadaluarsa(kadaluarsaData[0]?.total_batch_kadaluarsa || 0);
 
       const diproduksiRes = await fetch(
-        "http://localhost:3008/api/dashboard/batchDiproduksiBulanIni",
+        "https://brandis-backend.vercel.app/api/dashboard/batchDiproduksiBulanIni",
         { headers }
       );
       const diproduksiData = await diproduksiRes.json();
       setBatchDiproduksiBulanIni(diproduksiData[0]?.batch_diproduksi || 0);
 
       const stokRendahRes = await fetch(
-        "http://localhost:3008/api/dashboard/stokRendahDiGudang",
+        "https://brandis-backend.vercel.app/api/dashboard/stokRendahDiGudang",
         { headers }
       );
       const stokRendahData = await stokRendahRes.json();
       setStokRendahGudang(stokRendahData);
 
       const pengembalianRes = await fetch(
-        "http://localhost:3008/api/dashboard/totalPengembalianProduk",
+        "https://brandis-backend.vercel.app/api/dashboard/totalPengembalianProduk",
         { headers }
       );
       const pengembalianData = await pengembalianRes.json();
@@ -88,125 +88,104 @@ const DashboardManajer: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="p-5 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-10 text-center text-indigo-600">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
+      <h1 className="text-4xl font-extrabold text-center mb-8 text-gray-800">
         Dashboard Manajer
       </h1>
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-        {/* Total Stok Gudang */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaWarehouse className="text-blue-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Total Stok Gudang
-              </h2>
-              <p className="text-lg text-gray-600">
-                {totalStokGudang !== null ? totalStokGudang : "Loading..."}
-              </p>
-            </div>
+        <section>
+          <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
+            <FaWarehouse className="text-6xl mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold">Total Stok Gudang</h2>
+            <p className="text-xl font-medium">
+              {totalStokGudang !== null ? totalStokGudang : "Loading..."}
+            </p>
           </div>
         </section>
 
-        {/* Batch Kadaluarsa */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaExclamationTriangle className="text-red-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Batch Kadaluarsa
-              </h2>
-              <p className="text-lg text-gray-600">
-                {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
-              </p>
-            </div>
+        <section>
+          <div className="bg-gradient-to-r from-red-400 to-red-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
+            <FaExclamationTriangle className="text-6xl mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold">Batch Kadaluarsa</h2>
+            <p className="text-xl font-medium">
+              {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
+            </p>
           </div>
         </section>
 
-        {/* Batch Diproduksi Bulan Ini */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaPlusSquare className="text-green-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Batch Diproduksi Bulan Ini
-              </h2>
-              <p className="text-lg text-gray-600">
-                {batchDiproduksiBulanIni !== null
-                  ? batchDiproduksiBulanIni
-                  : "Loading..."}
-              </p>
-            </div>
+        <section>
+          <div className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
+            <FaPlusSquare className="text-6xl mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold">
+              Batch Diproduksi Bulan Ini
+            </h2>
+            <p className="text-xl font-medium">
+              {batchDiproduksiBulanIni !== null
+                ? batchDiproduksiBulanIni
+                : "Loading..."}
+            </p>
           </div>
         </section>
 
-        {/* Total Pengembalian Produk */}
-        <section className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
-          <div className="flex items-center space-x-4">
-            <FaUndo className="text-yellow-600 text-4xl" />
-            <div>
-              <h2 className="text-xl font-semibold text-gray-700">
-                Total Pengembalian Produk
-              </h2>
-              <p className="text-lg text-gray-600">
-                {totalPengembalianProduk !== null
-                  ? totalPengembalianProduk
-                  : "Loading..."}
-              </p>
-            </div>
+        <section>
+          <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
+            <FaUndo className="text-6xl mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold">
+              Total Pengembalian Produk
+            </h2>
+            <p className="text-xl font-medium">
+              {totalPengembalianProduk !== null
+                ? totalPengembalianProduk
+                : "Loading..."}
+            </p>
           </div>
         </section>
       </div>
 
-      {/* Stok Rendah di Gudang */}
-      <section className="bg-white rounded-lg shadow-lg p-6 mb-8 hover:shadow-xl transition-shadow">
-        <div className="flex justify-center items-center">
-          <div className="w-full">
-            <h2 className="text-xl font-semibold text-gray-700 text-center mb-4">
-              Stok Rendah di Gudang
-            </h2>
-            <div className="overflow-x-auto">
-              <table className="table-auto w-full text-center border-collapse border border-gray-200 bg-transparent">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 border border-gray-200">
-                      Nama Produk
-                    </th>
-                    <th className="px-4 py-2 border border-gray-200">
-                      Kuantitas
-                    </th>
+      <section className="bg-white rounded-xl shadow-md hover:shadow-lg p-6 mb-8 transition-shadow">
+        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+          Stok Rendah di Gudang
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
+            <thead className="bg-gray-200">
+              <tr>
+                <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-gray-800">
+                  Nama Produk
+                </th>
+                <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-gray-800">
+                  Kuantitas
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {stokRendahGudang.length > 0 ? (
+                stokRendahGudang.map((item, index) => (
+                  <tr
+                    key={index}
+                    className={`$ {
+                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                    } hover:bg-gray-100`}
+                  >
+                    <td className="px-6 py-4 border-b border-gray-300">
+                      {item.nama}
+                    </td>
+                    <td className="px-6 py-4 border-b border-gray-300">
+                      {item.kuantitas}
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {stokRendahGudang.length > 0 ? (
-                    stokRendahGudang.map((item, index) => (
-                      <tr
-                        key={index}
-                        className={`${
-                          index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                        }`}
-                      >
-                        <td className="px-4 py-2 border border-gray-200">
-                          {item.nama}
-                        </td>
-                        <td className="px-4 py-2 border border-gray-200">
-                          {item.kuantitas}
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={2} className="text-center py-4">
-                        No low stock items
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={2} className="text-center py-6 text-gray-500">
+                    No low stock items
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

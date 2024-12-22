@@ -2,6 +2,7 @@
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import globalReducer from "@/redux/slices/globalSlice";
 import authReducer from "@/redux/slices/authSlice";
+import toastReducer from "@/redux/slices/toastSlice";
 import {
   persistReducer,
   FLUSH,
@@ -42,6 +43,7 @@ const persistConfig = {
 const rootReducer = combineReducers({
   global: globalReducer,
   auth: authReducer,
+  toast: toastReducer,
 });
 
 export const makeStore = () => {

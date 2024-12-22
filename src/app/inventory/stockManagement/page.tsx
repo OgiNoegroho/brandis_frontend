@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Info } from "lucide-react"; 
-import { useAppSelector } from "@/redux/hooks"; 
-import { RootState } from "@/redux/store"; 
+import { Info } from "lucide-react";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
+import { showErrorToast } from "@/redux/slices/toastSlice"; // Import the action
 import {
   Card,
   CardBody,
@@ -20,11 +21,11 @@ import {
   TableCell,
   Chip,
   Button,
-  Divider
+  Divider,
 } from "@nextui-org/react";
 
 type Product = {
-  produk_id: number; 
+  produk_id: number;
   nama_produk: string;
   kuantitas: number;
   ketersediaan: "In stock" | "Low stock" | "Out of stock";
@@ -46,6 +47,10 @@ const StockManagement: React.FC = () => {
   const [loadingBatchDetails, setLoadingBatchDetails] = useState(false);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
+  const dispatch = useAppDispatch(); // Initialize dispatch
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -75,11 +80,14 @@ const StockManagement: React.FC = () => {
         setProducts(data);
       } catch (error) {
         console.error("Error fetching inventory:", error);
+        dispatch(
+          showErrorToast({ message: "Failed to load inventory.", isDarkMode })
+        ); // Show error toast
       }
     };
 
     fetchInventory();
-  }, [token]);
+  }, [token, dispatch, isDarkMode]);
 
   const fetchInventoryDetail = async (produkId: number) => {
     if (!token) {
@@ -108,6 +116,9 @@ const StockManagement: React.FC = () => {
       setBatchDetails(data);
     } catch (error) {
       console.error("Error fetching batch details:", error);
+      dispatch(
+        showErrorToast({ message: "Failed to load batch details.", isDarkMode })
+      ); // Show error toast
       setBatchDetails([]);
     } finally {
       setLoadingBatchDetails(false);
@@ -118,7 +129,11 @@ const StockManagement: React.FC = () => {
     switch (status) {
       case "In stock":
         return (
-          <Chip color="success" variant="dot" className="capitalize text-green-500 bg-green-50">
+          <Chip
+            color="success"
+            variant="dot"
+            className="capitalize text-green-500 bg-green-50"
+          >
             In Stock
           </Chip>
         );

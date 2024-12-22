@@ -8,6 +8,8 @@ import Sidebar from "@/components/Sidebar";
 import { useAppSelector } from "@/redux/hooks";
 import StoreProvider from "@/redux/provider";
 import { usePathname } from "next/navigation";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import the CSS
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
@@ -59,6 +61,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 const Wrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreProvider>
+      <ToastContainer position="bottom-right" autoClose={3000} />
       <Layout>{children}</Layout>
     </StoreProvider>
   );

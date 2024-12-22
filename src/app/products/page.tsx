@@ -15,8 +15,9 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
 interface Product {
   id: string;
@@ -40,14 +41,24 @@ const ProductsPage = () => {
     image: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [error, setError] = useState("");
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const dispatch = useAppDispatch();
+
+  // Assuming you have a way to determine if the user is in dark mode
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  ); // Replace with actual dark mode state if necessary
 
   useEffect(() => {
     const fetchProducts = async () => {
       if (!token) {
-        setError("No token found. Please log in.");
+        dispatch(
+          showErrorToast({
+            message: "No token found. Please log in.",
+            isDarkMode,
+          })
+        );
         return;
       }
 
@@ -64,12 +75,17 @@ const ProductsPage = () => {
         setProducts(data);
       } catch (err) {
         console.error(err);
-        setError("Error fetching products. Please try again.");
+        dispatch(
+          showErrorToast({
+            message: "Error fetching products. Please try again.",
+            isDarkMode,
+          })
+        );
       }
     };
 
     fetchProducts();
-  }, [token]);
+  }, [token, dispatch, isDarkMode]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,7 +114,12 @@ const ProductsPage = () => {
 
   const handleAddProduct = async () => {
     if (!token) {
-      setError("No token found. Please log in.");
+      dispatch(
+        showErrorToast({
+          message: "No token found. Please log in.",
+          isDarkMode,
+        })
+      );
       return;
     }
 
@@ -135,30 +156,43 @@ const ProductsPage = () => {
         });
         setImagePreview(null);
         setIsModalOpen(false);
+        dispatch(
+          showSuccessToast({
+            message: "Product added successfully!",
+            isDarkMode,
+          })
+        );
       } catch (err) {
         console.error(err);
-        setError("Error adding product. Please try again.");
+        dispatch(
+          showErrorToast({
+            message: "Error adding product. Please try again.",
+            isDarkMode,
+          })
+        );
       }
     } else {
-      alert("Please fill in all the required fields!");
+      dispatch(
+        showErrorToast({
+          message: "Please fill in all the required fields!",
+          isDarkMode,
+        })
+      );
     }
   };
 
   return (
     <div className="pl-12">
-      {/* Header and Add Product Button */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Produk</h2>
-        <button
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
-          onClick={() => setIsModalOpen(true)}
+        <Button
+          className=""
+          color="primary"
+          onPress={() => setIsModalOpen(true)}
         >
           Tambah Produk
-        </button>
+        </Button>
       </div>
-
-      {/* Display Error */}
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       {/* Product Grid */}
       <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
@@ -213,13 +247,13 @@ const ProductsPage = () => {
                       alt="Preview"
                       className="w-32 h-32 object-cover"
                     />
-                    <button
-                      type="button"
-                      onClick={handleRemoveImage}
-                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                    <Button
+                      onPress={handleRemoveImage}
+                      className=""
+                      color="primary"
                     >
                       X
-                    </button>
+                    </Button>
                   </div>
                 )}
                 {!imagePreview && (

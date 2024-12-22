@@ -138,58 +138,56 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
 
   // Handle sale submission
   const handleSaleSubmit = async () => {
-    setError(null); // Clear previous error messages
+    setError(null);
     if (selectedProduct && quantitySold && parseInt(quantitySold) > 0) {
       setIsSubmitting(true);
       try {
-        // Create sale submission payload in the required structure
-      const saleSubmission = {
-        outlet_id: parseInt(outletId), // Ensure outletId is passed as a number
-        saleDetails: [
-          {
-            product_id: selectedProduct, // ID of the selected product
-            kuantitas_terjual: parseInt(quantitySold), // Quantity sold
-          },
-        ],
-      };
+        const saleSubmission = {
+          outlet_id: parseInt(outletId),
+          saleDetails: [
+            {
+              product_id: selectedProduct,
+              kuantitas_terjual: parseInt(quantitySold),
+            },
+          ],
+        };
 
-
-        // Send POST request to the sales API endpoint
         const response = await fetch(`http://localhost:3008/api/sales`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include authorization token
+            Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(saleSubmission), // Serialize the payload
+          body: JSON.stringify(saleSubmission),
         });
 
         if (!response.ok) {
-          const errorData = await response.json(); // Parse error response
+          const errorData = await response.json();
           throw new Error(
             errorData?.message || "An error occurred while creating the sale."
           );
         }
 
-        // Clear the form inputs and close the modal on successful submission
+        const updatedSales = await response.json();
+        // Check if the response is an array or a single object
+        if (Array.isArray(updatedSales)) {
+          setSalesData((prevSales) => [...prevSales, ...updatedSales]);
+        } else {
+          setSalesData((prevSales) => [...prevSales, updatedSales]);
+        }
+
         setQuantitySold("");
         setSelectedProduct(null);
         setModalVisible(false);
-
-        // Optionally, re-fetch sales or stock data to reflect updates
-        const updatedSales = await response.json();
-        setSalesData((prevSales) => [...prevSales, ...updatedSales]);
       } catch (err: any) {
-        // Set error message for the user
         setError(err.message || "Error submitting sale.");
       } finally {
-        setIsSubmitting(false); // Re-enable submit button
+        setIsSubmitting(false);
       }
     } else {
-      setError("Please select a product and enter a valid quantity."); // Validation error
+      setError("Please select a product and enter a valid quantity.");
     }
   };
-
 
   return (
     <div className="space-y-6">
@@ -253,7 +251,7 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
       >
         <ModalContent>
           <ModalHeader>
-            <Button id="modal-title" className="text-lg font-semibold mb-2" >
+            <Button id="modal-title" className="text-lg font-semibold mb-2">
               Add Sale
             </Button>
           </ModalHeader>
@@ -263,6 +261,17 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
               placeholder="Choose a product"
               selectedKeys={selectedProduct ? [`${selectedProduct}`] : []}
               onChange={(e) => setSelectedProduct(Number(e.target.value))}
+              renderValue={(items) => {
+                const selectedItem = productSelectData.find(
+                  (item) => item.produk_id === selectedProduct
+                );
+                return selectedItem ? (
+                  <div>
+                    {selectedItem.nama_produk} ({selectedItem.kuantitas_stok} in
+                    stock)
+                  </div>
+                ) : null;
+              }}
             >
               {productSelectData.map((item) => (
                 <SelectItem key={item.produk_id} value={item.produk_id}>

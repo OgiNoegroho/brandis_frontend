@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useState, useEffect } from "react";
 import {
@@ -12,8 +12,9 @@ import {
   TableCell,
   Button,
 } from "@nextui-org/react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice"; // Import the toast actions
 
 // Type Definitions
 type Batch = {
@@ -32,8 +33,13 @@ type Product = {
 };
 
 const BatchManagement: React.FC = () => {
+  const dispatch = useAppDispatch(); // Use dispatch to dispatch actions
+
   // Redux selector for token
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+        (state: RootState) => state.global.isDarkMode
+      ); 
 
   // State Management
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -71,10 +77,19 @@ const BatchManagement: React.FC = () => {
 
       const data = await response.json();
       setBatches(data);
+      dispatch(
+        showSuccessToast({
+          message: "Batches loaded successfully",
+          isDarkMode,
+        })
+      );
     } catch (error) {
       console.error(error);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      dispatch(
+        showErrorToast({ message: "Failed to load batches", isDarkMode })
       );
     } finally {
       setLoading(false);
@@ -97,6 +112,12 @@ const BatchManagement: React.FC = () => {
       setProducts(data);
     } catch (error) {
       console.error(error);
+      dispatch(
+        showErrorToast({
+          message: "Failed to load products",
+          isDarkMode,
+        })
+      );
     }
   };
 
@@ -126,11 +147,20 @@ const BatchManagement: React.FC = () => {
 
       const newBatch = await response.json();
       setBatches([...batches, newBatch]);
+      dispatch(
+        showSuccessToast({
+          message: "Batch added successfully",
+          isDarkMode,
+        })
+      );
       closeAddModal();
     } catch (error) {
       console.error(error);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      dispatch(
+        showErrorToast({ message: "Failed to add batch", isDarkMode })
       );
     } finally {
       setLoading(false);
@@ -169,11 +199,20 @@ const BatchManagement: React.FC = () => {
           batch.batch_id === selectedBatch.batch_id ? updatedBatch : batch
         )
       );
+      dispatch(
+        showSuccessToast({
+          message: "Batch updated successfully",
+          isDarkMode,
+        })
+      );
       closeEditModal();
     } catch (error) {
       console.error(error);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      dispatch(
+        showErrorToast({ message: "Failed to update batch", isDarkMode })
       );
     } finally {
       setLoading(false);
@@ -199,10 +238,22 @@ const BatchManagement: React.FC = () => {
         if (!response.ok) throw new Error("Failed to delete batch");
 
         setBatches(batches.filter((batch) => batch.batch_id !== batchId));
+        dispatch(
+          showSuccessToast({
+            message: "Batch deleted successfully",
+            isDarkMode,
+          })
+        );
       } catch (error) {
         console.error(error);
         setError(
           error instanceof Error ? error.message : "An unknown error occurred"
+        );
+        dispatch(
+          showErrorToast({
+            message: "Failed to delete batch",
+            isDarkMode,
+          })
         );
       } finally {
         setLoading(false);
@@ -241,6 +292,12 @@ const BatchManagement: React.FC = () => {
       console.error(error);
       setError(
         error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      dispatch(
+        showErrorToast({
+          message: "Failed to fetch batch details",
+          isDarkMode,
+        })
       );
     } finally {
       setLoading(false);

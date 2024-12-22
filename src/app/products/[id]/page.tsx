@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import {
   Modal,
@@ -14,6 +14,7 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
 interface Product {
   id: string;
@@ -43,6 +44,10 @@ const ProductDetail = () => {
   });
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+      (state: RootState) => state.global.isDarkMode
+    ); 
+  const dispatch = useAppDispatch(); // Use dispatch hook
   const { id } = useParams();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -68,6 +73,8 @@ const ProductDetail = () => {
     const fetchProductDetail = async () => {
       if (!token) {
         setError("No token found. Please log in.");
+        dispatch(showErrorToast({ message: "No token found. Please log in.",
+            isDarkMode, }));
         return;
       }
 
@@ -96,13 +103,19 @@ const ProductDetail = () => {
       } catch (err) {
         console.error(err);
         setError("Error fetching product details. Please try again.");
+        dispatch(
+          showErrorToast({
+            message: "Error fetching product details. Please try again.",
+            isDarkMode,
+          })
+        );
       } finally {
         setLoading(false);
       }
     };
 
     fetchProductDetail();
-  }, [id, token]);
+  }, [id, token, dispatch]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -137,9 +150,21 @@ const ProductDetail = () => {
       const updatedProduct = await response.json();
       setProduct(updatedProduct);
       setShowImageUploadModal(false);
+      dispatch(
+        showSuccessToast({
+          message: "Image replaced successfully!",
+          isDarkMode,
+        })
+      );
     } catch (err) {
       console.error(err);
       setError("Error replacing image. Please try again.");
+      dispatch(
+        showErrorToast({
+          message: "Error replacing image. Please try again.",
+          isDarkMode,
+        })
+      );
     } finally {
       setImageUploading(false);
     }
@@ -163,9 +188,18 @@ const ProductDetail = () => {
       const updatedProduct = await response.json();
       setProduct(updatedProduct);
       setEditMode(false);
+      dispatch(
+        showSuccessToast({
+          message: "Product updated successfully!",
+          isDarkMode,
+        })
+      );
     } catch (err) {
       console.error(err);
       setError("Error updating product.");
+      dispatch(
+        showErrorToast({ message: "Error updating product.", isDarkMode })
+      );
     }
   };
 
@@ -183,9 +217,18 @@ const ProductDetail = () => {
       if (!response.ok) throw new Error("Failed to delete product");
 
       router.push("/products");
+      dispatch(
+        showSuccessToast({
+          message: "Product deleted successfully!",
+          isDarkMode,
+        })
+      );
     } catch (err) {
       console.error(err);
       setError("Error deleting product.");
+      dispatch(
+        showErrorToast({ message: "Error deleting product.", isDarkMode })
+      );
     }
   };
 
@@ -309,15 +352,13 @@ const ProductDetail = () => {
               name="deskripsi"
               value={formData.deskripsi}
               onChange={handleInputChange}
-              rows={4}
+              rows={3}
               className="mb-4"
             />
           </ModalBody>
           <ModalFooter>
-            <Button color="secondary" onPress={() => setEditMode(false)}>
-              Cancel
-            </Button>
-            <Button color="success" onPress={handleEdit}>
+            <Button onPress={() => setEditMode(false)}>Cancel</Button>
+            <Button onPress={handleEdit} disabled={loading} color="primary">
               Save Changes
             </Button>
           </ModalFooter>
@@ -332,18 +373,14 @@ const ProductDetail = () => {
         <ModalContent>
           <ModalHeader>Confirm Delete</ModalHeader>
           <ModalBody>
-            Are you sure you want to delete this product? This action cannot be
-            undone.
+            <p>Are you sure you want to delete this product?</p>
           </ModalBody>
           <ModalFooter>
-            <Button
-              color="secondary"
-              onPress={() => setShowDeleteConfirmation(false)}
-            >
+            <Button onPress={() => setShowDeleteConfirmation(false)}>
               Cancel
             </Button>
-            <Button color="danger" onPress={handleDelete}>
-              Delete
+            <Button onPress={handleDelete} disabled={loading} color="danger">
+              Confirm
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -355,23 +392,20 @@ const ProductDetail = () => {
         onClose={() => setShowImageUploadModal(false)}
       >
         <ModalContent>
-          <ModalHeader>Replace Product Image</ModalHeader>
+          <ModalHeader>Upload New Image</ModalHeader>
           <ModalBody>
             <input
               type="file"
               accept="image/*"
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleImageReplace(file);
+                if (e.target.files) handleImageReplace(e.target.files[0]);
               }}
-              disabled={isImageUploading}
+              className="block w-full"
             />
+            {isImageUploading && <p>Uploading image...</p>}
           </ModalBody>
           <ModalFooter>
-            <Button
-              color="secondary"
-              onPress={() => setShowImageUploadModal(false)}
-            >
+            <Button onPress={() => setShowImageUploadModal(false)}>
               Cancel
             </Button>
           </ModalFooter>
