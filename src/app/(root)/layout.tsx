@@ -1,15 +1,11 @@
-// src/app/wrapper.tsx
-
 "use client";
 
 import React, { useEffect } from "react";
+import { useAppSelector } from "@/redux/hooks";
+import "@/styles/globals.css";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
-import { useAppSelector } from "@/redux/hooks";
-import StoreProvider from "@/redux/provider";
 import { usePathname } from "next/navigation";
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import the CSS
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const isSidebarCollapsed = useAppSelector(
@@ -28,10 +24,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     }
   }, [isDarkMode]);
 
-  const isAuthPage = pathname === "/logIn"; // Check if the route is `/logIn`
+  const isAuthPage = pathname === "/";
 
   if (isAuthPage) {
-    // Render only the children for the `/logIn` page
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         {children}
@@ -58,13 +53,4 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-const Wrapper = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <StoreProvider>
-      <ToastContainer position="bottom-right" autoClose={3000} />
-      <Layout>{children}</Layout>
-    </StoreProvider>
-  );
-};
-
-export default Wrapper;
+export default Layout;

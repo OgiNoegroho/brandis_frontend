@@ -131,7 +131,7 @@ const StockManagement: React.FC = () => {
         return (
           <Chip
             color="success"
-            variant="dot"
+            variant="flat"
             className="capitalize text-green-500 bg-green-50"
           >
             In Stock
@@ -141,7 +141,7 @@ const StockManagement: React.FC = () => {
         return (
           <Chip
             color="danger"
-            variant="dot"
+            variant="flat"
             className="capitalize text-red-500 bg-red-50"
           >
             Out of Stock
@@ -151,8 +151,8 @@ const StockManagement: React.FC = () => {
         return (
           <Chip
             color="warning"
-            variant="dot"
-            className="capitalize text-yellow-500 bg-red-50"
+            variant="flat"
+            className="capitalize text-yellow-500 bg-yellow-50"
           >
             Low Stock
           </Chip>

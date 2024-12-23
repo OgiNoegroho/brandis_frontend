@@ -1,10 +1,9 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "@/styles/globals.css";
-import Wrapper from "./Wrapper";
 import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import the CSS
+import "react-toastify/dist/ReactToastify.css";
+import StoreProvider from "@/redux/provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,8 +20,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Wrapper>{children}</Wrapper>
-              <ToastContainer position="bottom-right" autoClose={3000} />
+        <StoreProvider>
+          <ToastContainer position="bottom-right" autoClose={3000} /> {children}
+        </StoreProvider>
       </body>
     </html>
   );

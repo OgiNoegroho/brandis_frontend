@@ -242,27 +242,14 @@ const Outlet = () => {
     return <div className="p-6 text-center">Loading outlets...</div>;
   }
 
-  if (error) {
-    return (
-      <div className="p-6 text-center text-red-600">
-        Error: {error}
-        <Button
-          onClick={fetchOutlets}
-          className="ml-4 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-        >
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
   return (
     <div className="pl-12">
       <h1 className="text-2xl font-bold mb-2">Outlet</h1>
       <div className="flex justify-end mb-6">
         <Button
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300"
-          onClick={() => setShowCreateModal(true)}
+          variant="flat"
+          color="success"
+          onPress={() => setShowCreateModal(true)}
         >
           Tambah Outlet
         </Button>
@@ -286,20 +273,23 @@ const Outlet = () => {
               </div>
               <div className="flex space-x-2">
                 <Button
-                  onClick={() => handleViewDetails(outlet.id)}
-                  className="bg-blue-500 text-white py-1 px-3 rounded-lg"
+                  onPress={() => handleViewDetails(outlet.id)}
+                  variant="flat"
+                  color="primary"
                 >
                   Detail
                 </Button>
                 <Button
-                  onClick={() => handleOpenEditModal(outlet)}
-                  className="bg-yellow-500 text-white py-1 px-3 rounded-lg"
+                  onPress={() => handleOpenEditModal(outlet)}
+                  variant="flat"
+                  color="warning"
                 >
                   Edit
                 </Button>
                 <Button
-                  onClick={() => handleDeleteOutlet(outlet.id)}
-                  className="bg-red-500 text-white py-1 px-3 rounded-lg"
+                  onPress={() => handleDeleteOutlet(outlet.id)}
+                  variant="flat"
+                  color="danger"
                 >
                   Hapus
                 </Button>
@@ -334,10 +324,10 @@ const Outlet = () => {
             />
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" onClick={() => setShowCreateModal(false)}>
+            <Button color="danger" onPress={() => setShowCreateModal(false)}>
               Batal
             </Button>
-            <Button color="primary" onClick={handleAddOutlet}>
+            <Button color="primary" onPress={handleAddOutlet}>
               Tambah
             </Button>
           </ModalFooter>
@@ -370,10 +360,10 @@ const Outlet = () => {
               />
             </ModalBody>
             <ModalFooter>
-              <Button color="danger" onClick={() => setShowEditModal(false)}>
+              <Button color="danger" onPress={() => setShowEditModal(false)}>
                 Batal
               </Button>
-              <Button color="primary" onClick={handleEditOutlet}>
+              <Button color="primary" onPress={handleEditOutlet}>
                 Simpan
               </Button>
             </ModalFooter>
