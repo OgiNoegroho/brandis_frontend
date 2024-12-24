@@ -19,21 +19,21 @@ const Bendahara: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
 
       const ringkasanRes = await fetch(
-        "http://localhost:3008/api/dashboard/ringkasanFaktur",
+        "http://localhost:3008/api/bendahara/ringkasanFakturDistribusi",
         { headers }
       );
       const ringkasanData = await ringkasanRes.json();
       setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
 
       const pendapatanRes = await fetch(
-        "http://localhost:3008/api/dashboard/pendapatanBulanIni",
+        "http://localhost:3008/api/bendahara/pendapatanBulanIni",
         { headers }
       );
       const pendapatanData = await pendapatanRes.json();
       setPendapatanBulanIni(pendapatanData[0]?.total_pendapatan || 0);
 
       const jatuhTempoRes = await fetch(
-        "http://localhost:3008/api/dashboard/fakturJatuhTempo",
+        "http://localhost:3008/api/bendahara/fakturJatuhTempoHariIni",
         { headers }
       );
       const jatuhTempoData = await jatuhTempoRes.json();

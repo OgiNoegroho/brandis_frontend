@@ -119,7 +119,7 @@ const Sidebar = () => {
 
   const handleLogout = () => {
     dispatch(removeToken());
-    router.push("/logIn");
+    router.push("/");
   };
 
   const toggleInventoryDropdown = (e: React.MouseEvent) => {

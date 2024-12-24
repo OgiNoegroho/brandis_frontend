@@ -187,6 +187,7 @@ const ProductsPage = () => {
         <h2 className="text-2xl font-bold">Produk</h2>
         <Button
           className=""
+          variant="flat"
           color="primary"
           onPress={() => setIsModalOpen(true)}
         >
@@ -247,13 +248,13 @@ const ProductsPage = () => {
                       alt="Preview"
                       className="w-32 h-32 object-cover"
                     />
-                    <Button
-                      onPress={handleRemoveImage}
-                      className=""
-                      color="primary"
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
                     >
                       X
-                    </Button>
+                    </button>
                   </div>
                 )}
                 {!imagePreview && (

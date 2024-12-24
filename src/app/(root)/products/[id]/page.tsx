@@ -310,7 +310,7 @@ const ProductDetail = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-between items-center mt-6">
+      <div className="absolute bottom-6 right-6 flex space-x-4">
         <Button color="secondary" onPress={() => setEditMode(true)}>
           Edit
         </Button>

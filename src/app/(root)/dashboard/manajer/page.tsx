@@ -4,17 +4,22 @@ import React, { useEffect, useState } from "react";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import {
-  FaBoxOpen,
   FaWarehouse,
   FaExclamationTriangle,
-  FaArrowAltCircleUp,
-  FaRecycle,
-  FaProductHunt,
-  FaFill,
-  FaIndustry,
   FaPlusSquare,
   FaUndo,
 } from "react-icons/fa";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+} from "@nextui-org/react";
 
 const DashboardManajer: React.FC = () => {
   const [gudangData, setGudangData] = useState<any[]>([]);
@@ -35,51 +40,66 @@ const DashboardManajer: React.FC = () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
+      // Fetch Total Stock in Warehouse
       const gudangRes = await fetch(
-        "https://brandis-backend.vercel.app/api/dashboard/produk",
+        "http://localhost:3008/api/pimpinan/totalStokGudang",
         { headers }
       );
+      if (!gudangRes.ok) throw new Error("Failed to fetch total stock data");
       const gudangData = await gudangRes.json();
-      setGudangData(gudangData);
+      setGudangData(Array.isArray(gudangData) ? gudangData : []);
 
+      // Fetch Summed-up Stock
       const stokGudangRes = await fetch(
-        "https://brandis-backend.vercel.app/api/dashboard/totalStokGudang",
+        "http://localhost:3008/api/pimpinan/totalStokGudang",
         { headers }
       );
+      if (!stokGudangRes.ok) throw new Error("Failed to fetch total stock sum");
       const stokGudangData = await stokGudangRes.json();
-      setTotalStokGudang(stokGudangData[0]?.total_stok_gudang || 0);
+      setTotalStokGudang(stokGudangData[0]?.total_stock || 0);
 
+      // Fetch Expiring Batches
       const kadaluarsaRes = await fetch(
-        "https://brandis-backend.vercel.app/api/dashboard/batchKadaluarsa",
+        "http://localhost:3008/api/pimpinan/batchKadaluarsa",
         { headers }
       );
+      if (!kadaluarsaRes.ok)
+        throw new Error("Failed to fetch expiring batches");
       const kadaluarsaData = await kadaluarsaRes.json();
       setBatchKadaluarsa(kadaluarsaData[0]?.total_batch_kadaluarsa || 0);
 
+      // Fetch Batches Produced This Month
       const diproduksiRes = await fetch(
-        "https://brandis-backend.vercel.app/api/dashboard/batchDiproduksiBulanIni",
+        "http://localhost:3008/api/manajer/batchDiproduksiBulanIni",
         { headers }
       );
+      if (!diproduksiRes.ok)
+        throw new Error("Failed to fetch monthly production data");
       const diproduksiData = await diproduksiRes.json();
       setBatchDiproduksiBulanIni(diproduksiData[0]?.batch_diproduksi || 0);
 
+      // Fetch Low Stock Items
       const stokRendahRes = await fetch(
-        "https://brandis-backend.vercel.app/api/dashboard/stokRendahDiGudang",
+        "http://localhost:3008/api/manajer/stokRendahDiGudang",
         { headers }
       );
+      if (!stokRendahRes.ok) throw new Error("Failed to fetch low stock items");
       const stokRendahData = await stokRendahRes.json();
-      setStokRendahGudang(stokRendahData);
+      setStokRendahGudang(Array.isArray(stokRendahData) ? stokRendahData : []);
 
+      // Fetch Total Returned Products
       const pengembalianRes = await fetch(
-        "https://brandis-backend.vercel.app/api/dashboard/totalPengembalianProduk",
+        "http://localhost:3008/api/manajer/totalPengembalianProduk",
         { headers }
       );
+      if (!pengembalianRes.ok)
+        throw new Error("Failed to fetch returned products data");
       const pengembalianData = await pengembalianRes.json();
       setTotalPengembalianProduk(
         pengembalianData[0]?.total_produk_dikembalikan || 0
       );
     } catch (err: any) {
-      setError(err.message || "Error fetching data");
+      setError(err.message || "An unknown error occurred");
     }
   };
 
@@ -88,106 +108,97 @@ const DashboardManajer: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
-      <h1 className="text-4xl font-extrabold text-center mb-8 text-gray-800">
+    <div className="container px-6 lg:px-12 py-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Manajer
       </h1>
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
-        <section>
-          <div className="bg-gradient-to-r from-blue-400 to-blue-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
-            <FaWarehouse className="text-6xl mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold">Total Stok Gudang</h2>
-            <p className="text-xl font-medium">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        {/* Cards for Summary Data */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex flex-col items-center">
+            <FaWarehouse className="text-4xl text-blue-600 mb-2" />
+            <h2 className="text-lg font-semibold">Total Stok Gudang</h2>
+            <p className="text-xl font-bold">
               {totalStokGudang !== null ? totalStokGudang : "Loading..."}
             </p>
-          </div>
-        </section>
+          </CardHeader>
+        </Card>
 
-        <section>
-          <div className="bg-gradient-to-r from-red-400 to-red-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
-            <FaExclamationTriangle className="text-6xl mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold">Batch Kadaluarsa</h2>
-            <p className="text-xl font-medium">
+        <Card className="shadow-lg">
+          <CardHeader className="flex flex-col items-center">
+            <FaExclamationTriangle className="text-4xl text-red-500 mb-2" />
+            <h2 className="text-lg font-semibold">Batch Kadaluarsa</h2>
+            <p className="text-xl font-bold">
               {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
             </p>
-          </div>
-        </section>
+          </CardHeader>
+        </Card>
+      </div>
 
-        <section>
-          <div className="bg-gradient-to-r from-green-400 to-green-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
-            <FaPlusSquare className="text-6xl mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        {/* Batch Diproduksi Bulan Ini */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex flex-col items-center">
+            <FaPlusSquare className="text-4xl text-green-500 mb-2" />
+            <h2 className="text-lg font-semibold">
               Batch Diproduksi Bulan Ini
             </h2>
-            <p className="text-xl font-medium">
+            <p className="text-xl font-bold">
               {batchDiproduksiBulanIni !== null
                 ? batchDiproduksiBulanIni
                 : "Loading..."}
             </p>
-          </div>
-        </section>
+          </CardHeader>
+        </Card>
 
-        <section>
-          <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition duration-300 p-6 text-center">
-            <FaUndo className="text-6xl mx-auto mb-4" />
-            <h2 className="text-2xl font-semibold">
-              Total Pengembalian Produk
-            </h2>
-            <p className="text-xl font-medium">
+        {/* Total Pengembalian Produk */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex flex-col items-center">
+            <FaUndo className="text-4xl text-yellow-500 mb-2" />
+            <h2 className="text-lg font-semibold">Total Pengembalian Produk</h2>
+            <p className="text-xl font-bold">
               {totalPengembalianProduk !== null
                 ? totalPengembalianProduk
                 : "Loading..."}
             </p>
-          </div>
-        </section>
+          </CardHeader>
+        </Card>
       </div>
 
-      <section className="bg-white rounded-xl shadow-md hover:shadow-lg p-6 mb-8 transition-shadow">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          Stok Rendah di Gudang
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full border-collapse border border-gray-300 rounded-lg overflow-hidden">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-gray-800">
-                  Nama Produk
-                </th>
-                <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-gray-800">
-                  Kuantitas
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {stokRendahGudang.length > 0 ? (
-                stokRendahGudang.map((item, index) => (
-                  <tr
-                    key={index}
-                    className={`$ {
-                      index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                    } hover:bg-gray-100`}
-                  >
-                    <td className="px-6 py-4 border-b border-gray-300">
-                      {item.nama}
-                    </td>
-                    <td className="px-6 py-4 border-b border-gray-300">
-                      {item.kuantitas}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={2} className="text-center py-6 text-gray-500">
-                    No low stock items
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      {/* Low Stock Table */}
+      <div className="mt-8">
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaWarehouse className="text-xl mr-2 text-gray-600" />
+            <h2 className="text-xl font-semibold">Stok Rendah di Gudang</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Low stock table">
+              <TableHeader>
+                <TableColumn>Nama Produk</TableColumn>
+                <TableColumn>Kuantitas</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {stokRendahGudang.length > 0 ? (
+                  stokRendahGudang.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.nama}</TableCell>
+                      <TableCell>{item.kuantitas}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell>No data available</TableCell>
+                    <TableCell>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 };

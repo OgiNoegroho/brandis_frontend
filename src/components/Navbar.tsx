@@ -56,7 +56,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     dispatch(removeToken());
-    router.push("/logIn");
+    router.push("/");
   };
 
   return (
