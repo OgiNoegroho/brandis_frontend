@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
 
 const Bendahara: React.FC = () => {
   const [ringkasanFaktur, setRingkasanFaktur] = useState<any[]>([]);
@@ -10,41 +11,65 @@ const Bendahara: React.FC = () => {
     null
   );
   const [fakturJatuhTempo, setFakturJatuhTempo] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const dispatch = useAppDispatch();
 
   const fetchData = async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
+      // Fetch ringkasanFakturDistribusi
       const ringkasanRes = await fetch(
         "https://brandis-backend.vercel.app/api/bendahara/ringkasanFakturDistribusi",
         { headers }
       );
+      if (!ringkasanRes.ok) throw new Error("Gagal memuat ringkasan faktur.");
       const ringkasanData = await ringkasanRes.json();
       setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
 
+      // Fetch pendapatanBulanIni
       const pendapatanRes = await fetch(
         "https://brandis-backend.vercel.app/api/bendahara/pendapatanBulanIni",
         { headers }
       );
+      if (!pendapatanRes.ok)
+        throw new Error("Gagal memuat pendapatan bulan ini.");
       const pendapatanData = await pendapatanRes.json();
       setPendapatanBulanIni(pendapatanData[0]?.total_pendapatan || 0);
 
+      // Fetch fakturJatuhTempoHariIni
       const jatuhTempoRes = await fetch(
         "https://brandis-backend.vercel.app/api/bendahara/fakturJatuhTempoHariIni",
         { headers }
       );
+      if (!jatuhTempoRes.ok)
+        throw new Error("Gagal memuat faktur jatuh tempo hari ini.");
       const jatuhTempoData = await jatuhTempoRes.json();
       setFakturJatuhTempo(jatuhTempoData[0]?.faktur_jatuh_tempo || 0);
+
+      // Show success toast for successful data fetch
+      dispatch(
+        showSuccessToast({
+          message: "Data berhasil dimuat.",
+          isDarkMode: false, // Adjust this based on your app's theme
+        })
+      );
     } catch (err: any) {
-      setError(err.message || "Error fetching data");
+      // Show error toast if an error occurs
+      dispatch(
+        showErrorToast({
+          message: err.message || "Terjadi kesalahan saat memuat data.",
+          isDarkMode: false, // Adjust this based on your app's theme
+        })
+      );
     }
   };
 
   useEffect(() => {
-    fetchData();
+    if (token) {
+      fetchData();
+    }
   }, [token]);
 
   return (
@@ -52,7 +77,6 @@ const Bendahara: React.FC = () => {
       <h1 className="text-3xl font-bold mb-5 text-center text-indigo-600">
         Dashboard Bendahara
       </h1>
-      {error && <p className="text-red-500 text-center">{error}</p>}
 
       <section className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">

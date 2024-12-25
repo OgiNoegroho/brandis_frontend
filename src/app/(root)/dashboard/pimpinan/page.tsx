@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks"; // Import useAppDispatch
 import { RootState } from "@/redux/store";
 import {
   FaChartBar,
@@ -31,6 +31,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { showErrorToast } from "@/redux/slices/toastSlice"; // Import showErrorToast
 
 ChartJS.register(
   CategoryScale,
@@ -64,6 +65,7 @@ const PimpinanDashboard: React.FC = () => {
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
+  const dispatch = useAppDispatch(); // Initialize dispatch
 
   const fetchData = async () => {
     try {
@@ -119,7 +121,14 @@ const PimpinanDashboard: React.FC = () => {
       );
       setBatchKadaluarsa(batchKadaluarsaData);
     } catch (err: any) {
-      setError(err.message || "Error fetching data");
+      const errorMessage = err.message || "Error fetching data";
+      setError(errorMessage);
+      
+      // Dispatch the error toast using Redux
+      dispatch(showErrorToast({
+        message: errorMessage,
+        isDarkMode: isDarkMode,
+      }));
     }
   };
 
@@ -185,7 +194,7 @@ const PimpinanDashboard: React.FC = () => {
     ],
   };
 
-    const formatCurrency = (value: number): string => {
+  const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
@@ -199,11 +208,6 @@ const PimpinanDashboard: React.FC = () => {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Pimpinan
       </h1>
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
-          {error}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         {/* Row 1: a, b, c */}

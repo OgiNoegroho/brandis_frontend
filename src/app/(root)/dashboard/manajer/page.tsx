@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import {
   FaWarehouse,
@@ -20,6 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
+import { showErrorToast } from "@/redux/slices/toastSlice";
 
 const DashboardManajer: React.FC = () => {
   const [gudangData, setGudangData] = useState<any[]>([]);
@@ -32,9 +33,9 @@ const DashboardManajer: React.FC = () => {
   const [totalPengembalianProduk, setTotalPengembalianProduk] = useState<
     number | null
   >(null);
-  const [error, setError] = useState<string | null>(null);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const dispatch = useAppDispatch();
 
   const fetchData = async () => {
     try {
@@ -45,7 +46,7 @@ const DashboardManajer: React.FC = () => {
         "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang",
         { headers }
       );
-      if (!gudangRes.ok) throw new Error("Failed to fetch total stock data");
+      if (!gudangRes.ok) throw new Error("Gagal memuat data stok gudang.");
       const gudangData = await gudangRes.json();
       setGudangData(Array.isArray(gudangData) ? gudangData : []);
 
@@ -54,7 +55,8 @@ const DashboardManajer: React.FC = () => {
         "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang",
         { headers }
       );
-      if (!stokGudangRes.ok) throw new Error("Failed to fetch total stock sum");
+      if (!stokGudangRes.ok)
+        throw new Error("Gagal memuat jumlah total stok gudang.");
       const stokGudangData = await stokGudangRes.json();
       setTotalStokGudang(stokGudangData[0]?.total_stock || 0);
 
@@ -63,8 +65,7 @@ const DashboardManajer: React.FC = () => {
         "https://brandis-backend.vercel.app/api/pimpinan/batchKadaluarsa",
         { headers }
       );
-      if (!kadaluarsaRes.ok)
-        throw new Error("Failed to fetch expiring batches");
+      if (!kadaluarsaRes.ok) throw new Error("Gagal memuat batch kadaluarsa.");
       const kadaluarsaData = await kadaluarsaRes.json();
       setBatchKadaluarsa(kadaluarsaData[0]?.total_batch_kadaluarsa || 0);
 
@@ -74,7 +75,7 @@ const DashboardManajer: React.FC = () => {
         { headers }
       );
       if (!diproduksiRes.ok)
-        throw new Error("Failed to fetch monthly production data");
+        throw new Error("Gagal memuat data batch diproduksi bulan ini.");
       const diproduksiData = await diproduksiRes.json();
       setBatchDiproduksiBulanIni(diproduksiData[0]?.batch_diproduksi || 0);
 
@@ -83,7 +84,7 @@ const DashboardManajer: React.FC = () => {
         "https://brandis-backend.vercel.app/api/manajer/stokRendahDiGudang",
         { headers }
       );
-      if (!stokRendahRes.ok) throw new Error("Failed to fetch low stock items");
+      if (!stokRendahRes.ok) throw new Error("Gagal memuat stok rendah.");
       const stokRendahData = await stokRendahRes.json();
       setStokRendahGudang(Array.isArray(stokRendahData) ? stokRendahData : []);
 
@@ -93,18 +94,26 @@ const DashboardManajer: React.FC = () => {
         { headers }
       );
       if (!pengembalianRes.ok)
-        throw new Error("Failed to fetch returned products data");
+        throw new Error("Gagal memuat data produk yang dikembalikan.");
       const pengembalianData = await pengembalianRes.json();
       setTotalPengembalianProduk(
         pengembalianData[0]?.total_produk_dikembalikan || 0
       );
     } catch (err: any) {
-      setError(err.message || "An unknown error occurred");
+      // Show error toast
+      dispatch(
+        showErrorToast({
+          message: err.message || "Terjadi kesalahan saat memuat data.",
+          isDarkMode: false,
+        })
+      );
     }
   };
 
   useEffect(() => {
-    fetchData();
+    if (token) {
+      fetchData();
+    }
   }, [token]);
 
   return (
@@ -112,10 +121,9 @@ const DashboardManajer: React.FC = () => {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Manajer
       </h1>
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Cards for Summary Data */}
         <Card className="shadow-lg">
           <CardHeader className="flex flex-col items-center">
             <FaWarehouse className="text-4xl text-blue-600 mb-2" />
@@ -138,7 +146,6 @@ const DashboardManajer: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-        {/* Batch Diproduksi Bulan Ini */}
         <Card className="shadow-lg">
           <CardHeader className="flex flex-col items-center">
             <FaPlusSquare className="text-4xl text-green-500 mb-2" />
@@ -153,7 +160,6 @@ const DashboardManajer: React.FC = () => {
           </CardHeader>
         </Card>
 
-        {/* Total Pengembalian Produk */}
         <Card className="shadow-lg">
           <CardHeader className="flex flex-col items-center">
             <FaUndo className="text-4xl text-yellow-500 mb-2" />
@@ -167,8 +173,38 @@ const DashboardManajer: React.FC = () => {
         </Card>
       </div>
 
-      {/* Low Stock Table */}
+      {/* Data Tables */}
       <div className="mt-8">
+        <Card className="shadow-lg mb-8">
+          <CardHeader className="flex items-center">
+            <FaWarehouse className="text-xl mr-2 text-gray-600" />
+            <h2 className="text-xl font-semibold">Data Gudang</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Warehouse Data Table">
+              <TableHeader>
+                <TableColumn>Nama Barang</TableColumn>
+                <TableColumn>Jumlah Stok</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {gudangData.length > 0 ? (
+                  gudangData.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{item.product_name}</TableCell>
+                      <TableCell>{item.total_stock}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell>No data available</TableCell>
+                    <TableCell>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+
         <Card className="shadow-lg">
           <CardHeader className="flex items-center">
             <FaWarehouse className="text-xl mr-2 text-gray-600" />

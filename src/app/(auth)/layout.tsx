@@ -1,13 +1,11 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/redux/hooks";
 import "@/styles/globals.css";
 
 const LogInLayout = ({ children }: { children: React.ReactNode }) => {
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
-  const pathname = usePathname();
 
   useEffect(() => {
     if (isDarkMode) {

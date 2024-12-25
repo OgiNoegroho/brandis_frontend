@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { FaWarehouse, FaArrowDown, FaTrophy, FaUndo } from "react-icons/fa";
 import {
@@ -15,6 +15,7 @@ import {
   TableRow,
   TableHeader,
 } from "@nextui-org/react";
+import { showErrorToast } from "@/redux/slices/toastSlice";
 
 const Pemasaran: React.FC = () => {
   const [totalStokOutlet, setTotalStokOutlet] = useState<any[]>([]);
@@ -24,6 +25,7 @@ const Pemasaran: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const dispatch = useAppDispatch();
 
   const fetchData = async () => {
     try {
@@ -52,7 +54,17 @@ const Pemasaran: React.FC = () => {
       setProdukDikembalikan(responses[3]);
     } catch (err: any) {
       console.error("Error fetching data:", err);
-      setError(err.message || "Error fetching data");
+      const errorMessage = err.message || "Error fetching data";
+
+      // Dispatch error toast notification
+      dispatch(
+        showErrorToast({
+          message: errorMessage,
+          isDarkMode: false,
+        })
+      );
+
+      setError(errorMessage); // Optionally display the error message within the component
     }
   };
 

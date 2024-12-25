@@ -3,8 +3,9 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
-import { setToken } from "@/redux/slices/authSlice"; // Use Redux Toolkit slice
-import { Button, Card, Input } from "@nextui-org/react"; // Import NextUI Button
+import { setToken } from "@/redux/slices/authSlice"; // Redux Toolkit slice
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice"; // Import toast actions
+import { Button, Card, Input } from "@nextui-org/react";
 import { Eye, EyeOff } from "lucide-react";
 
 const LogIn = () => {
@@ -14,8 +15,7 @@ const LogIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,15 +39,29 @@ const LogIn = () => {
 
       const data = await response.json();
 
-      // Dispatch action to save token in Redux store and local storage
+      // Dispatch token to Redux store
       dispatch(setToken(data.token));
+
+      // Show success toast
+      dispatch(
+        showSuccessToast({
+          message: "Login berhasil! Anda akan diarahkan ke dashboard.",
+          isDarkMode: false, // Change based on your theme
+        })
+      );
 
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
-      setError("Invalid credentials, please try again.");
+      // Show error toast
+      dispatch(
+        showErrorToast({
+          message: "Login gagal. Silakan cek kembali kredensial Anda.",
+          isDarkMode: false, // Change based on your theme
+        })
+      );
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false); // Stop loading
     }
   };
 
@@ -83,12 +97,6 @@ const LogIn = () => {
               Silakan masukkan kredensial Anda
             </p>
           </div>
-
-          {error && (
-            <div className="bg-red-50 text-red-800 p-4 rounded-lg text-sm">
-              {error}
-            </div>
-          )}
 
           <form
             onSubmit={handleSubmit}
