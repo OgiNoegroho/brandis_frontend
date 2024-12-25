@@ -291,8 +291,8 @@ const Outlet = () => {
 
   return (
     <div className="pl-12">
-      <h1 className="text-2xl font-bold mb-2">Outlet</h1>
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Outlet</h1>
         <Button
           variant="flat"
           color="success"
@@ -442,6 +442,11 @@ const Outlet = () => {
                 Apakah Anda yakin ingin menghapus outlet{" "}
                 <strong>{selectedOutlet.nama}</strong>? Tindakan ini tidak dapat
                 dibatalkan.
+              </p>
+              <p className="text-red-600 italic mt-2">
+                <strong>Catatan:</strong> Outlet yang telah digunakan dalam
+                transaksi atau memiliki data terkait mungkin tidak dapat dihapus
+                untuk menjaga integritas data.
               </p>
             </ModalBody>
             <ModalFooter>

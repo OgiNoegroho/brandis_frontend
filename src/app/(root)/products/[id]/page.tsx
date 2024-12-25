@@ -400,18 +400,32 @@ const ProductDetail = () => {
         onClose={() => setShowDeleteConfirmation(false)}
       >
         <ModalContent>
-          <ModalHeader>Confirm Delete</ModalHeader>
+          <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
           <ModalBody>
             <p className="text-gray-700">
-              Are you sure you want to delete this product?
+              Apakah Anda yakin ingin menghapus produk ini?
+            </p>
+            <p className="text-red-600 italic mt-2">
+              <strong>Catatan:</strong> Produk yang telah digunakan dalam proses
+              produksi atau transaksi mungkin tidak dapat dihapus untuk menjaga
+              integritas data.
             </p>
           </ModalBody>
           <ModalFooter>
-            <Button onPress={() => setShowDeleteConfirmation(false)}>
-              Cancel
+            <Button
+              onPress={() => setShowDeleteConfirmation(false)}
+              color="default"
+              variant="flat"
+            >
+              Batal
             </Button>
-            <Button onPress={handleDelete} disabled={loading} color="danger">
-              Confirm
+            <Button
+              onPress={handleDelete}
+              disabled={loading}
+              color="danger"
+              variant="flat"
+            >
+              Hapus
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -440,7 +454,7 @@ const ProductDetail = () => {
           </ModalBody>
           <ModalFooter>
             <Button onPress={() => setShowImageUploadModal(false)}>
-              Cancel
+              Batal
             </Button>
           </ModalFooter>
         </ModalContent>

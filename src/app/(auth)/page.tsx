@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
 import { setToken } from "@/redux/slices/authSlice"; // Use Redux Toolkit slice
-import { Button } from "@nextui-org/react"; // Import NextUI Button
+import { Button, Card, Input } from "@nextui-org/react"; // Import NextUI Button
+import { Eye, EyeOff } from "lucide-react";
 
 const LogIn = () => {
   const dispatch = useAppDispatch();
@@ -48,88 +49,116 @@ const LogIn = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 responsive-margin">
-      <div className="w-full max-w-[1600px] bg-white shadow-lg rounded-lg overflow-hidden flex flex-col lg:flex-row">
-        <div className="w-full lg:w-1/2 bg-gray-200 border-r-4 border-gray-300 flex flex-col items-center justify-center px-8 sm:px-16 py-12 sm:py-20">
-          <img
-            src="/brandis_logo.png"
-            alt="Brand Logo"
-            className="h-28 sm:h-36 lg:h-48 mb-4 sm:mb-6"
-          />
-          <p className="text-gray-700 text-center text-sm sm:text-lg lg:text-xl font-semibold mt-4">
-            Selamat Datang di Brandis!
-          </p>
+    <div className="h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 py-12 sm:py-16">
+      <Card className="w-full max-w-[350px] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] xl:max-w-[900px] 2xl:max-w-[1000px] bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col lg:flex-row">
+        {/* Brand Section */}
+        <div className="w-full lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 lg:p-12">
+          <div className="flex flex-col items-center space-y-6">
+            <img
+              src="/brandis_logo.png"
+              alt="Brand Logo"
+              className="h-20 sm:h-24 lg:h-36 object-contain"
+            />
+            <div className="text-center space-y-4">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+                Selamat Datang di Brandis!
+              </h1>
+              <p className="text-lg text-blue-100 max-w-md">
+                Kelola bisnis Anda dengan lebih efisien dan profesional
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="w-full lg:w-1/2 px-8 sm:px-16 py-12 sm:py-20 flex flex-col justify-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 text-center mb-6 sm:mb-8">
-            Login
-          </h2>
-          <p className="text-sm sm:text-base lg:text-lg text-gray-600 text-center mb-4 sm:mb-6">
-            Silahkan Login Disini
-          </p>
-          {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+        {/* Login Form Section */}
+        <div className="w-full lg:w-1/2 p-6 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-center space-y-8">
+          <div className="text-center">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+              Login ke Akun Anda
+            </h2>
+            <p className="mt-2 text-gray-600">
+              Silakan masukkan kredensial Anda
+            </p>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 text-red-800 p-4 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           <form
             onSubmit={handleSubmit}
-            className="space-y-4 sm:space-y-6"
+            className="space-y-6"
             autoComplete="off"
           >
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-600"
-              >
-                Email
-              </label>
-              <input
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Email</label>
+              <Input
                 type="email"
-                id="email"
-                name="email" // Add name attribute for form handling and accessibility
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email" // Add autocomplete attribute
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                autoComplete="email"
+                className="w-full px-4 py-2 text-gray-900"
+                placeholder="nama@perusahaan.com"
               />
             </div>
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-600"
-              >
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">
                 Password
               </label>
               <div className="relative">
-                <input
+                <Input
                   type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password" // Add name attribute for form handling and accessibility
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  autoComplete="current-password" // Add autocomplete attribute for password
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  autoComplete="current-password"
+                  className="w-full px-4 py-2 text-gray-900 pr-10"
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
                 </button>
               </div>
             </div>
+
+            <div className="flex items-center justify-between">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">Ingat saya</span>
+              </label>
+              <a
+                href="#"
+                className="text-sm font-medium text-blue-600 hover:text-blue-500"
+              >
+                Lupa password?
+              </a>
+            </div>
+
             <Button
               type="submit"
-              className="w-full"
-              color="primary"
-              size="lg"
-              isLoading={isLoading} // Pass isLoading prop to show spinner
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition-colors"
+              disabled={isLoading}
             >
-              Login
+              {isLoading ? "Memproses..." : "Login"}
             </Button>
           </form>
         </div>
-      </div>
+      </Card>
     </div>
   );
 };

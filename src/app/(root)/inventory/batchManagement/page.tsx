@@ -10,7 +10,16 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Divider,
+  Input,
   Button,
+  Select,
+  SelectItem,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@nextui-org/react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
@@ -46,6 +55,8 @@ const BatchManagement: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [batchToDelete, setBatchToDelete] = useState<Batch | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,7 +121,9 @@ const BatchManagement: React.FC = () => {
     }
   };
 
-  // Add a new batch
+  // Add Batch and Edit Batch Modal Handlers
+
+  // Add the batch after successful creation
   const addBatch = async () => {
     setLoading(true);
     setError(null);
@@ -135,10 +148,11 @@ const BatchManagement: React.FC = () => {
       if (!response.ok) throw new Error("Failed to add batch");
 
       const newBatch = await response.json();
-      setBatches([...batches, newBatch]);
+      setBatches([...batches, newBatch]); // Update state with new batch
       dispatch(
         showSuccessToast({ message: "Batch berhasil ditambahkan", isDarkMode })
       );
+      fetchBatches(); // Refresh the table with the latest data
       closeAddModal();
     } catch (error) {
       console.error(error);
@@ -153,7 +167,7 @@ const BatchManagement: React.FC = () => {
     }
   };
 
-  // Update Batch
+  // Update the batch after successful edit
   const updateBatch = async () => {
     if (!selectedBatch) return;
 
@@ -188,6 +202,7 @@ const BatchManagement: React.FC = () => {
       dispatch(
         showSuccessToast({ message: "Batch berhasil diperbarui", isDarkMode })
       );
+      fetchBatches(); // Refresh the table with updated data
       closeEditModal();
     } catch (error) {
       console.error(error);
@@ -202,39 +217,48 @@ const BatchManagement: React.FC = () => {
     }
   };
 
-  // Delete Batch
-  const deleteBatch = async (batchId: number) => {
-    if (window.confirm("Are you sure you want to delete this batch?")) {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(
-          `http://localhost:3008/api/inventory/batch/${batchId}`,
-          {
-            method: "DELETE",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  // Handle the deletion process
+  const handleDeleteBatch = (batch: Batch) => {
+    setBatchToDelete(batch);
+    setShowDeleteModal(true);
+  };
 
-        if (!response.ok) throw new Error("Failed to delete batch");
+  const confirmDeleteBatch = async () => {
+    if (!batchToDelete) return;
 
-        setBatches(batches.filter((batch) => batch.batch_id !== batchId));
-        dispatch(
-          showSuccessToast({ message: "Batch berhasil dihapus", isDarkMode })
-        );
-      } catch (error) {
-        console.error(error);
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred"
-        );
-        dispatch(
-          showErrorToast({ message: "Gagal menghapus batch", isDarkMode })
-        );
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(
+        `http://localhost:3008/api/inventory/batch/${batchToDelete.batch_id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to delete batch");
+
+      setBatches(
+        batches.filter((batch) => batch.batch_id !== batchToDelete.batch_id)
+      );
+      dispatch(
+        showSuccessToast({ message: "Batch berhasil dihapus", isDarkMode })
+      );
+      fetchBatches(); // Refresh the table after deletion
+      setShowDeleteModal(false); // Close the delete modal
+    } catch (error) {
+      console.error(error);
+      setError(
+        error instanceof Error ? error.message : "An unknown error occurred"
+      );
+      dispatch(
+        showErrorToast({ message: "Gagal menghapus batch", isDarkMode })
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -331,233 +355,253 @@ const BatchManagement: React.FC = () => {
 
   return (
     <div className="p-12 sm:p-8 bg-gray-50 min-h-screen">
-      {/* Error Handling */}
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-          role="alert"
-        >
-          <span className="block sm:inline">{error}</span>
-        </div>
-      )}
-
-      {/* Header */}
-      <h2 className="text-2xl font-bold mb-2">Manajemen Batch</h2>
-
-      {/* Add Product Button */}
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold">Manajemen Batch</h2>
         <Button
           className=""
           color="success"
           variant="flat"
-          onClick={handleAddNewBatch}
+          onPress={handleAddNewBatch}
           disabled={loading}
         >
           Tambah Batch
         </Button>
       </div>
-
       {/* Add Batch Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Tambah Batch</h3>
-            <div className="space-y-4">
-              {/* Removed Nama Batch input */}
-              <label className="text-sm">Produk</label>
-              <select
-                value={productId}
-                onChange={(e) => setProductId(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              >
-                <option value="">Pilih Produk</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.nama}
-                  </option>
-                ))}
-              </select>
-              <label className="text-sm">Tanggal Produksi</label>
-              <input
-                type="date"
-                value={productionDate}
-                onChange={(e) => setProductionDate(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              />
-              <label className="text-sm">Kuantitas</label>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              />
-              <label className="text-sm">Tanggal Kedaluwarsa</label>
-              <input
-                type="date"
-                value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              />
-              <div className="mt-6 flex justify-end gap-3">
+      <Modal isOpen={showAddModal} onClose={closeAddModal}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Tambah Batch
+              </ModalHeader>
+              <ModalBody>
+                <div className="space-y-4">
+                  <Select
+                    label="Produk"
+                    placeholder="Pilih Produk"
+                    value={productId}
+                    onChange={(e) => setProductId(e.target.value)}
+                    isDisabled={loading}
+                  >
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        {product.nama}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <Input
+                    type="date"
+                    label="Tanggal Produksi"
+                    value={productionDate}
+                    onChange={(e) => setProductionDate(e.target.value)}
+                    isDisabled={loading}
+                  />
+                  <Input
+                    type="number"
+                    label="Kuantitas"
+                    value={String(quantity)}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    isDisabled={loading}
+                  />
+                  <Input
+                    type="date"
+                    label="Tanggal Kedaluwarsa"
+                    value={expirationDate}
+                    onChange={(e) => setExpirationDate(e.target.value)}
+                    isDisabled={loading}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
                 <Button
-                  className=""
                   color="danger"
                   variant="flat"
-                  onClick={closeAddModal}
-                  disabled={loading}
+                  onPress={onClose}
+                  isDisabled={loading}
                 >
                   Batal
                 </Button>
-                <Button
-                  className=""
-                  color="primary"
-                  variant="flat"
-                  onClick={addBatch}
-                  disabled={loading}
-                >
+                <Button color="primary" onPress={addBatch} isDisabled={loading}>
                   {loading ? "Saving..." : "Simpan"}
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
       {/* Edit Batch Modal */}
-      {showEditModal && selectedBatch && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-96">
-            <h3 className="text-lg font-semibold mb-4">Edit Batch</h3>
-            <div className="space-y-4">
-              {/* Removed Nama Batch input */}
-              <label className="text-sm">Produk</label>
-              <select
-                value={productId}
-                onChange={(e) => setProductId(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              >
-                <option value="">Pilih Produk</option>
-                {products.map((product) => (
-                  <option key={product.id} value={product.id}>
-                    {product.nama}
-                  </option>
-                ))}
-              </select>
-              <label className="text-sm">Tanggal Produksi</label>
-              <input
-                type="date"
-                value={productionDate}
-                onChange={(e) => setProductionDate(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              />
-              <label className="text-sm">Kuantitas</label>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              />
-              <label className="text-sm">Tanggal Kedaluwarsa</label>
-              <input
-                type="date"
-                value={expirationDate}
-                onChange={(e) => setExpirationDate(e.target.value)}
-                className="border rounded-lg p-2 w-full"
-                disabled={loading}
-              />
-              <div className="mt-6 flex justify-end gap-3">
+      <Modal isOpen={showEditModal && !!selectedBatch} onClose={closeEditModal}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Edit Batch
+              </ModalHeader>
+              <ModalBody>
+                <div className="space-y-4">
+                  <Select
+                    label="Produk"
+                    placeholder="Pilih Produk"
+                    value={productId}
+                    onChange={(e) => setProductId(e.target.value)}
+                    isDisabled={loading}
+                  >
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        {product.nama}
+                      </SelectItem>
+                    ))}
+                  </Select>
+                  <Input
+                    type="date"
+                    label="Tanggal Produksi"
+                    value={productionDate}
+                    onChange={(e) => setProductionDate(e.target.value)}
+                    isDisabled={loading}
+                  />
+                  <Input
+                    type="number"
+                    label="Kuantitas"
+                    value={String(quantity)}
+                    onChange={(e) => setQuantity(Number(e.target.value))}
+                    isDisabled={loading}
+                  />
+                  <Input
+                    type="date"
+                    label="Tanggal Kedaluwarsa"
+                    value={expirationDate}
+                    onChange={(e) => setExpirationDate(e.target.value)}
+                    isDisabled={loading}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
                 <Button
-                  className=""
                   color="danger"
                   variant="flat"
-                  onClick={closeEditModal}
-                  disabled={loading}
+                  onPress={onClose}
+                  isDisabled={loading}
                 >
                   Batal
                 </Button>
                 <Button
-                  className=""
                   color="primary"
-                  variant="flat"
-                  onClick={updateBatch}
-                  disabled={loading}
+                  onPress={updateBatch}
+                  isDisabled={loading}
                 >
                   {loading ? "Updating..." : "Simpan"}
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showDetailModal && selectedBatch && (
-        <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-[500px]">
-            <h3 className="text-xl font-semibold mb-6"> Detail Batch</h3>
-            <div className="w-full">
-              <table className="w-full">
-                <tbody>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">Batch ID</td>
-                    <td className="px-4 py-2">{selectedBatch.batch_id}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">Nama Batch</td>
-                    <td className="px-4 py-2">{selectedBatch.nama_batch}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">Nama Produk</td>
-                    <td className="px-4 py-2">{selectedBatch.nama_produk}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">
-                      Tanggal Produksi
-                    </td>
-                    <td className="px-4 py-2">{selectedBatch.dibuat_pada}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">
-                      Tanggal Kedaluwarsa
-                    </td>
-                    <td className="px-4 py-2">
-                      {selectedBatch.tanggal_kadaluarsa}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">Kuantitas</td>
-                    <td className="px-4 py-2">{selectedBatch.kuantitas}</td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-semibold">
-                      Terakhir Diperbarui
-                    </td>
-                    <td className="px-4 py-2">
-                      {selectedBatch.diperbarui_pada}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div className="mt-6 flex justify-end">
-                <Button
-                  className=""
-                  color="primary"
-                  variant="flat"
-                  onClick={closeDetailModal}
-                >
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      {/* Detail Batch Modal */}
+      <Modal
+        isOpen={showDetailModal && !!selectedBatch}
+        onClose={closeDetailModal}
+        size="lg"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Detail Batch
+              </ModalHeader>
+              <ModalBody>
+                <Table aria-label="Batch details table">
+                  <TableHeader>
+                    <TableColumn>Field</TableColumn>
+                    <TableColumn>Value</TableColumn>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow>
+                      <TableCell className="font-semibold">Batch ID</TableCell>
+                      <TableCell>{selectedBatch?.batch_id}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-semibold">
+                        Nama Batch
+                      </TableCell>
+                      <TableCell>{selectedBatch?.nama_batch}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-semibold">
+                        Nama Produk
+                      </TableCell>
+                      <TableCell>{selectedBatch?.nama_produk}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-semibold">
+                        Tanggal Produksi
+                      </TableCell>
+                      <TableCell>{selectedBatch?.dibuat_pada}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-semibold">
+                        Tanggal Kedaluwarsa
+                      </TableCell>
+                      <TableCell>{selectedBatch?.tanggal_kadaluarsa}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-semibold">Kuantitas</TableCell>
+                      <TableCell>{selectedBatch?.kuantitas}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell className="font-semibold">
+                        Terakhir Diperbarui
+                      </TableCell>
+                      <TableCell>{selectedBatch?.diperbarui_pada}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="primary" onPress={onClose}>
                   Selesai
                 </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+
+      {/* Delete Batch Modal */}
+      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <ModalContent>
+          <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
+          <ModalBody>
+            <p>
+              Apakah Anda yakin ingin menghapus batch{" "}
+              <strong>{batchToDelete?.nama_batch}</strong>?
+            </p>
+            <p style={{ color: "red", fontStyle: "italic" }}>
+              <strong>Catatan:</strong> Batch yang telah digunakan dalam proses
+              produksi atau transaksi mungkin tidak dapat dihapus untuk
+              memastikan integritas data.
+            </p>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="default"
+              variant="flat"
+              onPress={() => setShowDeleteModal(false)}
+              isDisabled={loading}
+            >
+              Batal
+            </Button>
+            <Button
+              color="danger"
+              variant="flat"
+              onPress={confirmDeleteBatch}
+              isDisabled={loading}
+            >
+              Hapus
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       {/* Batch Table */}
       <Card>
@@ -593,7 +637,7 @@ const BatchManagement: React.FC = () => {
                             className=""
                             color="primary"
                             variant="flat"
-                            onClick={() => fetchBatchDetails(batch.batch_id)}
+                            onPress={() => fetchBatchDetails(batch.batch_id)}
                             disabled={loading}
                           >
                             Detail
@@ -602,7 +646,7 @@ const BatchManagement: React.FC = () => {
                             className=""
                             color="warning"
                             variant="flat"
-                            onClick={() => handleEditBatch(batch)}
+                            onPress={() => handleEditBatch(batch)}
                             disabled={loading}
                           >
                             Edit
@@ -611,7 +655,7 @@ const BatchManagement: React.FC = () => {
                             className=""
                             color="danger"
                             variant="flat"
-                            onClick={() => deleteBatch(batch.batch_id)}
+                            onPress={() => handleDeleteBatch(batch)}
                             disabled={loading}
                           >
                             Hapus
