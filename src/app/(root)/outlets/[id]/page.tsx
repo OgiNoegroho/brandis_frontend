@@ -38,7 +38,9 @@ const OutletDetail = () => {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch(`http://localhost:3008/api/outlet/${id}`);
+        const response = await fetch(
+          `https://brandis-backend.vercel.app/api/outlet/${id}`
+        );
 
         if (!response.ok) {
           throw new Error(`Failed to fetch outlet details: ${response.status}`);

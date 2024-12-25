@@ -139,7 +139,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
   // Fetch products from API
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:3008/api/products", {
+      const response = await fetch("https://brandis-backend.vercel.app/api/products", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -160,7 +160,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     setLoadingBatches(true);
     try {
       const response = await fetch(
-        `http://localhost:3008/api/inventory/${productId}`,
+        `https://brandis-backend.vercel.app/api/inventory/${productId}`,
         {
           method: "GET",
           headers: {
@@ -217,7 +217,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       }
 
       const response = await fetch(
-        `http://localhost:3008/api/distribusi/${outletIdNumber}`,
+        `https://brandis-backend.vercel.app/api/distribusi/${outletIdNumber}`,
         {
           method: "GET",
           headers: {
@@ -253,7 +253,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
   const handleViewDetail = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:3008/api/distribusi/detail/${distributionId}`,
+        `https://brandis-backend.vercel.app/api/distribusi/detail/${distributionId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -289,7 +289,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
   const handleViewFaktur = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:3008/api/faktur/${distributionId}`,
+        `https://brandis-backend.vercel.app/api/faktur/${distributionId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -473,7 +473,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     };
 
     try {
-      const response = await fetch("http://localhost:3008/api/distribusi", {
+      const response = await fetch("https://brandis-backend.vercel.app/api/distribusi", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

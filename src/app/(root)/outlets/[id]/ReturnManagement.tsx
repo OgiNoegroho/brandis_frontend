@@ -92,7 +92,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     const fetchProducts = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3008/api/returns/${outletId}/products`,
+          `https://brandis-backend.vercel.app/api/returns/${outletId}/products`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -123,7 +123,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
       try {
         const response = await fetch(
-          `http://localhost:3008/api/returns/${newReturn.productId}/batches`,
+          `https://brandis-backend.vercel.app/api/returns/${newReturn.productId}/batches`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -150,7 +150,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     const fetchReturnHistory = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3008/api/returns/${outletId}`,
+          `https://brandis-backend.vercel.app/api/returns/${outletId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -241,7 +241,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
       console.log("Return Request Body:", returnRequestBody);
 
-      const response = await fetch("http://localhost:3008/api/returns", {
+      const response = await fetch("https://brandis-backend.vercel.app/api/returns", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

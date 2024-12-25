@@ -22,13 +22,16 @@ const LogIn = () => {
     setIsLoading(true); // Start loading
 
     try {
-      const response = await fetch("http://localhost:3008/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await fetch(
+        "https://brandis-backend.vercel.app/api/users/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Login failed. Please check your credentials.");

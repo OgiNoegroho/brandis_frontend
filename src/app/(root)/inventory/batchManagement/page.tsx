@@ -73,7 +73,7 @@ const BatchManagement: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        "http://localhost:3008/api/inventory/batch",
+        "https://brandis-backend.vercel.app/api/inventory/batch",
         {
           method: "GET",
           headers: {
@@ -102,7 +102,7 @@ const BatchManagement: React.FC = () => {
   // Fetch Products
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:3008/api/products", {
+      const response = await fetch("https://brandis-backend.vercel.app/api/products", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -129,7 +129,7 @@ const BatchManagement: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        "http://localhost:3008/api/inventory/batch",
+        "https://brandis-backend.vercel.app/api/inventory/batch",
         {
           method: "POST",
           headers: {
@@ -175,7 +175,7 @@ const BatchManagement: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:3008/api/inventory/batch/${selectedBatch.batch_id}`,
+        `https://brandis-backend.vercel.app/api/inventory/batch/${selectedBatch.batch_id}`,
         {
           method: "PUT",
           headers: {
@@ -230,7 +230,7 @@ const BatchManagement: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:3008/api/inventory/batch/${batchToDelete.batch_id}`,
+        `https://brandis-backend.vercel.app/api/inventory/batch/${batchToDelete.batch_id}`,
         {
           method: "DELETE",
           headers: {
@@ -268,7 +268,7 @@ const BatchManagement: React.FC = () => {
     setError(null);
     try {
       const response = await fetch(
-        `http://localhost:3008/api/inventory/batch/${batchId}`,
+        `https://brandis-backend.vercel.app/api/inventory/batch/${batchId}`,
         {
           method: "GET",
           headers: {

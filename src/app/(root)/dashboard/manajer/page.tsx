@@ -42,7 +42,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Total Stock in Warehouse
       const gudangRes = await fetch(
-        "http://localhost:3008/api/pimpinan/totalStokGudang",
+        "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang",
         { headers }
       );
       if (!gudangRes.ok) throw new Error("Failed to fetch total stock data");
@@ -51,7 +51,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Summed-up Stock
       const stokGudangRes = await fetch(
-        "http://localhost:3008/api/pimpinan/totalStokGudang",
+        "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang",
         { headers }
       );
       if (!stokGudangRes.ok) throw new Error("Failed to fetch total stock sum");
@@ -60,7 +60,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Expiring Batches
       const kadaluarsaRes = await fetch(
-        "http://localhost:3008/api/pimpinan/batchKadaluarsa",
+        "https://brandis-backend.vercel.app/api/pimpinan/batchKadaluarsa",
         { headers }
       );
       if (!kadaluarsaRes.ok)
@@ -70,7 +70,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Batches Produced This Month
       const diproduksiRes = await fetch(
-        "http://localhost:3008/api/manajer/batchDiproduksiBulanIni",
+        "https://brandis-backend.vercel.app/api/manajer/batchDiproduksiBulanIni",
         { headers }
       );
       if (!diproduksiRes.ok)
@@ -80,7 +80,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Low Stock Items
       const stokRendahRes = await fetch(
-        "http://localhost:3008/api/manajer/stokRendahDiGudang",
+        "https://brandis-backend.vercel.app/api/manajer/stokRendahDiGudang",
         { headers }
       );
       if (!stokRendahRes.ok) throw new Error("Failed to fetch low stock items");
@@ -89,7 +89,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Total Returned Products
       const pengembalianRes = await fetch(
-        "http://localhost:3008/api/manajer/totalPengembalianProduk",
+        "https://brandis-backend.vercel.app/api/manajer/totalPengembalianProduk",
         { headers }
       );
       if (!pengembalianRes.ok)

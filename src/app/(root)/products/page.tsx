@@ -64,7 +64,7 @@ const ProductsPage = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:3008/api/products", {
+        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -138,7 +138,7 @@ const ProductsPage = () => {
           formData.append("image", newProduct.image);
         }
 
-        const response = await fetch("http://localhost:3008/api/products", {
+        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

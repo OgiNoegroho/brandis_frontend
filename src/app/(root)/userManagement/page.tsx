@@ -59,7 +59,7 @@ const UserManagement: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:3008/api/users/", {
+        const response = await fetch("https://brandis-backend.vercel.app/api/users/", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +109,7 @@ const UserManagement: React.FC = () => {
      }
 
      const response = await fetch(
-       `http://localhost:3008/api/users/${selectedUser.email}`,
+       `https://brandis-backend.vercel.app/api/users/${selectedUser.email}`,
        {
          method: "PUT",
          headers: {
@@ -168,7 +168,7 @@ const UserManagement: React.FC = () => {
        setIsLoading(true);
 
        const response = await fetch(
-         "http://localhost:3008/api/users/register",
+         "https://brandis-backend.vercel.app/api/users/register",
          {
            method: "POST",
            headers: {
@@ -239,7 +239,7 @@ const UserManagement: React.FC = () => {
   const handleDeleteUser = async () => {
     if (selectedUser) {
       const response = await fetch(
-        `http://localhost:3008/api/users/${selectedUser.email}`,
+        `https://brandis-backend.vercel.app/api/users/${selectedUser.email}`,
         {
           method: "DELETE",
           headers: {

@@ -64,7 +64,7 @@ const Outlet = () => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch("http://localhost:3008/api/outlet", {
+      const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -132,7 +132,7 @@ const Outlet = () => {
 
       if (!token) throw new Error("Authentication token not found");
 
-      const response = await fetch("http://localhost:3008/api/outlet", {
+      const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +188,7 @@ const Outlet = () => {
       if (!token) throw new Error("Authentication token not found");
 
       const response = await fetch(
-        `http://localhost:3008/api/outlet/${selectedOutlet.id}`,
+        `https://brandis-backend.vercel.app/api/outlet/${selectedOutlet.id}`,
         {
           method: "PUT",
           headers: {
@@ -240,7 +240,7 @@ const Outlet = () => {
     try {
       if (!token) throw new Error("Authentication token not found");
 
-      const response = await fetch(`http://localhost:3008/api/outlet/${id}`, {
+      const response = await fetch(`https://brandis-backend.vercel.app/api/outlet/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

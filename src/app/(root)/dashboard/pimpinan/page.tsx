@@ -75,7 +75,7 @@ const PimpinanDashboard: React.FC = () => {
       };
 
       const totalPenjualanData = await fetchAPI(
-        "http://localhost:3008/api/pimpinan/totalPenjualan"
+        "https://brandis-backend.vercel.app/api/pimpinan/totalPenjualan"
       );
       const totalSales = totalPenjualanData.reduce(
         (acc: number, item: any) => acc + parseFloat(item.total_sales),
@@ -90,7 +90,7 @@ const PimpinanDashboard: React.FC = () => {
       );
 
       const totalDistribusiData = await fetchAPI(
-        "http://localhost:3008/api/pimpinan/totalDistribusi"
+        "https://brandis-backend.vercel.app/api/pimpinan/totalDistribusi"
       );
       const totalDistribution = totalDistribusiData.reduce(
         (acc: number, item: any) => acc + parseFloat(item.total_distribution),
@@ -105,17 +105,17 @@ const PimpinanDashboard: React.FC = () => {
       );
 
       const topProdukTerlarisData = await fetchAPI(
-        "http://localhost:3008/api/pimpinan/topProdukTerlaris"
+        "https://brandis-backend.vercel.app/api/pimpinan/topProdukTerlaris"
       );
       setTopProdukTerlaris(topProdukTerlarisData);
 
       const totalStokGudangData = await fetchAPI(
-        "http://localhost:3008/api/pimpinan/totalStokGudang"
+        "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang"
       );
       setTotalStokGudang(totalStokGudangData);
 
       const batchKadaluarsaData = await fetchAPI(
-        "http://localhost:3008/api/pimpinan/batchKadaluarsa"
+        "https://brandis-backend.vercel.app/api/pimpinan/batchKadaluarsa"
       );
       setBatchKadaluarsa(batchKadaluarsaData);
     } catch (err: any) {

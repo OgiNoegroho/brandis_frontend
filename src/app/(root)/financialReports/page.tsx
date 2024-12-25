@@ -34,12 +34,15 @@ const FinancialReports = () => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch("http://localhost:3008/api/outlet", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        "https://brandis-backend.vercel.app/api/outlet",
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -91,7 +91,7 @@ const FinancialReportsDetails: React.FC = () => {
 
   const fetchOutletDetails = async () => {
     try {
-      const response = await fetch(`http://localhost:3008/api/outlet/${id}`, {
+      const response = await fetch(`https://brandis-backend.vercel.app/outlet/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Failed to fetch outlet details");
@@ -116,7 +116,7 @@ const FinancialReportsDetails: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3008/api/distribusi/${id}`,
+        `https://brandis-backend.vercel.app/distribusi/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -136,7 +136,7 @@ const FinancialReportsDetails: React.FC = () => {
   const handleViewDetail = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:3008/api/distribusi/detail/${distributionId}`,
+        `https://brandis-backend.vercel.app/distribusi/detail/${distributionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -158,7 +158,7 @@ const FinancialReportsDetails: React.FC = () => {
   const handleViewFaktur = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `http://localhost:3008/api/faktur/${distributionId}`,
+        `https://brandis-backend.vercel.app/faktur/${distributionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -186,7 +186,7 @@ const FinancialReportsDetails: React.FC = () => {
       const encodedFakturId = encodeURIComponent(fakturId);
 
       const response = await fetch(
-        `http://localhost:3008/api/faktur/${encodedFakturId}/jumlah-dibayar`,
+        `https://brandis-backend.vercel.app/faktur/${encodedFakturId}/jumlah-dibayar`,
         {
           method: "PUT",
           headers: {

@@ -65,7 +65,7 @@ const StockManagement: React.FC = () => {
       }
 
       try {
-        const response = await fetch("http://localhost:3008/api/inventory", {
+        const response = await fetch("https://brandis-backend.vercel.app/api/inventory", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -99,7 +99,7 @@ const StockManagement: React.FC = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3008/api/inventory/${produkId}`,
+        `https://brandis-backend.vercel.app/api/inventory/${produkId}`,
         {
           method: "GET",
           headers: {

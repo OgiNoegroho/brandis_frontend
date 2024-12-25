@@ -37,9 +37,12 @@ const Pemasaran: React.FC = () => {
 
       const responses = await Promise.all(
         endpoints.map((endpoint) =>
-          fetch(`http://localhost:3008/api/pemasaran/${endpoint}`, {
-            headers,
-          }).then((res) => res.json())
+          fetch(
+            `https://brandis-backend.vercel.app/api/pemasaran/${endpoint}`,
+            {
+              headers,
+            }
+          ).then((res) => res.json())
         )
       );
 

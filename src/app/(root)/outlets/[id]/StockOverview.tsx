@@ -81,7 +81,7 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
     const fetchStockData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3008/api/outlet/${outletId}/stock-overview`,
+          `https://brandis-backend.vercel.app/api/outlet/${outletId}/stock-overview`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -104,7 +104,7 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
     const fetchProductSelectData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3008/api/outlet/${outletId}/stock-overview-without-price`,
+          `https://brandis-backend.vercel.app/api/outlet/${outletId}/stock-overview-without-price`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
     const fetchSalesData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3008/api/sales/${outletId}`,
+          `https://brandis-backend.vercel.app/api/sales/${outletId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
           ],
         };
 
-        const response = await fetch(`http://localhost:3008/api/sales`, {
+        const response = await fetch(`https://brandis-backend.vercel.app/api/sales`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

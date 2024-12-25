@@ -93,7 +93,7 @@ const ProductDetail = () => {
 
       try {
         const response = await fetch(
-          `http://localhost:3008/api/products/${id}`,
+          `https://brandis-backend.vercel.app/api/products/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -144,7 +144,7 @@ const ProductDetail = () => {
 
     try {
       const response = await fetch(
-        `http://localhost:3008/api/products/${id}/replace-image`,
+        `https://brandis-backend.vercel.app/api/products/${id}/replace-image`,
         {
           method: "PUT",
           headers: {
@@ -183,7 +183,7 @@ const ProductDetail = () => {
     if (!token || !product) return;
 
     try {
-      const response = await fetch(`http://localhost:3008/api/products/${id}`, {
+      const response = await fetch(`https://brandis-backend.vercel.app/api/products/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -216,7 +216,7 @@ const ProductDetail = () => {
     if (!token || !product) return;
 
     try {
-      const response = await fetch(`http://localhost:3008/api/products/${id}`, {
+      const response = await fetch(`https://brandis-backend.vercel.app/api/products/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
