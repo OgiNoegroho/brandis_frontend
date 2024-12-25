@@ -203,13 +203,13 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
     <div className="space-y-6">
       {/* Stock Overview Table */}
       <div>
-        <h3 className="text-lg font-semibold">Stock Overview</h3>
+        <h3 className="text-lg font-semibold">Stok Outlet</h3>
         <Divider className="my-2" />
         <Table aria-label="Stock levels for each product">
           <TableHeader>
-            <TableColumn>Product Name</TableColumn>
-            <TableColumn>Price per Product</TableColumn>
-            <TableColumn>Quantity</TableColumn>
+            <TableColumn>Nama Produk</TableColumn>
+            <TableColumn>Harga per Produk</TableColumn>
+            <TableColumn>Kuantitas</TableColumn>
           </TableHeader>
           <TableBody>
             {stockData.map((item) => (
@@ -217,7 +217,9 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
                 <TableCell>{item.nama_produk}</TableCell>
                 <TableCell>
                   {item.harga_produk
-                    ? `Rp. ${item.harga_produk.toLocaleString("id-ID")}`
+                    ? `Rp. ${Math.floor(item.harga_produk).toLocaleString(
+                        "id-ID"
+                      )}`
                     : "N/A"}
                 </TableCell>
                 <TableCell>{item.kuantitas_stok}</TableCell>
@@ -229,16 +231,16 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
 
       {/* Sales Data Table */}
       <div>
-        <h3 className="text-lg font-semibold">Sales Overview</h3>
+        <h3 className="text-lg font-semibold">Penjualan Outlet</h3>
         <Divider className="my-2" />
         <Button color="primary" onClick={() => setModalVisible(true)}>
           Add Sale
         </Button>
         <Table aria-label="Sales transactions">
           <TableHeader>
-            <TableColumn>Product Name</TableColumn>
-            <TableColumn>Quantity Sold</TableColumn>
-            <TableColumn>Sale Date</TableColumn>
+            <TableColumn>Nama Produk</TableColumn>
+            <TableColumn>Kuantitas Terjual</TableColumn>
+            <TableColumn>Tanggal Penjualan</TableColumn>
           </TableHeader>
           <TableBody>
             {salesData.map((sale, index) => (

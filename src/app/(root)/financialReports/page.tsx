@@ -103,7 +103,8 @@ const FinancialReports = () => {
               <div className="flex space-x-2">
                 <Button
                   onClick={() => handleViewDetails(outlet.id)}
-                  className="bg-blue-500 text-white py-1 px-3 rounded-lg"
+                  color="primary"
+                  variant="flat"
                 >
                   Detail
                 </Button>

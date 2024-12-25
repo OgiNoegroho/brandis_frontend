@@ -41,6 +41,7 @@ const ProductsPage = () => {
     image: null as File | null,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
@@ -48,7 +49,7 @@ const ProductsPage = () => {
   // Assuming you have a way to determine if the user is in dark mode
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
-  ); // Replace with actual dark mode state if necessary
+  );
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -124,6 +125,8 @@ const ProductsPage = () => {
     }
 
     if (newProduct.nama && newProduct.harga) {
+      setIsLoading(true); // Start loading
+
       try {
         const formData = new FormData();
         formData.append("nama", newProduct.nama);
@@ -170,6 +173,8 @@ const ProductsPage = () => {
             isDarkMode,
           })
         );
+      } finally {
+        setIsLoading(false); // End loading
       }
     } else {
       dispatch(
@@ -186,9 +191,8 @@ const ProductsPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Produk</h2>
         <Button
-          className=""
           variant="flat"
-          color="primary"
+          color="success"
           onPress={() => setIsModalOpen(true)}
         >
           Tambah Produk
@@ -309,14 +313,21 @@ const ProductsPage = () => {
           </ModalBody>
           <ModalFooter>
             <Button
-              color="secondary"
+              color="danger"
+              variant="flat"
               onPress={() => setIsModalOpen(false)}
               className="mr-2"
             >
               Batal
             </Button>
-            <Button color="primary" onPress={handleAddProduct}>
-              Tambah Produk
+            <Button
+              color="primary"
+              variant="flat"
+              onPress={handleAddProduct}
+              isLoading={isLoading}
+              disabled={isLoading}
+            >
+              Simpan
             </Button>
           </ModalFooter>
         </ModalContent>

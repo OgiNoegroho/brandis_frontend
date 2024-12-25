@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppDispatch } from "@/redux/hooks";
 import { setToken } from "@/redux/slices/authSlice"; // Use Redux Toolkit slice
+import { Button } from "@nextui-org/react"; // Import NextUI Button
 
 const LogIn = () => {
   const dispatch = useAppDispatch();
@@ -13,9 +14,11 @@ const LogIn = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false); // Loading state
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
 
     try {
       const response = await fetch("http://localhost:3008/api/users/login", {
@@ -39,6 +42,8 @@ const LogIn = () => {
       router.push("/dashboard");
     } catch (error) {
       setError("Invalid credentials, please try again.");
+    } finally {
+      setIsLoading(false); // End loading
     }
   };
 
@@ -113,12 +118,15 @@ const LogIn = () => {
                 </button>
               </div>
             </div>
-            <button
+            <Button
               type="submit"
-              className="w-full bg-blue-500 text-white py-4 rounded-lg hover:bg-blue-600 transition"
+              className="w-full"
+              color="primary"
+              size="lg"
+              isLoading={isLoading} // Pass isLoading prop to show spinner
             >
               Login
-            </button>
+            </Button>
           </form>
         </div>
       </div>

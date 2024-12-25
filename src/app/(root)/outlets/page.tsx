@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAppSelector } from "@/redux/hooks"; // Importing the useAppSelector hook
-import { RootState } from "@/redux/store"; // Importing RootState to access global state
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 import {
   Modal,
   ModalContent,
@@ -13,7 +14,6 @@ import {
   Button,
   Input,
 } from "@nextui-org/react";
-
 
 interface Outlet {
   id: string;
@@ -30,12 +30,20 @@ interface FormData {
 
 const Outlet = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
+
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedOutlet, setSelectedOutlet] = useState<Outlet | null>(null);
+
   const [formData, setFormData] = useState<FormData>({
     outletName: "",
     address: "",
@@ -47,10 +55,6 @@ const Outlet = () => {
     phone: "",
   });
 
-  // Access the token from Redux state
-  const token = useAppSelector((state: RootState) => state.auth.token);
-
-  // Fetch outlets with proper error handling
   const fetchOutlets = async () => {
     try {
       setIsLoading(true);
@@ -75,6 +79,12 @@ const Outlet = () => {
       setOutlets(data);
     } catch (error) {
       setError(error instanceof Error ? error.message : "An error occurred");
+      dispatch(
+        showErrorToast({
+          message: "Gagal memuat data outlet",
+          isDarkMode,
+        })
+      );
       console.error("Error fetching outlets:", error);
     } finally {
       setIsLoading(false);
@@ -83,9 +93,8 @@ const Outlet = () => {
 
   useEffect(() => {
     fetchOutlets();
-  }, [token]); // Re-fetch outlets if token changes
+  }, [token]);
 
-  // Form validation
   const validateForm = (data: FormData): string[] => {
     const errors: string[] = [];
     if (!data.outletName.trim()) errors.push("Outlet name is required");
@@ -112,13 +121,17 @@ const Outlet = () => {
     try {
       const errors = validateForm(formData);
       if (errors.length > 0) {
-        alert(errors.join("\n"));
+        dispatch(
+          showErrorToast({
+            message: errors.join("\n"),
+            isDarkMode,
+          })
+        );
         return;
       }
 
       if (!token) throw new Error("Authentication token not found");
 
-      // In the handleAddOutlet
       const response = await fetch("http://localhost:3008/api/outlet", {
         method: "POST",
         headers: {
@@ -126,9 +139,9 @@ const Outlet = () => {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          nama: formData.outletName, // map outletName to nama
-          alamat: formData.address, // map address to alamat
-          nomor_telepon: formData.phone, // map phone to nomor_telepon
+          nama: formData.outletName,
+          alamat: formData.address,
+          nomor_telepon: formData.phone,
         }),
       });
 
@@ -140,9 +153,19 @@ const Outlet = () => {
       setOutlets((prevOutlets) => [...prevOutlets, newOutlet]);
       setShowCreateModal(false);
       setFormData({ outletName: "", address: "", phone: "" });
-      alert("Outlet successfully added!");
+      dispatch(
+        showSuccessToast({
+          message: "Outlet berhasil ditambahkan",
+          isDarkMode,
+        })
+      );
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to add outlet");
+      dispatch(
+        showErrorToast({
+          message: "Gagal menambahkan outlet",
+          isDarkMode,
+        })
+      );
       console.error("Error adding outlet:", error);
     }
   };
@@ -153,13 +176,17 @@ const Outlet = () => {
     try {
       const errors = validateForm(editFormData);
       if (errors.length > 0) {
-        alert(errors.join("\n"));
+        dispatch(
+          showErrorToast({
+            message: errors.join("\n"),
+            isDarkMode,
+          })
+        );
         return;
       }
 
       if (!token) throw new Error("Authentication token not found");
 
-      // In the handleEditOutlet
       const response = await fetch(
         `http://localhost:3008/api/outlet/${selectedOutlet.id}`,
         {
@@ -169,9 +196,9 @@ const Outlet = () => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            nama: editFormData.outletName, // map outletName to nama
-            alamat: editFormData.address, // map address to alamat
-            nomor_telepon: editFormData.phone, // map phone to nomor_telepon
+            nama: editFormData.outletName,
+            alamat: editFormData.address,
+            nomor_telepon: editFormData.phone,
           }),
         }
       );
@@ -188,9 +215,19 @@ const Outlet = () => {
       );
       setShowEditModal(false);
       setSelectedOutlet(null);
-      alert("Outlet successfully updated!");
+      dispatch(
+        showSuccessToast({
+          message: "Outlet berhasil diperbarui",
+          isDarkMode,
+        })
+      );
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to update outlet");
+      dispatch(
+        showErrorToast({
+          message: "Gagal memperbarui outlet",
+          isDarkMode,
+        })
+      );
       console.error("Error editing outlet:", error);
     }
   };
@@ -217,9 +254,19 @@ const Outlet = () => {
       setOutlets((prevOutlets) =>
         prevOutlets.filter((outlet) => outlet.id !== id)
       );
-      alert("Outlet successfully deleted!");
+      dispatch(
+        showSuccessToast({
+          message: "Outlet berhasil dihapus",
+          isDarkMode,
+        })
+      );
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Failed to delete outlet");
+      dispatch(
+        showErrorToast({
+          message: "Gagal menghapus outlet",
+          isDarkMode,
+        })
+      );
       console.error("Error deleting outlet:", error);
     }
   };
@@ -287,7 +334,10 @@ const Outlet = () => {
                   Edit
                 </Button>
                 <Button
-                  onPress={() => handleDeleteOutlet(outlet.id)}
+                  onPress={() => {
+                    setSelectedOutlet(outlet);
+                    setShowDeleteModal(true);
+                  }}
                   variant="flat"
                   color="danger"
                 >
@@ -324,10 +374,14 @@ const Outlet = () => {
             />
           </ModalBody>
           <ModalFooter>
-            <Button color="danger" onPress={() => setShowCreateModal(false)}>
+            <Button
+              color="danger"
+              variant="flat"
+              onPress={() => setShowCreateModal(false)}
+            >
               Batal
             </Button>
-            <Button color="primary" onPress={handleAddOutlet}>
+            <Button color="primary" variant="flat" onPress={handleAddOutlet}>
               Tambah
             </Button>
           </ModalFooter>
@@ -360,11 +414,53 @@ const Outlet = () => {
               />
             </ModalBody>
             <ModalFooter>
-              <Button color="danger" onPress={() => setShowEditModal(false)}>
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={() => setShowEditModal(false)}
+              >
                 Batal
               </Button>
-              <Button color="primary" onPress={handleEditOutlet}>
+              <Button color="primary" variant="flat" onPress={handleEditOutlet}>
                 Simpan
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Delete Modal */}
+      {showDeleteModal && selectedOutlet && (
+        <Modal
+          isOpen={showDeleteModal}
+          onClose={() => setShowDeleteModal(false)}
+        >
+          <ModalContent>
+            <ModalHeader>Hapus Outlet</ModalHeader>
+            <ModalBody>
+              <p>
+                Apakah Anda yakin ingin menghapus outlet{" "}
+                <strong>{selectedOutlet.nama}</strong>? Tindakan ini tidak dapat
+                dibatalkan.
+              </p>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="default"
+                variant="flat"
+                onPress={() => setShowDeleteModal(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={() => {
+                  handleDeleteOutlet(selectedOutlet.id);
+                  setShowDeleteModal(false);
+                }}
+              >
+                Hapus
               </Button>
             </ModalFooter>
           </ModalContent>

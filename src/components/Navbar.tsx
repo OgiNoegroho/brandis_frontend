@@ -6,7 +6,7 @@ import {
   setIsSidebarCollapsed,
 } from "@/redux/slices/globalSlice";
 import { removeToken } from "@/redux/slices/authSlice";
-import { Bell, Menu, Moon, Sun, Search, Settings, LogOut } from "lucide-react";
+import { Menu, Moon, Sun, Settings, LogOut } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import {
   Dropdown,
@@ -61,22 +61,18 @@ const Navbar = () => {
 
   return (
     <div className="flex justify-between items-center w-full mb-7 transition-all duration-300 px-4 md:px-0">
-      {/* LEFT SIDE - MENU AND SEARCH */}
-      <div className="flex items-center space-x-4 w-full">
+      {/* LEFT SIDE - MENU */}
+      <div className="flex items-center space-x-4">
         <button
-          className={`
-            p-3 rounded-full transition-all duration-300 
-            ${
-              isMobile
-                ? isSidebarCollapsed
-                  ? "ml-7"
-                  : "ml-64"
-                : isSidebarCollapsed
-                ? "ml-0"
-                : "-ml-2"
-            }
-            ${isMenuClicked ? "bg-blue-200" : "bg-gray-100 hover:bg-blue-100"}
-          `}
+          className={`p-3 rounded-full transition-all duration-300 ${
+            isMobile
+              ? isSidebarCollapsed
+                ? "ml-7"
+                : "ml-64"
+              : isSidebarCollapsed
+              ? "ml-0"
+              : "-ml-2"
+          } ${isMenuClicked ? "bg-blue-200" : "bg-gray-100 hover:bg-blue-100"}`}
           onClick={handleMenuClick}
           aria-label="Toggle Sidebar"
         >
@@ -86,41 +82,13 @@ const Navbar = () => {
             }`}
           />
         </button>
-
-        <div
-          className={`
-            relative flex-grow max-w-md
-            md:block 
-            ${isSidebarCollapsed ? "block" : "hidden"}
-            md:block
-          `}
-        >
-          <input
-            type="search"
-            placeholder="Start typing to search groups & products"
-            className="pl-10 pr-4 py-2 w-full border-2 border-gray-300 bg-white rounded-lg focus:outline-none focus:border-blue-500"
-          />
-          <div className="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-            <Search className="text-gray-500" size={20} />
-          </div>
-        </div>
       </div>
 
       {/* RIGHT SIDE */}
       <div className="flex items-center space-x-5">
-        <div className="hidden md:flex items-center space-x-5">
-          {/* Notifications */}
-          <div className="relative">
-            <Bell className="cursor-pointer text-gray-500" size={24} />
-            <span className="absolute -top-2 -right-2 inline-flex items-center justify-center px-[0.4rem] py-1 text-xs font-semibold leading-none text-red-100 bg-red-400 rounded-full">
-              3
-            </span>
-          </div>
-
-          {/* User Role Display */}
-          <div className="flex items-center space-x-3 cursor-pointer">
-            <span className="font-semibold">{userRole ?? "Guest"}</span>
-          </div>
+        {/* User Role Display */}
+        <div className="hidden md:flex items-center space-x-3 cursor-pointer">
+          <span className="font-semibold">{userRole ?? "Guest"}</span>
         </div>
 
         {/* Dropdown Menu for Settings */}

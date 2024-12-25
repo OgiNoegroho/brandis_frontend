@@ -7,6 +7,15 @@ import {
   TableRow,
   TableCell,
   Divider,
+  Input,
+  Button,
+  Select,
+  SelectItem,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@nextui-org/react";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
@@ -256,32 +265,31 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     }
   };
 
-
-
   return (
     <div>
       <h3 className="text-lg font-semibold">Return Management</h3>
       <Divider className="mb-2" />
 
       <div className="flex justify-end mb-4">
-        <button
+        <Button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200"
+          color="success"
+          variant="flat"
         >
-          Add New Return
-        </button>
+          Retur Produk
+        </Button>
       </div>
 
       {returnData.length > 0 && (
         <>
           <Table aria-label="Unsaved Returns">
             <TableHeader>
-              <TableColumn>Product Name</TableColumn>
+              <TableColumn>Nama Produk</TableColumn>
               <TableColumn>Batch</TableColumn>
-              <TableColumn>Quantity</TableColumn>
-              <TableColumn>Reason</TableColumn>
-              <TableColumn>Return Date</TableColumn>
-              <TableColumn>Action</TableColumn>
+              <TableColumn>Kuantitas</TableColumn>
+              <TableColumn>Alasan</TableColumn>
+              <TableColumn>Tanggal Retur</TableColumn>
+              <TableColumn>Aksi</TableColumn>
             </TableHeader>
             <TableBody>
               {returnData.map((item) => (
@@ -292,16 +300,17 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
                   <TableCell>{item.reason}</TableCell>
                   <TableCell>{formatDate(item.return_date)}</TableCell>
                   <TableCell>
-                    <button
+                    <Button
                       onClick={() =>
                         setReturnData((prev) =>
                           prev.filter((r) => r.return_id !== item.return_id)
                         )
                       }
-                      className="text-red-600 hover:underline"
+                      color="danger"
+                      variant="light"
                     >
-                      Remove
-                    </button>
+                      Hapus
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -310,157 +319,149 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
           {returnData.length > 0 && (
             <div className="flex justify-end mt-4">
-              <button
+              <Button
                 onClick={handleSaveReturns}
-                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                color="primary"
+                variant="flat"
               >
                 Save Returns
-              </button>
+              </Button>
             </div>
           )}
         </>
       )}
 
-     
       <h3 className="text-lg font-semibold">Return History</h3>
-      <Divider className="mb-2"/>
-        <Table>
-          <TableHeader>
-            <TableColumn>Product Name</TableColumn>
-            <TableColumn>Batch</TableColumn>
-            <TableColumn>Quantity</TableColumn>
-            <TableColumn>Reason</TableColumn>
-            <TableColumn>Return Date</TableColumn>
-          </TableHeader>
-          <TableBody>
-            {returnHistory.map((item) => (
-              <TableRow key={item.return_id}>
-                <TableCell>{item.product_name}</TableCell>
-                <TableCell>{item.batch_id}</TableCell>
-                <TableCell>{item.quantity}</TableCell>
-                <TableCell>{item.reason}</TableCell>
-                <TableCell>
-                  {formatDate(item.return_date)} {/* Format date */}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      
+      <Divider className="mb-2" />
+      <Table>
+        <TableHeader>
+          <TableColumn>Nama Produk</TableColumn>
+          <TableColumn>Batch</TableColumn>
+          <TableColumn>Kuantitas</TableColumn>
+          <TableColumn>Alasan</TableColumn>
+          <TableColumn>Tanggal Pengembalian</TableColumn>
+        </TableHeader>
+        <TableBody>
+          {returnHistory.map((item) => (
+            <TableRow key={item.return_id}>
+              <TableCell>{item.product_name}</TableCell>
+              <TableCell>{item.batch_id}</TableCell>
+              <TableCell>{item.quantity}</TableCell>
+              <TableCell>{item.reason}</TableCell>
+              <TableCell>
+                {formatDate(item.return_date)} {/* Format date */}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="border-b px-6 py-4">
-              <h3 className="text-xl font-semibold">Add New Return</h3>
-            </div>
-            <form
-              key="return-form"
-              className="px-6 py-4 space-y-4"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <div>
-                <label className="block text-sm font-medium">
-                  Product Name
-                </label>
-                <select
-                  value={newReturn.productId || ""}
-                  onChange={(e) => {
-                    const value = e.target.value
-                      ? Number(e.target.value)
-                      : null;
-                    setNewReturn((prev) => ({
-                      ...prev,
-                      productId: value,
-                      batchId: null, // Reset batch when product changes
-                    }));
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        size="md"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Retur Produk
+              </ModalHeader>
+              <ModalBody>
+                <div className="space-y-4">
+                  <Select
+                    label="Nama Produk"
+                    placeholder="Select Product"
+                    value={newReturn.productId?.toString() || ""}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        ? Number(e.target.value)
+                        : null;
+                      setNewReturn((prev) => ({
+                        ...prev,
+                        productId: value,
+                        batchId: null, // Reset batch when product changes
+                      }));
+                    }}
+                  >
+                    {[
+                      ...new Map(
+                        products.map((product) => [product.product_id, product])
+                      ).values(),
+                    ].map((uniqueProduct) => (
+                      <SelectItem
+                        key={uniqueProduct.product_id}
+                        value={uniqueProduct.product_id}
+                      >
+                        {uniqueProduct.product_name}
+                      </SelectItem>
+                    ))}
+                  </Select>
+
+                  <Select
+                    label="Batch"
+                    placeholder="Select Batch"
+                    value={newReturn.batchId?.toString() || ""}
+                    onChange={(e) => {
+                      setNewReturn((prev) => ({
+                        ...prev,
+                        batchId: Number(e.target.value),
+                      }));
+                    }}
+                  >
+                    {batches.map((batch) => (
+                      <SelectItem key={batch.batch_id} value={batch.batch_id}>
+                        {`${batch.batch_name} - ${batch.kuantitas}`}
+                      </SelectItem>
+                    ))}
+                  </Select>
+
+                  <Input
+                    type="number"
+                    label="Kuantitas"
+                    placeholder="Enter quantity"
+                    value={newReturn.quantity.toString()}
+                    min={1}
+                    onChange={(e) => {
+                      setNewReturn((prev) => ({
+                        ...prev,
+                        quantity: Number(e.target.value) || 0,
+                      }));
+                    }}
+                  />
+
+                  <Input
+                    label="Alasan"
+                    placeholder="Enter return reason"
+                    value={newReturn.reason}
+                    onChange={(e) => {
+                      setNewReturn((prev) => ({
+                        ...prev,
+                        reason: e.target.value,
+                      }));
+                    }}
+                  />
+                </div>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Tutup
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={() => {
+                    handleAddReturn();
+                    onClose();
                   }}
-                  className="w-full p-2 border rounded-md"
                 >
-                  <option value="">Select Product</option>
-                  {products.map((product, index) => (
-                    <option
-                      key={`${product.product_id}-${index}`}
-                      value={product.product_id}
-                    >
-                      {product.product_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium">Batch</label>
-                <select
-                  value={newReturn.batchId || ""}
-                  onChange={(e) =>
-                    setNewReturn((prev) => ({
-                      ...prev,
-                      batchId: Number(e.target.value),
-                    }))
-                  }
-                  className="w-full p-2 border rounded-md"
-                >
-                  <option value="">Select Batch</option>
-                  {batches.map((batch) => (
-                    <option key={batch.batch_id} value={batch.batch_id}>
-                      {batch.batch_name} - {batch.kuantitas}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium">Quantity</label>
-                <input
-                  type="number"
-                  value={newReturn.quantity}
-                  onChange={(e) =>
-                    setNewReturn((prev) => ({
-                      ...prev,
-                      quantity: Number(e.target.value) || 0, // Convert input to a number
-                    }))
-                  }
-                  className="w-full p-2 border rounded-md"
-                  min="1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium">Reason</label>
-                <input
-                  type="text"
-                  value={newReturn.reason}
-                  onChange={(e) =>
-                    setNewReturn((prev) => ({
-                      ...prev,
-                      reason: e.target.value,
-                    }))
-                  }
-                  className="w-full p-2 border rounded-md"
-                />
-              </div>
-
-              <div className="flex justify-end mt-4 space-x-4">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  onClick={handleAddReturn}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Add Return
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                  Tambah
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

@@ -52,6 +52,14 @@ const PimpinanDashboard: React.FC = () => {
   const [distribusiData, setDistribusiData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const formatDate = (date: string | Date): string => {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
@@ -326,14 +334,7 @@ const PimpinanDashboard: React.FC = () => {
                     <TableRow key={index}>
                       <TableCell>{batch.product_name}</TableCell>
                       <TableCell>
-                        {new Date(batch.expiry_date).toLocaleDateString(
-                          "id-ID",
-                          {
-                            day: "numeric",
-                            month: "long",
-                            year: "numeric",
-                          }
-                        )}
+                        {formatDate(batch.expiry_date)}
                       </TableCell>
                     </TableRow>
                   ))

@@ -6,8 +6,16 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  Divider,
+  Input,
   Button,
-  Divider
+  Select,
+  SelectItem,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "@nextui-org/react";
 import { useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
@@ -504,7 +512,8 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       <div className="flex justify-end mb-4">
         <Button
           onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          color="success"
+          variant="flat"
         >
           Tambah Produk
         </Button>
@@ -530,7 +539,8 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
                   <TableCell>
                     <Button
                       onClick={() => handleRemoveProduct(index)}
-                      className="text-red-500 hover:text-red-700"
+                      color="danger"
+                      variant="light"
                     >
                       Hapus
                     </Button>
@@ -551,7 +561,8 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
                   );
                 }
               }}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+              color="primary"
+              variant="flat"
             >
               Simpan Distribusi
             </Button>
@@ -560,155 +571,130 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       )}
 
       {isSaveModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="border-b px-6 py-4">
-              <h3 className="text-xl font-semibold text-gray-900">
-                Detail Faktur
-              </h3>
-            </div>
-            <div className="px-6 py-4 space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Tanggal Faktur
-                </label>
-                <input
-                  type="date"
-                  value={invoiceDate}
-                  onChange={(e) => setInvoiceDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Tenggat Waktu
-                </label>
-                <input
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Status Pembayaran
-                </label>
-                <select
-                  value={paymentStatus}
-                  onChange={(e) =>
-                    setPaymentStatus(e.target.value as "Lunas" | "Menunggu")
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="Lunas">Lunas</option>
-                  <option value="Menunggu">Menunggu</option>
-                </select>
-              </div>
-              <div className="flex justify-end space-x-4 mt-4">
-                <Button
-                  onClick={() => setIsSaveModalOpen(false)}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-                >
-                  Batal
-                </Button>
-                <Button
-                  onClick={handleSaveDistribution}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                >
-                  Simpan
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Modal
+          isOpen={isSaveModalOpen}
+          onClose={() => setIsSaveModalOpen(false)}
+          closeButton
+        >
+          <ModalContent>
+            <ModalHeader>
+              <h3 className="text-xl font-semibold">Detail Faktur</h3>
+            </ModalHeader>
+            <ModalBody>
+              <Input
+                type="date"
+                label="Tanggal Faktur"
+                value={invoiceDate}
+                onChange={(e) => setInvoiceDate(e.target.value)}
+              />
+              <Input
+                type="date"
+                label="Tenggat Waktu"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+              />
+              <Select
+                label="Status Pembayaran"
+                placeholder="Pilih Status"
+                value={paymentStatus}
+                onChange={(e) =>
+                  setPaymentStatus(e.target.value as "Lunas" | "Menunggu")
+                }
+              >
+                <SelectItem key="Lunas" value="Lunas">
+                  Lunas
+                </SelectItem>
+                <SelectItem key="Menunggu" value="Menunggu">
+                  Menunggu
+                </SelectItem>
+              </Select>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={() => setIsSaveModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                color="primary"
+                variant="flat"
+                onPress={handleSaveDistribution}
+              >
+                Simpan
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
 
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
-            <div className="border-b px-6 py-4">
-              <h3 className="text-xl font-semibold text-gray-900">
-                Tambah Produk Baru
-              </h3>
-            </div>
-
-            <div className="px-6 py-4 space-y-4">
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Nama Produk
-                </label>
-                <select
-                  value={selectedProduct}
-                  onChange={(e) => handleProductChange(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Pilih Produk</option>
-                  {products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.nama}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Nama Batch
-                </label>
-                <select
-                  value={selectedBatch}
-                  onChange={(e) => handleBatchChange(e.target.value)}
-                  disabled={!selectedProduct || loadingBatches}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">
-                    {loadingBatches ? "Memuat batches..." : "Pilih Batch"}
-                  </option>
-                  {batches.map((batch) => (
-                    <option
-                      key={batch.batch_id}
-                      value={batch.batch_id.toString()}
-                    >
-                      {batch.nama_batch} (kuantitas: {batch.kuantitas_batch},
-                      kadaluarsa:{" "}
-                      {new Date(batch.tanggal_kadaluarsa).toLocaleDateString()})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  Kuantitas
-                </label>
-                <input
-                  type="number"
-                  value={newProduct.quantity}
-                  onChange={(e) =>
-                    setNewProduct({ ...newProduct, quantity: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                />
-              </div>
-
-              <div className="flex justify-end space-x-4 mt-4">
-                <Button
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-                >
-                  Batal
-                </Button>
-                <Button
-                  onClick={handleAddProduct}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                  Tambah
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          closeButton
+        >
+          <ModalContent>
+            <ModalHeader>
+              <h3 className="text-xl font-semibold">Tambah Produk Baru</h3>
+            </ModalHeader>
+            <ModalBody>
+              <Select
+                label="Nama Produk"
+                placeholder="Pilih Produk"
+                value={selectedProduct}
+                onChange={(e) => handleProductChange(e.target.value)}
+              >
+                {products.map((product) => (
+                  <SelectItem key={product.id} value={product.id}>
+                    {product.nama}
+                  </SelectItem>
+                ))}
+              </Select>
+              <Select
+                label="Nama Batch"
+                placeholder={
+                  loadingBatches ? "Memuat batches..." : "Pilih Batch"
+                }
+                value={selectedBatch}
+                disabled={!selectedProduct || loadingBatches}
+                onChange={(e) => handleBatchChange(e.target.value)}
+              >
+                {batches.map((batch) => (
+                  <SelectItem
+                    key={batch.batch_id}
+                    value={batch.batch_id.toString()}
+                  >
+                    {batch.nama_batch} (kuantitas: {batch.kuantitas_batch},
+                    kadaluarsa:{" "}
+                    {new Date(batch.tanggal_kadaluarsa).toLocaleDateString()})
+                  </SelectItem>
+                ))}
+              </Select>
+              <Input
+                type="number"
+                label="Kuantitas"
+                value={newProduct.quantity}
+                onChange={(e) =>
+                  setNewProduct({ ...newProduct, quantity: e.target.value })
+                }
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={() => setIsModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button color="primary" variant="flat" onPress={handleAddProduct}>
+                Tambah
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
 
       <h3 className="text-lg font-semibold">Riwayat Distribusi</h3>
@@ -739,13 +725,15 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
                 <div className="flex space-x-2">
                   <Button
                     onClick={() => handleViewDetail(item.distribusi_id)}
-                    className="bg-blue-600 text-white hover:bg-blue-700"
+                    color="primary"
+                    variant="flat"
                   >
                     Detail
                   </Button>
                   <Button
                     onClick={() => handleViewFaktur(item.distribusi_id)}
-                    className="bg-green-600 text-white hover:bg-green-700"
+                    color="success"
+                    variant="flat"
                   >
                     Faktur
                   </Button>
@@ -755,145 +743,163 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
           )}
         </TableBody>
       </Table>
-
+      
       {isDetailModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-4">
-            <div className="flex justify-between items-center border-b pb-2 mb-4">
-              <h3 className="text-xl font-semibold">Detail Distribusi</h3>
+        <Modal
+          isOpen={isDetailModalOpen}
+          onClose={() => setIsDetailModalOpen(false)}
+          aria-labelledby="detail-modal-title"
+        >
+          <ModalContent>
+            <ModalHeader>
+              <h3 id="detail-modal-title" className="text-xl font-semibold">
+                Detail Distribusi
+              </h3>
+            </ModalHeader>
+            <ModalBody>
+              <div className="space-y-4">
+                {detailData?.map((detail) => (
+                  <div key={detail.batch_id} className="space-y-2">
+                    <p>
+                      <strong>Nama Batch:</strong> {detail.batch_name}
+                    </p>
+                    <p>
+                      <strong>Nama Produk:</strong> {detail.product_name}
+                    </p>
+                    <p>
+                      <strong>Kuantitas:</strong> {detail.quantity}
+                    </p>
+                    <Divider />
+                  </div>
+                ))}
+              </div>
+            </ModalBody>
+            <ModalFooter>
               <Button
                 onClick={() => setIsDetailModalOpen(false)}
-                className="text-red-500 hover:text-red-700"
+                color="danger"
+                variant="flat"
               >
                 Tutup
               </Button>
-            </div>
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="border-b text-left px-4 py-2">Nama Batch</th>
-                  <th className="border-b text-left px-4 py-2">Nama Produk</th>
-                  <th className="border-b text-left px-4 py-2">Kuantitas</th>
-                </tr>
-              </thead>
-              <tbody>
-                {detailData?.map((detail) => (
-                  <tr key={detail.batch_id}>
-                    <td className="border-t px-4 py-2">{detail.batch_name}</td>
-                    <td className="border-t px-4 py-2">
-                      {detail.product_name}
-                    </td>
-                    <td className="border-t px-4 py-2">{detail.quantity}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
 
       {isFakturModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-4">
-            <div className="flex justify-between items-center border-b pb-2 mb-4">
-              <h3 className="text-xl font-semibold">Detail Faktur</h3>
+        <Modal
+          isOpen={isFakturModalOpen}
+          onClose={() => setIsFakturModalOpen(false)}
+          aria-labelledby="faktur-modal-title"
+        >
+          <ModalContent>
+            <ModalHeader>
+              <h3 id="faktur-modal-title" className="text-xl font-semibold">
+                Detail Faktur
+              </h3>
+            </ModalHeader>
+            <ModalBody>
+              <div className="space-y-4">
+                <p>
+                  <strong>Nomor Faktur:</strong>{" "}
+                  {fakturData?.[0]?.invoice_number}
+                </p>
+                <p>
+                  <strong>Tanggal Faktur:</strong>{" "}
+                  {formatDate(fakturData?.[0]?.invoice_date)}
+                </p>
+                <p>
+                  <strong>Waktu Tenggat:</strong>{" "}
+                  {formatDate(fakturData?.[0]?.due_date)}
+                </p>
+                <p>
+                  <strong>Nama Outlet:</strong> {fakturData?.[0]?.outlet_name}
+                </p>
+                <p>
+                  <strong>Alamat Outlet:</strong>{" "}
+                  {fakturData?.[0]?.outlet_address}
+                </p>
+
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="border-b text-left px-4 py-2">
+                        Nama Produk
+                      </th>
+                      <th className="border-b text-left px-4 py-2">
+                        kuantitas
+                      </th>
+                      <th className="border-b text-left px-4 py-2">
+                        Harga Satuan
+                      </th>
+                      <th className="border-b text-left px-4 py-2">
+                        Total Harga
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fakturData?.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border-t px-4 py-2">
+                          {item.product_name}
+                        </td>
+                        <td className="border-t px-4 py-2">{item.quantity}</td>
+                        <td className="border-t px-4 py-2">
+                          {Number(item.unit_price).toLocaleString("id-ID", {
+                            minimumFractionDigits: 0,
+                          })}
+                        </td>
+                        <td className="border-t px-4 py-2">
+                          {Number(item.total_price).toLocaleString("id-ID", {
+                            minimumFractionDigits: 0,
+                          })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                <div className="mt-4 space-y-2">
+                  <p>
+                    <strong>Total Harga:</strong>{" "}
+                    {Number(fakturData?.[0]?.grand_total).toLocaleString(
+                      "id-ID",
+                      { minimumFractionDigits: 0 }
+                    )}
+                  </p>
+                  <p>
+                    <strong>Jumlah Dibayar:</strong>{" "}
+                    {Number(fakturData?.[0]?.amount_paid).toLocaleString(
+                      "id-ID",
+                      { minimumFractionDigits: 0 }
+                    )}
+                  </p>
+                  <p>
+                    <strong>Jumlah Tagihan:</strong>{" "}
+                    {Number(fakturData?.[0]?.balance_due).toLocaleString(
+                      "id-ID",
+                      { minimumFractionDigits: 0 }
+                    )}
+                  </p>
+                  <p>
+                    <strong>Status Pembayaran:</strong>{" "}
+                    {fakturData?.[0]?.payment_status}
+                  </p>
+                </div>
+              </div>
+            </ModalBody>
+            <ModalFooter>
               <Button
                 onClick={() => setIsFakturModalOpen(false)}
-                className="text-red-500 hover:text-red-700"
+                color="danger"
+                variant="flat"
               >
                 Close
               </Button>
-            </div>
-            <div className="space-y-2">
-              <p className="mb-2">
-                Nomor Faktur: {fakturData?.[0]?.invoice_number}
-              </p>
-              <p className="mb-2">
-                Tanggal Faktur: {formatDate(fakturData?.[0]?.invoice_date)}
-              </p>
-              <p className="mb-2">
-                Waktu Tenggat: {formatDate(fakturData?.[0]?.due_date)}
-              </p>
-
-              <p className="mb-2">
-                Nama Outlet: {fakturData?.[0]?.outlet_name}
-              </p>
-              <p className="mb-4">
-                Alamat Outlet: {fakturData?.[0]?.outlet_address}
-              </p>
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr>
-                    <th className="border-b text-left px-4 py-2">
-                      Nama Produk
-                    </th>
-                    <th className="border-b text-left px-4 py-2">kuantitas</th>
-                    <th className="border-b text-left px-4 py-2">
-                      Harga Satuan
-                    </th>
-                    <th className="border-b text-left px-4 py-2">
-                      Total Harga
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {fakturData?.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="border-t px-4 py-2">
-                        {item.product_name}
-                      </td>
-                      <td className="border-t px-4 py-2">{item.quantity}</td>
-                      <td className="border-t px-4 py-2">
-                        {Number(item.unit_price).toLocaleString("id-ID", {
-                          minimumFractionDigits: 0,
-                        })}
-                      </td>
-                      <td className="border-t px-4 py-2">
-                        {Number(item.total_price).toLocaleString("id-ID", {
-                          minimumFractionDigits: 0,
-                        })}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              <div className="mt-4 space-y-2">
-                <p>
-                  <strong>Grand Total:</strong>{" "}
-                  {Number(fakturData?.[0]?.grand_total).toLocaleString(
-                    "id-ID",
-                    {
-                      minimumFractionDigits: 0,
-                    }
-                  )}
-                </p>
-                <p>
-                  <strong>Amount Paid:</strong>{" "}
-                  {Number(fakturData?.[0]?.amount_paid).toLocaleString(
-                    "id-ID",
-                    {
-                      minimumFractionDigits: 0,
-                    }
-                  )}
-                </p>
-                <p>
-                  <strong>Balance Due:</strong>{" "}
-                  {Number(fakturData?.[0]?.balance_due).toLocaleString(
-                    "id-ID",
-                    {
-                      minimumFractionDigits: 0,
-                    }
-                  )}
-                </p>
-                <p>
-                  <strong>Status Pembayaran:</strong>{" "}
-                  {fakturData?.[0]?.payment_status}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
     </div>
   );

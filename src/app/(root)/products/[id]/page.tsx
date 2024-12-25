@@ -45,9 +45,14 @@ const ProductDetail = () => {
 
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
-      (state: RootState) => state.global.isDarkMode
-    ); 
+    (state: RootState) => state.global.isDarkMode
+  );
   const dispatch = useAppDispatch(); // Use dispatch hook
+
+   const formatPrice = (price: number): string => {
+     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+  
   const { id } = useParams();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -73,8 +78,12 @@ const ProductDetail = () => {
     const fetchProductDetail = async () => {
       if (!token) {
         setError("No token found. Please log in.");
-        dispatch(showErrorToast({ message: "No token found. Please log in.",
-            isDarkMode, }));
+        dispatch(
+          showErrorToast({
+            message: "No token found. Please log in.",
+            isDarkMode,
+          })
+        );
         return;
       }
 
@@ -244,117 +253,138 @@ const ProductDetail = () => {
     product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">{formData.nama}</h2>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Image Section with Dropdown */}
-        <div className="relative" ref={dropdownRef}>
-          <img
-            src={
-              primaryImage ? primaryImage.url : "/images/default-product.png"
-            }
-            alt={formData.nama}
-            className="w-full h-64 object-cover cursor-pointer rounded-lg shadow-md transition-transform hover:scale-[1.02]"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          />
-
-          {isDropdownOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
-              <div className="py-1" role="menu" aria-orientation="vertical">
-                <a
-                  href={
-                    primaryImage
-                      ? primaryImage.url
-                      : "/images/default-product.png"
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  role="menuitem"
-                >
-                  View Full Image
-                </a>
-                <button
-                  onClick={() => {
-                    setShowImageUploadModal(true);
-                    setIsDropdownOpen(false);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  role="menuitem"
-                >
-                  Replace Image
-                </button>
-              </div>
+    <div className="p-4 sm:p-6">
+      {/* Main Content Grid */}
+      <div className="max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
+          {/* Image Section */}
+          <div className="relative w-full max-w-md mx-auto lg:mx-0">
+            <div className="aspect-square w-full relative">
+              <img
+                src={
+                  primaryImage
+                    ? primaryImage.url
+                    : "/images/default-product.png"
+                }
+                alt={formData.nama}
+                className="w-full h-full object-cover cursor-pointer rounded-lg shadow-md transition-transform hover:scale-[1.02]"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              />
             </div>
-          )}
-        </div>
 
-        {/* Product Information */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold">Product Information</h3>
-          <p className="text-2xl text-blue-600 font-semibold">
-            Rp. {formData.harga.toLocaleString()}
-          </p>
-          <div>
-            <h4 className="font-medium text-gray-900 mb-1">Composition</h4>
-            <p className="text-gray-700">{formData.komposisi}</p>
+            {/* Dropdown Menu */}
+            {isDropdownOpen && (
+              <div
+                className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
+                ref={dropdownRef}
+              >
+                <div className="py-1" role="menu" aria-orientation="vertical">
+                  <a
+                    href={
+                      primaryImage
+                        ? primaryImage.url
+                        : "/images/default-product.png"
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    role="menuitem"
+                  >
+                    View Full Image
+                  </a>
+                  <button
+                    onClick={() => {
+                      setShowImageUploadModal(true);
+                      setIsDropdownOpen(false);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    role="menuitem"
+                  >
+                    Replace Image
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
-          <div>
-            <h4 className="font-medium text-gray-900 mb-1">Description</h4>
-            <p className="text-gray-700">{formData.deskripsi}</p>
+
+          {/* Product Information */}
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold break-words">{formData.nama}</h2>
+            <p className="text-2xl text-blue-600 font-semibold">
+              Rp. {formatPrice(formData.harga)}
+            </p>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900">Composition</h4>
+              <p className="text-gray-700 text-sm sm:text-base whitespace-pre-wrap">
+                {formData.komposisi}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium text-gray-900">Description</h4>
+              <p className="text-gray-700 text-sm sm:text-base whitespace-pre-wrap">
+                {formData.deskripsi}
+              </p>
+            </div>
+
+            {/* Action Buttons - Below product information */}
+            <div className="pt-6 flex justify-end gap-3">
+              <Button
+                color="warning"
+                variant="flat"
+                onPress={() => setEditMode(true)}
+                size="lg"
+                className="w-32 sm:w-40"
+              >
+                Edit
+              </Button>
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={() => setShowDeleteConfirmation(true)}
+                size="lg"
+                className="w-32 sm:w-40"
+              >
+                Hapus
+              </Button>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="absolute bottom-6 right-6 flex space-x-4">
-        <Button color="secondary" onPress={() => setEditMode(true)}>
-          Edit
-        </Button>
-        <Button color="danger" onPress={() => setShowDeleteConfirmation(true)}>
-          Delete
-        </Button>
-      </div>
-
-      {/* Edit Modal */}
-      <Modal isOpen={editMode} onClose={() => setEditMode(false)}>
-        <ModalContent>
+      {/* Modals remain the same */}
+      <Modal isOpen={editMode} onClose={() => setEditMode(false)} size="lg">
+        <ModalContent className="sm:min-w-[500px]">
           <ModalHeader>Edit Product</ModalHeader>
           <ModalBody>
-            <Input
-              label="Product Name"
-              name="nama"
-              value={formData.nama}
-              onChange={handleInputChange}
-              className="mb-4"
-            />
-            <Input
-              label="Price"
-              type="number"
-              name="harga"
-              value={formData.harga.toString()}
-              onChange={handleInputChange}
-              className="mb-4"
-            />
-            <Textarea
-              label="Composition"
-              name="komposisi"
-              value={formData.komposisi}
-              onChange={handleInputChange}
-              rows={3}
-              className="mb-4"
-            />
-            <Textarea
-              label="Description"
-              name="deskripsi"
-              value={formData.deskripsi}
-              onChange={handleInputChange}
-              rows={3}
-              className="mb-4"
-            />
+            <div className="space-y-4">
+              <Input
+                label="Product Name"
+                name="nama"
+                value={formData.nama}
+                onChange={handleInputChange}
+              />
+              <Input
+                label="Price"
+                type="number"
+                name="harga"
+                value={formData.harga.toString()}
+                onChange={handleInputChange}
+              />
+              <Textarea
+                label="Composition"
+                name="komposisi"
+                value={formData.komposisi}
+                onChange={handleInputChange}
+                rows={3}
+              />
+              <Textarea
+                label="Description"
+                name="deskripsi"
+                value={formData.deskripsi}
+                onChange={handleInputChange}
+                rows={3}
+              />
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button onPress={() => setEditMode(false)}>Cancel</Button>
@@ -365,7 +395,6 @@ const ProductDetail = () => {
         </ModalContent>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
       <Modal
         isOpen={showDeleteConfirmation}
         onClose={() => setShowDeleteConfirmation(false)}
@@ -373,7 +402,9 @@ const ProductDetail = () => {
         <ModalContent>
           <ModalHeader>Confirm Delete</ModalHeader>
           <ModalBody>
-            <p>Are you sure you want to delete this product?</p>
+            <p className="text-gray-700">
+              Are you sure you want to delete this product?
+            </p>
           </ModalBody>
           <ModalFooter>
             <Button onPress={() => setShowDeleteConfirmation(false)}>
@@ -386,7 +417,6 @@ const ProductDetail = () => {
         </ModalContent>
       </Modal>
 
-      {/* Image Upload Modal */}
       <Modal
         isOpen={showImageUploadModal}
         onClose={() => setShowImageUploadModal(false)}
@@ -394,15 +424,19 @@ const ProductDetail = () => {
         <ModalContent>
           <ModalHeader>Upload New Image</ModalHeader>
           <ModalBody>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                if (e.target.files) handleImageReplace(e.target.files[0]);
-              }}
-              className="block w-full"
-            />
-            {isImageUploading && <p>Uploading image...</p>}
+            <div className="space-y-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  if (e.target.files) handleImageReplace(e.target.files[0]);
+                }}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+              />
+              {isImageUploading && (
+                <p className="text-sm text-gray-600">Uploading image...</p>
+              )}
+            </div>
           </ModalBody>
           <ModalFooter>
             <Button onPress={() => setShowImageUploadModal(false)}>

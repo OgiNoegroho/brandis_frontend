@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -14,7 +14,7 @@ import {
 } from "@nextui-org/react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice"; // Import the toast actions
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
 // Type Definitions
 type Batch = {
@@ -24,7 +24,7 @@ type Batch = {
   dibuat_pada: string;
   tanggal_kadaluarsa: string;
   kuantitas: number;
-  diperbarui_pada: string; // Added this field
+  diperbarui_pada: string;
 };
 
 type Product = {
@@ -33,13 +33,11 @@ type Product = {
 };
 
 const BatchManagement: React.FC = () => {
-  const dispatch = useAppDispatch(); // Use dispatch to dispatch actions
-
-  // Redux selector for token
+  const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
-        (state: RootState) => state.global.isDarkMode
-      ); 
+    (state: RootState) => state.global.isDarkMode
+  );
 
   // State Management
   const [batches, setBatches] = useState<Batch[]>([]);
@@ -77,12 +75,6 @@ const BatchManagement: React.FC = () => {
 
       const data = await response.json();
       setBatches(data);
-      dispatch(
-        showSuccessToast({
-          message: "Batches loaded successfully",
-          isDarkMode,
-        })
-      );
     } catch (error) {
       console.error(error);
       setError(
@@ -113,10 +105,7 @@ const BatchManagement: React.FC = () => {
     } catch (error) {
       console.error(error);
       dispatch(
-        showErrorToast({
-          message: "Failed to load products",
-          isDarkMode,
-        })
+        showErrorToast({ message: "Failed to load products", isDarkMode })
       );
     }
   };
@@ -148,10 +137,7 @@ const BatchManagement: React.FC = () => {
       const newBatch = await response.json();
       setBatches([...batches, newBatch]);
       dispatch(
-        showSuccessToast({
-          message: "Batch added successfully",
-          isDarkMode,
-        })
+        showSuccessToast({ message: "Batch berhasil ditambahkan", isDarkMode })
       );
       closeAddModal();
     } catch (error) {
@@ -160,7 +146,7 @@ const BatchManagement: React.FC = () => {
         error instanceof Error ? error.message : "An unknown error occurred"
       );
       dispatch(
-        showErrorToast({ message: "Failed to add batch", isDarkMode })
+        showErrorToast({ message: "Gagal menambahkan batch", isDarkMode })
       );
     } finally {
       setLoading(false);
@@ -200,10 +186,7 @@ const BatchManagement: React.FC = () => {
         )
       );
       dispatch(
-        showSuccessToast({
-          message: "Batch updated successfully",
-          isDarkMode,
-        })
+        showSuccessToast({ message: "Batch berhasil diperbarui", isDarkMode })
       );
       closeEditModal();
     } catch (error) {
@@ -212,7 +195,7 @@ const BatchManagement: React.FC = () => {
         error instanceof Error ? error.message : "An unknown error occurred"
       );
       dispatch(
-        showErrorToast({ message: "Failed to update batch", isDarkMode })
+        showErrorToast({ message: "Gagal memperbarui batch", isDarkMode })
       );
     } finally {
       setLoading(false);
@@ -239,10 +222,7 @@ const BatchManagement: React.FC = () => {
 
         setBatches(batches.filter((batch) => batch.batch_id !== batchId));
         dispatch(
-          showSuccessToast({
-            message: "Batch deleted successfully",
-            isDarkMode,
-          })
+          showSuccessToast({ message: "Batch berhasil dihapus", isDarkMode })
         );
       } catch (error) {
         console.error(error);
@@ -250,10 +230,7 @@ const BatchManagement: React.FC = () => {
           error instanceof Error ? error.message : "An unknown error occurred"
         );
         dispatch(
-          showErrorToast({
-            message: "Failed to delete batch",
-            isDarkMode,
-          })
+          showErrorToast({ message: "Gagal menghapus batch", isDarkMode })
         );
       } finally {
         setLoading(false);
@@ -261,6 +238,7 @@ const BatchManagement: React.FC = () => {
     }
   };
 
+  // Fetch Batch Details
   const fetchBatchDetails = async (batchId: number) => {
     setLoading(true);
     setError(null);
@@ -277,7 +255,7 @@ const BatchManagement: React.FC = () => {
 
       if (!response.ok) throw new Error("Failed to fetch batch details");
 
-      const [data] = await response.json(); // Assuming the API returns an array
+      const [data] = await response.json();
       setSelectedBatch({
         batch_id: data.batch_id,
         nama_batch: data.nama_batch,
@@ -285,7 +263,7 @@ const BatchManagement: React.FC = () => {
         kuantitas: data.kuantitas_batch,
         dibuat_pada: formatDate(data.dibuat_pada),
         tanggal_kadaluarsa: formatDate(data.tanggal_kadaluarsa),
-        diperbarui_pada: formatDate(data.diperbarui_pada), // Processed here
+        diperbarui_pada: formatDate(data.diperbarui_pada),
       });
       setShowDetailModal(true);
     } catch (error) {
@@ -294,17 +272,14 @@ const BatchManagement: React.FC = () => {
         error instanceof Error ? error.message : "An unknown error occurred"
       );
       dispatch(
-        showErrorToast({
-          message: "Failed to fetch batch details",
-          isDarkMode,
-        })
+        showErrorToast({ message: "Gagal mengambil detail batch", isDarkMode })
       );
     } finally {
       setLoading(false);
     }
   };
 
-  // Modal Handlers
+  // Modal Handlers and Utility Functions
   const handleAddNewBatch = () => {
     resetFormFields();
     setShowAddModal(true);
@@ -346,10 +321,9 @@ const BatchManagement: React.FC = () => {
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
-    return date.toISOString().split("T")[0]; // Extract only the 'YYYY-MM-DD' part
+    return date.toISOString().split("T")[0];
   };
 
-  // Fetch data on component mount
   useEffect(() => {
     fetchBatches();
     fetchProducts();
