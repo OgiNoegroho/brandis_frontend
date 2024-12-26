@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import {
@@ -22,14 +22,25 @@ import {
 } from "@nextui-org/react";
 import { showErrorToast } from "@/redux/slices/toastSlice";
 
+// Define interfaces for API responses
+interface GudangData {
+  product_name: string;
+  total_stock: number;
+}
+
+interface StokRendah {
+  nama: string;
+  kuantitas: number;
+}
+
 const DashboardManajer: React.FC = () => {
-  const [gudangData, setGudangData] = useState<any[]>([]);
+  const [gudangData, setGudangData] = useState<GudangData[]>([]);
   const [totalStokGudang, setTotalStokGudang] = useState<number | null>(null);
   const [batchKadaluarsa, setBatchKadaluarsa] = useState<number | null>(null);
   const [batchDiproduksiBulanIni, setBatchDiproduksiBulanIni] = useState<
     number | null
   >(null);
-  const [stokRendahGudang, setStokRendahGudang] = useState<any[]>([]);
+  const [stokRendahGudang, setStokRendahGudang] = useState<StokRendah[]>([]);
   const [totalPengembalianProduk, setTotalPengembalianProduk] = useState<
     number | null
   >(null);
@@ -37,7 +48,7 @@ const DashboardManajer: React.FC = () => {
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
@@ -47,7 +58,7 @@ const DashboardManajer: React.FC = () => {
         { headers }
       );
       if (!gudangRes.ok) throw new Error("Gagal memuat data stok gudang.");
-      const gudangData = await gudangRes.json();
+      const gudangData: GudangData[] = await gudangRes.json();
       setGudangData(Array.isArray(gudangData) ? gudangData : []);
 
       // Fetch Summed-up Stock
@@ -85,7 +96,7 @@ const DashboardManajer: React.FC = () => {
         { headers }
       );
       if (!stokRendahRes.ok) throw new Error("Gagal memuat stok rendah.");
-      const stokRendahData = await stokRendahRes.json();
+      const stokRendahData: StokRendah[] = await stokRendahRes.json();
       setStokRendahGudang(Array.isArray(stokRendahData) ? stokRendahData : []);
 
       // Fetch Total Returned Products
@@ -108,13 +119,13 @@ const DashboardManajer: React.FC = () => {
         })
       );
     }
-  };
+  }, [token, dispatch]);
 
   useEffect(() => {
     if (token) {
       fetchData();
     }
-  }, [token]);
+  }, [token, fetchData]);
 
   return (
     <div className="container px-12 sm:px-6 lg:pl-0 content">
@@ -213,7 +224,7 @@ const DashboardManajer: React.FC = () => {
           <CardBody>
             <Table aria-label="Low stock table">
               <TableHeader>
-                <TableColumn>Nama Produk</TableColumn>
+                <TableColumn>Nama Barang</TableColumn>
                 <TableColumn>Kuantitas</TableColumn>
               </TableHeader>
               <TableBody>

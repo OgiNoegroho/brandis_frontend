@@ -41,14 +41,13 @@ const ProductDetail = () => {
     komposisi: "",
     deskripsi: "",
   });
-
+const router = useRouter();
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
   const dispatch = useAppDispatch();
   const { id } = useParams();
-  const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const formatPrice = (price: number): string => {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -66,7 +65,7 @@ const ProductDetail = () => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [isDarkMode]); // Add isDarkMode as a dependency
 
   useEffect(() => {
     if (!id) return;
@@ -208,39 +207,40 @@ const ProductDetail = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!token || !product) return;
+ const handleDelete = async () => {
+   if (!token || !product) return;
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+   try {
+     const response = await fetch(
+       `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+       {
+         method: "DELETE",
+         headers: {
+           Authorization: `Bearer ${token}`,
+         },
+       }
+     );
 
-      if (!response.ok) throw new Error("Gagal menghapus produk");
+     if (!response.ok) throw new Error("Gagal menghapus produk");
 
-      router.push("/products");
-      dispatch(
-        showSuccessToast({
-          message: "Produk berhasil dihapus!",
-          isDarkMode,
-        })
-      );
-    } catch (err) {
-      console.error(err);
-      dispatch(
-        showErrorToast({
-          message: "Gagal menghapus produk, silahkan coba lagi.",
-          isDarkMode,
-        })
-      );
-    }
-  };
+     router.push("/products"); // Navigate to the products page after deletion
+     dispatch(
+       showSuccessToast({
+         message: "Produk berhasil dihapus!",
+         isDarkMode,
+       })
+     );
+   } catch (err) {
+     console.error(err);
+     dispatch(
+       showErrorToast({
+         message: "Gagal menghapus produk, silahkan coba lagi.",
+         isDarkMode,
+       })
+     );
+   }
+ };
+
 
   if (loading)
     return (

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks"; // Import useAppDispatch
+import React, { useEffect, useState, useCallback } from "react";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import {
   FaChartBar,
@@ -31,7 +31,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { showErrorToast } from "@/redux/slices/toastSlice"; // Import showErrorToast
+import { showErrorToast } from "@/redux/slices/toastSlice";
 
 ChartJS.register(
   CategoryScale,
@@ -43,14 +43,47 @@ ChartJS.register(
   Legend
 );
 
+// Define interfaces for the API responses
+interface PenjualanData {
+  product_name: string;
+  total_sales: string;
+}
+
+interface DistribusiData {
+  product_name: string;
+  total_distribution: string;
+}
+
+interface ProdukTerlaris {
+  product_name: string;
+  quantity_sold: number;
+  total_sales: number;
+}
+
+interface StokGudang {
+  product_name: string;
+  total_stock: number;
+}
+
+interface BatchKadaluarsa {
+  product_name: string;
+  expiry_date: string;
+}
+
 const PimpinanDashboard: React.FC = () => {
   const [totalPenjualan, setTotalPenjualan] = useState<number | null>(null);
   const [totalDistribusi, setTotalDistribusi] = useState<number | null>(null);
-  const [topProdukTerlaris, setTopProdukTerlaris] = useState<any[]>([]);
-  const [totalStokGudang, setTotalStokGudang] = useState<any[]>([]);
-  const [batchKadaluarsa, setBatchKadaluarsa] = useState<any[]>([]);
-  const [penjualanData, setPenjualanData] = useState<any>(null);
-  const [distribusiData, setDistribusiData] = useState<any>(null);
+  const [topProdukTerlaris, setTopProdukTerlaris] = useState<ProdukTerlaris[]>(
+    []
+  );
+  const [totalStokGudang, setTotalStokGudang] = useState<StokGudang[]>([]);
+  const [batchKadaluarsa, setBatchKadaluarsa] = useState<BatchKadaluarsa[]>([]);
+  const [penjualanData, setPenjualanData] = useState<PenjualanData[] | null>(
+    null
+  );
+  const [distribusiData, setDistribusiData] = useState<DistribusiData[] | null>(
+    null
+  );
 
   const formatDate = (date: string | Date): string => {
     const d = new Date(date);
@@ -64,9 +97,10 @@ const PimpinanDashboard: React.FC = () => {
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
-  const dispatch = useAppDispatch(); // Initialize dispatch
+  const dispatch = useAppDispatch();
 
-  const fetchData = async () => {
+  // Memoize the fetchData function to prevent unnecessary re-renders
+  const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
@@ -75,64 +109,64 @@ const PimpinanDashboard: React.FC = () => {
         return res.json();
       };
 
-      const totalPenjualanData = await fetchAPI(
+      const totalPenjualanData: PenjualanData[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalPenjualan`
       );
       const totalSales = totalPenjualanData.reduce(
-        (acc: number, item: any) => acc + parseFloat(item.total_sales),
+        (acc, item) => acc + parseFloat(item.total_sales),
         0
       );
       setTotalPenjualan(totalSales);
-      setPenjualanData(
-        totalPenjualanData.map((item: any) => ({
-          month: item.product_name,
-          total: parseFloat(item.total_sales),
-        })) || []
-      );
+   setPenjualanData(
+     totalPenjualanData.map((item) => ({
+       product_name: item.product_name, // Keep the product_name
+       total_sales: item.total_sales, // Keep the total_sales
+     })) || []
+   );
 
-      const totalDistribusiData = await fetchAPI(
+      const totalDistribusiData: DistribusiData[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalDistribusi`
       );
       const totalDistribution = totalDistribusiData.reduce(
-        (acc: number, item: any) => acc + parseFloat(item.total_distribution),
+        (acc, item) => acc + parseFloat(item.total_distribution),
         0
       );
       setTotalDistribusi(totalDistribution);
-      setDistribusiData(
-        totalDistribusiData.map((item: any) => ({
-          month: item.product_name,
-          total: parseFloat(item.total_distribution),
-        })) || []
-      );
+  setDistribusiData(
+    totalDistribusiData.map((item) => ({
+      product_name: item.product_name, // Keep the product_name
+      total_distribution: item.total_distribution, // Keep the total_distribution
+    })) || []
+  );
 
-      const topProdukTerlarisData = await fetchAPI(
+      const topProdukTerlarisData: ProdukTerlaris[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/topProdukTerlaris`
       );
       setTopProdukTerlaris(topProdukTerlarisData);
 
-      const totalStokGudangData = await fetchAPI(
+      const totalStokGudangData: StokGudang[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`
       );
       setTotalStokGudang(totalStokGudangData);
 
-      const batchKadaluarsaData = await fetchAPI(
+      const batchKadaluarsaData: BatchKadaluarsa[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/batchKadaluarsa`
       );
       setBatchKadaluarsa(batchKadaluarsaData);
     } catch (err: any) {
       const errorMessage = err.message || "Terjadi kesalahan saat memuat data.";
-      
-      // Dispatch the error toast using Redux
-      dispatch(showErrorToast({
-        message: errorMessage,
-        isDarkMode: isDarkMode,
-      }));
+      dispatch(
+        showErrorToast({
+          message: errorMessage,
+          isDarkMode: isDarkMode,
+        })
+      );
     }
-  };
+  }, [token, dispatch, isDarkMode]);
 
   useEffect(() => {
     fetchData();
-  }, [token]);
+  }, [fetchData]);
 
   const chartOptions = {
     responsive: true,
@@ -160,37 +194,41 @@ const PimpinanDashboard: React.FC = () => {
     },
   };
 
-  const salesChartData = {
-    labels: penjualanData?.map((item: any) => item.month) || [],
-    datasets: [
-      {
-        label: "Total Penjualan (Bulan Ini)",
-        data: penjualanData?.map((item: any) => item.total) || [],
-        borderColor: "#4C6EF5",
-        backgroundColor: "rgba(76, 110, 245, 0.2)",
-        pointBackgroundColor: "#4C6EF5",
-        pointBorderColor: "#fff",
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
+const salesChartData = {
+  labels: penjualanData?.map((item) => item.product_name) || [], // Use product_name as labels
+  datasets: [
+    {
+      label: "Total Penjualan (Bulan Ini)",
+      data: penjualanData?.map((item) => parseFloat(item.total_sales)) || [], // Use total_sales for data
+      borderColor: "#4C6EF5",
+      backgroundColor: "rgba(76, 110, 245, 0.2)",
+      pointBackgroundColor: "#4C6EF5",
+      pointBorderColor: "#fff",
+      fill: true,
+      tension: 0.4,
+    },
+  ],
+};
 
-  const distribusiChartData = {
-    labels: distribusiData?.map((item: any) => item.month) || [],
-    datasets: [
-      {
-        label: "Total Distribusi (Bulan Ini)",
-        data: distribusiData?.map((item: any) => item.total) || [],
-        borderColor: "#34D399",
-        backgroundColor: "rgba(52, 211, 153, 0.2)",
-        pointBackgroundColor: "#34D399",
-        pointBorderColor: "#fff",
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  };
+
+ const distribusiChartData = {
+   labels: distribusiData?.map((item) => item.product_name) || [], // Use product_name as labels
+   datasets: [
+     {
+       label: "Total Distribusi (Bulan Ini)",
+       data:
+         distribusiData?.map((item) => parseFloat(item.total_distribution)) ||
+         [], // Use total_distribution for data
+       borderColor: "#34D399",
+       backgroundColor: "rgba(52, 211, 153, 0.2)",
+       pointBackgroundColor: "#34D399",
+       pointBorderColor: "#fff",
+       fill: true,
+       tension: 0.4,
+     },
+   ],
+ };
+
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat("id-ID", {
@@ -351,7 +389,6 @@ const PimpinanDashboard: React.FC = () => {
       </div>
     </div>
   );
-
 };
 
 export default PimpinanDashboard;

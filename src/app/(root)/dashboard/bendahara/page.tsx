@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
 
+// Define types
+interface RingkasanFaktur {
+  status_pembayaran: string;
+  total_tagihan: number;
+}
+
 const Bendahara: React.FC = () => {
-  const [ringkasanFaktur, setRingkasanFaktur] = useState<any[]>([]);
+  const [ringkasanFaktur, setRingkasanFaktur] = useState<RingkasanFaktur[]>([]);
   const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
     null
   );
@@ -15,7 +21,8 @@ const Bendahara: React.FC = () => {
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
 
-  const fetchData = async () => {
+  // Fetch data with useCallback to avoid redefining in useEffect
+  const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
@@ -25,7 +32,7 @@ const Bendahara: React.FC = () => {
         { headers }
       );
       if (!ringkasanRes.ok) throw new Error("Gagal memuat ringkasan faktur.");
-      const ringkasanData = await ringkasanRes.json();
+      const ringkasanData: RingkasanFaktur[] = await ringkasanRes.json();
       setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
 
       // Fetch pendapatanBulanIni
@@ -64,13 +71,13 @@ const Bendahara: React.FC = () => {
         })
       );
     }
-  };
+  }, [token, dispatch]);
 
   useEffect(() => {
     if (token) {
       fetchData();
     }
-  }, [token]);
+  }, [token, fetchData]);
 
   return (
     <div className="container px-12 sm:px-6 lg:pl-0 content">

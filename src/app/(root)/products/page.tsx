@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Card,
   CardBody,
@@ -184,9 +185,7 @@ const ProductsPage = () => {
   };
 
   return (
-    
     <div className="container px-12 sm:px-6 lg:pl-0 content ">
-      
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Produk</h2>
         <Button
@@ -206,7 +205,7 @@ const ProductsPage = () => {
             <Link key={product.id} href={`/products/${product.id}`} passHref>
               <Card className="w-full">
                 <CardBody className="overflow-visible p-0">
-                  <img
+                  <Image
                     src={
                       primaryImage
                         ? primaryImage.url
@@ -214,6 +213,9 @@ const ProductsPage = () => {
                     }
                     alt={product.nama}
                     className="w-full h-[140px] object-cover rounded-lg shadow-sm"
+                    width={140} // Set an appropriate width for the image
+                    height={140} // Set an appropriate height for the image
+                    layout="intrinsic" // Maintains aspect ratio based on width and height
                   />
                 </CardBody>
 
@@ -241,11 +243,15 @@ const ProductsPage = () => {
               <div className="flex flex-col items-center border-dashed border-2 border-gray-300 w-full p-4">
                 {imagePreview && (
                   <div className="relative mb-2">
-                    <img
-                      src={imagePreview}
+                    <Image
+                      src={imagePreview || "/images/default-product.png"}
                       alt="Preview"
                       className="w-32 h-32 object-cover"
+                      width={128} // Set an appropriate width for the image
+                      height={128} // Set an appropriate height for the image
+                      layout="intrinsic" // Maintains aspect ratio based on width and height
                     />
+
                     <button
                       type="button"
                       onClick={handleRemoveImage}
