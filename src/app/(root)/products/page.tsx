@@ -46,7 +46,6 @@ const ProductsPage = () => {
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
 
-  // Assuming you have a way to determine if the user is in dark mode
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
@@ -56,7 +55,7 @@ const ProductsPage = () => {
       if (!token) {
         dispatch(
           showErrorToast({
-            message: "No token found. Please log in.",
+            message: "Token tidak ditemukan, silahkan login!",
             isDarkMode,
           })
         );
@@ -64,13 +63,13 @@ const ProductsPage = () => {
       }
 
       try {
-        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!response.ok) throw new Error("Failed to fetch products");
+        if (!response.ok) throw new Error("Gagal mengambil produk.");
 
         const data: Product[] = await response.json();
         setProducts(data);
@@ -78,7 +77,7 @@ const ProductsPage = () => {
         console.error(err);
         dispatch(
           showErrorToast({
-            message: "Error fetching products. Please try again.",
+            message: "Gagal mengambil produk, silahkan coba kembali.",
             isDarkMode,
           })
         );
@@ -101,15 +100,13 @@ const ProductsPage = () => {
     setImagePreview(null);
   };
 
-  // Format harga with thousand separators
   const formatHarga = (value: string) => {
-    const numberValue = value.replace(/[^\d]/g, ""); // Remove non-digit characters
+    const numberValue = value.replace(/[^\d]/g, "");
     return new Intl.NumberFormat("id-ID").format(Number(numberValue));
   };
 
-  // Handle harga input change
   const handleHargaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const rawValue = e.target.value.replace(/[^\d]/g, ""); // Remove non-digit characters
+    const rawValue = e.target.value.replace(/[^\d]/g, "");
     setNewProduct({ ...newProduct, harga: rawValue });
   };
 
@@ -117,7 +114,7 @@ const ProductsPage = () => {
     if (!token) {
       dispatch(
         showErrorToast({
-          message: "No token found. Please log in.",
+          message: "Gagal menambahkan produk, silahkan coba kembali.",
           isDarkMode,
         })
       );
@@ -125,12 +122,12 @@ const ProductsPage = () => {
     }
 
     if (newProduct.nama && newProduct.harga) {
-      setIsLoading(true); // Start loading
+      setIsLoading(true);
 
       try {
         const formData = new FormData();
         formData.append("nama", newProduct.nama);
-        formData.append("harga", newProduct.harga); // Send raw harga without formatting
+        formData.append("harga", newProduct.harga);
         formData.append("komposisi", newProduct.komposisi);
         formData.append("deskripsi", newProduct.deskripsi);
 
@@ -138,7 +135,7 @@ const ProductsPage = () => {
           formData.append("image", newProduct.image);
         }
 
-        const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -146,7 +143,7 @@ const ProductsPage = () => {
           body: formData,
         });
 
-        if (!response.ok) throw new Error("Failed to add product");
+        if (!response.ok) throw new Error("Gagal menambahkan produk");
 
         const addedProduct: Product = await response.json();
         setProducts([...products, addedProduct]);
@@ -161,7 +158,7 @@ const ProductsPage = () => {
         setIsModalOpen(false);
         dispatch(
           showSuccessToast({
-            message: "Product added successfully!",
+            message: "Produk berhasil ditambahkan!",
             isDarkMode,
           })
         );
@@ -169,17 +166,17 @@ const ProductsPage = () => {
         console.error(err);
         dispatch(
           showErrorToast({
-            message: "Error adding product. Please try again.",
+            message: "Terjadi kesalahan saat menambah produk, Silahkan coba kembali.",
             isDarkMode,
           })
         );
       } finally {
-        setIsLoading(false); // End loading
+        setIsLoading(false);
       }
     } else {
       dispatch(
         showErrorToast({
-          message: "Please fill in all the required fields!",
+          message: "Isi semua kolom terlebih dahulu!",
           isDarkMode,
         })
       );
@@ -187,9 +184,11 @@ const ProductsPage = () => {
   };
 
   return (
-    <div className="pl-12">
+    
+    <div className="container px-12 sm:px-6 lg:pl-0 content ">
+      
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Produk</h2>
+        <h2 className="text-2xl font-bold">Daftar Produk</h2>
         <Button
           variant="flat"
           color="success"
@@ -199,7 +198,6 @@ const ProductsPage = () => {
         </Button>
       </div>
 
-      {/* Product Grid */}
       <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
         {products.map((product) => {
           const primaryImage =
@@ -207,7 +205,6 @@ const ProductsPage = () => {
           return (
             <Link key={product.id} href={`/products/${product.id}`} passHref>
               <Card className="w-full">
-                {/* Product Image */}
                 <CardBody className="overflow-visible p-0">
                   <img
                     src={
@@ -220,7 +217,6 @@ const ProductsPage = () => {
                   />
                 </CardBody>
 
-                {/* Product Details */}
                 <CardFooter>
                   <div className="flex flex-col justify-between w-full">
                     <b className="truncate max-w-[140px]">{product.nama}</b>
@@ -235,7 +231,6 @@ const ProductsPage = () => {
         })}
       </div>
 
-      {/* Add Product Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <ModalContent>
           <ModalHeader>
@@ -243,7 +238,6 @@ const ProductsPage = () => {
           </ModalHeader>
           <ModalBody>
             <div className="space-y-4">
-              {/* Image Upload */}
               <div className="flex flex-col items-center border-dashed border-2 border-gray-300 w-full p-4">
                 {imagePreview && (
                   <div className="relative mb-2">
@@ -278,7 +272,6 @@ const ProductsPage = () => {
                 />
               </div>
 
-              {/* Form Inputs */}
               <Input
                 label="Nama Produk"
                 placeholder="Masukkan nama produk"

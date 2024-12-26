@@ -51,7 +51,6 @@ const PimpinanDashboard: React.FC = () => {
   const [batchKadaluarsa, setBatchKadaluarsa] = useState<any[]>([]);
   const [penjualanData, setPenjualanData] = useState<any>(null);
   const [distribusiData, setDistribusiData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
 
   const formatDate = (date: string | Date): string => {
     const d = new Date(date);
@@ -77,7 +76,7 @@ const PimpinanDashboard: React.FC = () => {
       };
 
       const totalPenjualanData = await fetchAPI(
-        "https://brandis-backend.vercel.app/api/pimpinan/totalPenjualan"
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalPenjualan`
       );
       const totalSales = totalPenjualanData.reduce(
         (acc: number, item: any) => acc + parseFloat(item.total_sales),
@@ -92,7 +91,7 @@ const PimpinanDashboard: React.FC = () => {
       );
 
       const totalDistribusiData = await fetchAPI(
-        "https://brandis-backend.vercel.app/api/pimpinan/totalDistribusi"
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalDistribusi`
       );
       const totalDistribution = totalDistribusiData.reduce(
         (acc: number, item: any) => acc + parseFloat(item.total_distribution),
@@ -107,22 +106,21 @@ const PimpinanDashboard: React.FC = () => {
       );
 
       const topProdukTerlarisData = await fetchAPI(
-        "https://brandis-backend.vercel.app/api/pimpinan/topProdukTerlaris"
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/topProdukTerlaris`
       );
       setTopProdukTerlaris(topProdukTerlarisData);
 
       const totalStokGudangData = await fetchAPI(
-        "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang"
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`
       );
       setTotalStokGudang(totalStokGudangData);
 
       const batchKadaluarsaData = await fetchAPI(
-        "https://brandis-backend.vercel.app/api/pimpinan/batchKadaluarsa"
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/batchKadaluarsa`
       );
       setBatchKadaluarsa(batchKadaluarsaData);
     } catch (err: any) {
-      const errorMessage = err.message || "Error fetching data";
-      setError(errorMessage);
+      const errorMessage = err.message || "Terjadi kesalahan saat memuat data.";
       
       // Dispatch the error toast using Redux
       dispatch(showErrorToast({
@@ -204,7 +202,7 @@ const PimpinanDashboard: React.FC = () => {
   };
 
   return (
-    <div className="container px-6 lg:px-12 py-6">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Pimpinan
       </h1>
@@ -337,9 +335,7 @@ const PimpinanDashboard: React.FC = () => {
                   batchKadaluarsa.map((batch, index) => (
                     <TableRow key={index}>
                       <TableCell>{batch.product_name}</TableCell>
-                      <TableCell>
-                        {formatDate(batch.expiry_date)}
-                      </TableCell>
+                      <TableCell>{formatDate(batch.expiry_date)}</TableCell>
                     </TableRow>
                   ))
                 ) : (

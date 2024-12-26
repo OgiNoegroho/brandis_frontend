@@ -59,7 +59,7 @@ const UserManagement: React.FC = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("https://brandis-backend.vercel.app/api/users/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +109,7 @@ const UserManagement: React.FC = () => {
      }
 
      const response = await fetch(
-       `https://brandis-backend.vercel.app/api/users/${selectedUser.email}`,
+       `${process.env.NEXT_PUBLIC_API_URL}/users/${selectedUser.email}`,
        {
          method: "PUT",
          headers: {
@@ -127,7 +127,6 @@ const UserManagement: React.FC = () => {
 
      const updatedUser = await response.json();
 
-     // Update the users list with the new data
      setUsers((prevUsers) =>
        prevUsers.map((user) =>
          user.email === selectedUser.email ? updatedUser : user
@@ -168,7 +167,7 @@ const UserManagement: React.FC = () => {
        setIsLoading(true);
 
        const response = await fetch(
-         "https://brandis-backend.vercel.app/api/users/register",
+         `${process.env.NEXT_PUBLIC_API_URL}/users/register`,
          {
            method: "POST",
            headers: {
@@ -239,7 +238,7 @@ const UserManagement: React.FC = () => {
   const handleDeleteUser = async () => {
     if (selectedUser) {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/users/${selectedUser.email}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${selectedUser.email}`,
         {
           method: "DELETE",
           headers: {
@@ -259,7 +258,7 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-12">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Daftar Pengguna</h1>
         <Button variant="flat" color="success" onPress={handleOpenAddUserModal}>
@@ -303,7 +302,6 @@ const UserManagement: React.FC = () => {
         </TableBody>
       </Table>
 
-      {/* Add User Modal */}
       <Modal
         isOpen={isAddUserModalOpen}
         onClose={() => setIsAddUserModalOpen(false)}
@@ -372,7 +370,6 @@ const UserManagement: React.FC = () => {
         </ModalContent>
       </Modal>
 
-      {/* Update User Modal */}
       <Modal
         isOpen={isUpdateUserModalOpen}
         onClose={() => setIsUpdateUserModalOpen(false)}
@@ -422,7 +419,6 @@ const UserManagement: React.FC = () => {
         </ModalContent>
       </Modal>
 
-      {/* Delete User Modal */}
       <Modal
         isOpen={isDeleteUserModalOpen}
         onClose={() => setIsDeleteUserModalOpen(false)}

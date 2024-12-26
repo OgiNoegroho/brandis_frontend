@@ -50,7 +50,7 @@ const StockManagement: React.FC = () => {
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
-  const dispatch = useAppDispatch(); // Initialize dispatch
+  const dispatch = useAppDispatch();
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -65,7 +65,7 @@ const StockManagement: React.FC = () => {
       }
 
       try {
-        const response = await fetch("https://brandis-backend.vercel.app/api/inventory", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -82,7 +82,7 @@ const StockManagement: React.FC = () => {
         console.error("Error fetching inventory:", error);
         dispatch(
           showErrorToast({ message: "Failed to load inventory.", isDarkMode })
-        ); // Show error toast
+        );
       }
     };
 
@@ -99,7 +99,7 @@ const StockManagement: React.FC = () => {
 
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/inventory/${produkId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/inventory/${produkId}`,
         {
           method: "GET",
           headers: {
@@ -175,7 +175,7 @@ const StockManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-10 bg-gray-50 min-h-screen">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold">Manajemen Stok</h1>
       </div>
@@ -237,13 +237,12 @@ const StockManagement: React.FC = () => {
         </Table>
       </Card>
 
-      {/* Modal */}
       <Modal
         isOpen={isModalOpen}
-        scrollBehavior="inside" // Ensures scrollable content inside the modal
-        placement="center" // Centers the modal
+        scrollBehavior="inside"
+        placement="center"
         onOpenChange={(open) => {
-          if (!open) closeModal(); // Close modal when the state changes
+          if (!open) closeModal();
         }}
       >
         <ModalContent>

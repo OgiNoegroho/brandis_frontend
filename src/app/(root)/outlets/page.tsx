@@ -64,7 +64,7 @@ const Outlet = () => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/outlet`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -132,7 +132,7 @@ const Outlet = () => {
 
       if (!token) throw new Error("Authentication token not found");
 
-      const response = await fetch("https://brandis-backend.vercel.app/api/outlet", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/outlet`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -188,7 +188,7 @@ const Outlet = () => {
       if (!token) throw new Error("Authentication token not found");
 
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/outlet/${selectedOutlet.id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet/${selectedOutlet.id}`,
         {
           method: "PUT",
           headers: {
@@ -240,12 +240,15 @@ const Outlet = () => {
     try {
       if (!token) throw new Error("Authentication token not found");
 
-      const response = await fetch(`https://brandis-backend.vercel.app/api/outlet/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -290,7 +293,7 @@ const Outlet = () => {
   }
 
   return (
-    <div className="pl-12">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Outlet</h1>
         <Button
@@ -349,7 +352,6 @@ const Outlet = () => {
         </div>
       )}
 
-      {/* Create Modal */}
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
         <ModalContent>
           <ModalHeader>Tambah Outlet Baru</ModalHeader>
@@ -388,7 +390,6 @@ const Outlet = () => {
         </ModalContent>
       </Modal>
 
-      {/* Edit Modal */}
       {showEditModal && selectedOutlet && (
         <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)}>
           <ModalContent>
@@ -429,7 +430,6 @@ const Outlet = () => {
         </Modal>
       )}
 
-      {/* Delete Modal */}
       {showDeleteModal && selectedOutlet && (
         <Modal
           isOpen={showDeleteModal}

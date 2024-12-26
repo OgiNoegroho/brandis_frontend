@@ -9,8 +9,7 @@ import {
   Users,
   House,
   ChartColumn,
-  ChevronDown,
-  LogOut,
+  ChevronDown
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -113,15 +112,6 @@ const Sidebar = () => {
     };
   }, [dispatch, isMobile, isSidebarCollapsed, wasOpenBeforeMobile]);
 
-  const toggleSidebar = () => {
-    dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
-  };
-
-  const handleLogout = () => {
-    dispatch(removeToken());
-    router.push("/");
-  };
-
   const toggleInventoryDropdown = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -184,7 +174,7 @@ const Sidebar = () => {
       {
         href: "/userManagement",
         icon: Users,
-        label: "User Management",
+        label: "Manajemen Pengguna",
         roles: ["Pimpinan"],
       },
       {
@@ -196,19 +186,19 @@ const Sidebar = () => {
       {
         href: "/products",
         icon: Clipboard,
-        label: "Products",
+        label: "Produk",
         roles: ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"],
       },
       {
         href: "/outlets",
         icon: House,
-        label: "Outlets",
+        label: "Outlet",
         roles: ["Pimpinan", "Manajer", "Pemasaran"],
       },
       {
         href: "/financialReports",
         icon: ChartColumn,
-        label: "Financial Reports",
+        label: "Laporan Outlet",
         roles: ["Pimpinan", "Manajer", "Bendahara"],
       },
     ];
@@ -230,7 +220,7 @@ const Sidebar = () => {
           }`}
         >
           <Clipboard className="w-4 h-4" />
-          <span className="text-sm">Stock Management</span>
+          <span className="text-sm">Manajemen Stok</span>
         </div>
       </Link>
       <Link href="/inventory/batchManagement">
@@ -242,7 +232,7 @@ const Sidebar = () => {
           }`}
         >
           <Clipboard className="w-4 h-4" />
-          <span className="text-sm">Batch Management</span>
+          <span className="text-sm">Manajemen Batch</span>
         </div>
       </Link>
     </div>
@@ -253,7 +243,7 @@ const Sidebar = () => {
       <SidebarLink
         href="/inventory/stockManagement"
         icon={Clipboard}
-        label="Stock Management"
+        label="Manajemen Stok"
         isCollapsed={isSidebarCollapsed}
         isActive={isActiveTab("/inventory/stockManagement")}
         isSubLink={true}
@@ -261,7 +251,7 @@ const Sidebar = () => {
       <SidebarLink
         href="/inventory/batchManagement"
         icon={Clipboard}
-        label="Batch Management"
+        label="Manajemen Batch"
         isCollapsed={isSidebarCollapsed}
         isActive={isActiveTab("/inventory/batchManagement")}
         isSubLink={true}
@@ -333,7 +323,7 @@ const Sidebar = () => {
                     <div className="flex items-center gap-3">
                       <Archive className="w-6 h-6" />
                       {!isSidebarCollapsed && (
-                        <span className="font-medium">Inventory</span>
+                        <span className="font-medium">Inventaris</span>
                       )}
                     </div>
                     {!isSidebarCollapsed && (

@@ -30,7 +30,6 @@ interface Product {
 const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [editMode, setEditMode] = useState<boolean>(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -47,17 +46,14 @@ const ProductDetail = () => {
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
-  const dispatch = useAppDispatch(); // Use dispatch hook
-
-   const formatPrice = (price: number): string => {
-     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
-  
+  const dispatch = useAppDispatch();
   const { id } = useParams();
   const router = useRouter();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const formatPrice = (price: number): string => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -77,10 +73,9 @@ const ProductDetail = () => {
 
     const fetchProductDetail = async () => {
       if (!token) {
-        setError("No token found. Please log in.");
         dispatch(
           showErrorToast({
-            message: "No token found. Please log in.",
+            message: "Token tidak ditemukan, silahkan login!",
             isDarkMode,
           })
         );
@@ -89,17 +84,16 @@ const ProductDetail = () => {
 
       setLoading(true);
       setProduct(null);
-      setError("");
 
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/products/${id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        if (!response.ok) throw new Error("Failed to fetch product details");
+        if (!response.ok) throw new Error("Gagal menampilkan detail produk");
 
         const data: Product = await response.json();
         setProduct(data);
@@ -111,10 +105,9 @@ const ProductDetail = () => {
         });
       } catch (err) {
         console.error(err);
-        setError("Error fetching product details. Please try again.");
         dispatch(
           showErrorToast({
-            message: "Error fetching product details. Please try again.",
+            message: "Gagal menampilkan detail produk, silahkan coba lagi.",
             isDarkMode,
           })
         );
@@ -137,14 +130,13 @@ const ProductDetail = () => {
     if (!token || !product) return;
 
     setImageUploading(true);
-    setError("");
 
     const uploadFormData = new FormData();
     uploadFormData.append("image", file);
 
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/products/${id}/replace-image`,
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}/replace-image`,
         {
           method: "PUT",
           headers: {
@@ -154,23 +146,22 @@ const ProductDetail = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to upload image");
+      if (!response.ok) throw new Error("Gagal mengganti gambar produk");
 
       const updatedProduct = await response.json();
       setProduct(updatedProduct);
       setShowImageUploadModal(false);
       dispatch(
         showSuccessToast({
-          message: "Image replaced successfully!",
+          message: "Gambar produk berhasil diganti!",
           isDarkMode,
         })
       );
     } catch (err) {
       console.error(err);
-      setError("Error replacing image. Please try again.");
       dispatch(
         showErrorToast({
-          message: "Error replacing image. Please try again.",
+          message: "Gagal mengganti gambar produk, Silahkan coba lagi.",
           isDarkMode,
         })
       );
@@ -183,31 +174,36 @@ const ProductDetail = () => {
     if (!token || !product) return;
 
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/products/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
-      if (!response.ok) throw new Error("Failed to update product");
+      if (!response.ok) throw new Error("Gagal mengupdate produk");
 
       const updatedProduct = await response.json();
       setProduct(updatedProduct);
       setEditMode(false);
       dispatch(
         showSuccessToast({
-          message: "Product updated successfully!",
+          message: "Produk berhasil diupdate!",
           isDarkMode,
         })
       );
     } catch (err) {
       console.error(err);
-      setError("Error updating product.");
       dispatch(
-        showErrorToast({ message: "Error updating product.", isDarkMode })
+        showErrorToast({
+          message: "Gagal mengupdate produk, silahkan coba lagi.",
+          isDarkMode,
+        })
       );
     }
   };
@@ -216,27 +212,32 @@ const ProductDetail = () => {
     if (!token || !product) return;
 
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/api/products/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-      if (!response.ok) throw new Error("Failed to delete product");
+      if (!response.ok) throw new Error("Gagal menghapus produk");
 
       router.push("/products");
       dispatch(
         showSuccessToast({
-          message: "Product deleted successfully!",
+          message: "Produk berhasil dihapus!",
           isDarkMode,
         })
       );
     } catch (err) {
       console.error(err);
-      setError("Error deleting product.");
       dispatch(
-        showErrorToast({ message: "Error deleting product.", isDarkMode })
+        showErrorToast({
+          message: "Gagal menghapus produk, silahkan coba lagi.",
+          isDarkMode,
+        })
       );
     }
   };
@@ -245,7 +246,6 @@ const ProductDetail = () => {
     return (
       <p className="text-gray-500 text-center">Loading product details...</p>
     );
-  if (error) return <p className="text-red-500 text-center">{error}</p>;
   if (!product)
     return <p className="text-gray-500 text-center">No product found.</p>;
 
@@ -253,13 +253,11 @@ const ProductDetail = () => {
     product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
   return (
-    <div className="p-4 sm:p-6">
-      {/* Main Content Grid */}
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
-          {/* Image Section */}
           <div className="relative w-full max-w-md mx-auto lg:mx-0">
-            <div className="aspect-square w-full relative">
+            <div className="aspect-square w-full relative mb-2">
               <img
                 src={
                   primaryImage
@@ -272,7 +270,6 @@ const ProductDetail = () => {
               />
             </div>
 
-            {/* Dropdown Menu */}
             {isDropdownOpen && (
               <div
                 className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10"
@@ -307,7 +304,6 @@ const ProductDetail = () => {
             )}
           </div>
 
-          {/* Product Information */}
           <div className="space-y-4">
             <h2 className="text-2xl font-bold break-words">{formData.nama}</h2>
             <p className="text-2xl text-blue-600 font-semibold">
@@ -326,7 +322,6 @@ const ProductDetail = () => {
               </p>
             </div>
 
-            {/* Action Buttons - Below product information */}
             <div className="pt-6 flex justify-end gap-3">
               <Button
                 color="warning"
@@ -351,7 +346,6 @@ const ProductDetail = () => {
         </div>
       </div>
 
-      {/* Modals remain the same */}
       <Modal isOpen={editMode} onClose={() => setEditMode(false)} size="lg">
         <ModalContent className="sm:min-w-[500px]">
           <ModalHeader>Edit Product</ModalHeader>

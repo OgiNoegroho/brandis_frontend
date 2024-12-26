@@ -17,8 +17,9 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
 interface Product {
   product_id: number;
@@ -51,7 +52,12 @@ interface ReturnHistory {
 }
 
 const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
-  const token = useAppSelector((state: RootState) => state.auth.token);
+  const dispatch = useAppDispatch();
+  
+    const token = useAppSelector((state: RootState) => state.auth.token);
+      const isDarkMode = useAppSelector(
+        (state: RootState) => state.global.isDarkMode
+      );
   const [returnData, setReturnData] = useState<ReturnHistory[]>([]);
   const [returnHistory, setReturnHistory] = useState<ReturnHistory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -61,11 +67,10 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     batchId: null,
     quantity: 0,
     reason: "",
-    returnDate: "", // We'll set this to current date in useEffect
+    returnDate: "",
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   const formatDate = (date?: string | number | null) => {
     if (!date) return "N/A";
@@ -78,21 +83,19 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     return `${day}-${month}-${year}`;
   };
 
-  // Set the current date as the default return date when the component is mounted
   useEffect(() => {
-    const currentDate = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+    const currentDate = new Date().toISOString().split("T")[0];
     setNewReturn((prev) => ({
       ...prev,
-      returnDate: currentDate, // Set the return date
+      returnDate: currentDate,
     }));
   }, []);
 
-  // Fetch products on mount
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/returns/${outletId}/products`,
+          `${process.env.NEXT_PUBLIC_API_URL}/returns/${outletId}/products`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -105,25 +108,25 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
         const productsList = await response.json();
         setProducts(productsList);
       } catch (error) {
-        console.error("Error fetching products:", error);
-        setError("Error fetching products. Please try again later.");
-      }
-    };
+                dispatch(
+                  showErrorToast({ message: "Failed to fetch products", isDarkMode })
+                );
+              }
+            };
 
     if (outletId) fetchProducts();
   }, [outletId, token]);
 
-  // Fetch batches when product changes
   useEffect(() => {
     const fetchBatches = async () => {
       if (!newReturn.productId) {
-        setBatches([]); // Clear batches if no product is selected
+        setBatches([]);
         return;
       }
 
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/returns/${newReturn.productId}/batches`,
+          `${process.env.NEXT_PUBLIC_API_URL}/returns/${newReturn.productId}/batches`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -136,21 +139,20 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
         const batchesList = await response.json();
         setBatches(batchesList);
       } catch (error) {
-        console.error("Error fetching batches:", error);
-        setBatches([]); // Reset batches if error occurs
-        setError("Error fetching batches. Please try again later.");
-      }
-    };
+          dispatch(
+            showErrorToast({ message: "Error fetching batches. Please try again later.", isDarkMode })
+          );
+        }
+      };
 
     fetchBatches();
   }, [newReturn.productId, token]);
 
-  // Fetch return history
   useEffect(() => {
     const fetchReturnHistory = async () => {
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/returns/${outletId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/returns/${outletId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -163,10 +165,12 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
         const history = await response.json();
         setReturnHistory(history);
       } catch (error) {
-        console.error("Error fetching return history:", error);
-        setError("Error fetching return history. Please try again later.");
-      }
-    };
+          dispatch(
+            showErrorToast({ message: "Error fetching return history. Please try again later.", isDarkMode })
+          );
+        }
+      };
+    
 
     if (outletId) fetchReturnHistory();
   }, [outletId, token]);
@@ -178,13 +182,13 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
       !newReturn.quantity ||
       !newReturn.reason
     ) {
-      setError("Please fill all fields");
+      showErrorToast({ message: "please fill all the field", isDarkMode });
       return;
     }
 
     const quantity = Number(newReturn.quantity);
     if (isNaN(quantity) || quantity <= 0) {
-      setError("Quantity must be a positive number");
+      showErrorToast({ message: "quantity must be a positive number", isDarkMode });
       return;
     }
 
@@ -194,7 +198,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     const selectedBatch = batches.find((b) => b.batch_id === newReturn.batchId);
 
     if (!selectedProduct || !selectedBatch) {
-      setError("Invalid product or batch selection");
+      showErrorToast({ message: "invalid product or batch selection", isDarkMode });
       return;
     }
 
@@ -211,7 +215,6 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     setReturnData((prev) => [...prev, newEntry]);
     setIsModalOpen(false);
     resetForm();
-    setError(null); // Clear error after successful return addition
   };
 
   const resetForm = () => {
@@ -221,13 +224,13 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
       batchId: null,
       quantity: 0,
       reason: "",
-      returnDate: new Date().toISOString().split("T")[0], // Reset to current date
+      returnDate: new Date().toISOString().split("T")[0],
     });
   };
 
   const handleSaveReturns = async () => {
     if (returnData.length === 0) {
-      setError("No returns to save");
+      dispatch(showErrorToast({ message: "No returns to save", isDarkMode }));
       return;
     }
 
@@ -241,14 +244,17 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
       console.log("Return Request Body:", returnRequestBody);
 
-      const response = await fetch("https://brandis-backend.vercel.app/api/returns", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(returnRequestBody),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(returnRequestBody),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -257,11 +263,15 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
       }
 
       setReturnHistory((prev) => [...prev, ...returnData]);
-      setReturnData([]); // Clear return data after saving
-      setError(null); // Clear error after successfully saving returns
+      setReturnData([]);
+      dispatch(
+        showSuccessToast({ message: "Returns saved successfully!", isDarkMode })
+      );
     } catch (error) {
-      console.error("Error saving returns:", error);
-      setError(error instanceof Error ? error.message : "Failed to save returns");
+      console.error("Failed to save returns:", error);
+      dispatch(
+        showErrorToast({ message: "Failed to save returns", isDarkMode })
+      );
     }
   };
 
@@ -349,7 +359,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
               <TableCell>{item.quantity}</TableCell>
               <TableCell>{item.reason}</TableCell>
               <TableCell>
-                {formatDate(item.return_date)} {/* Format date */}
+                {formatDate(item.return_date)}
               </TableCell>
             </TableRow>
           ))}
@@ -381,7 +391,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
                       setNewReturn((prev) => ({
                         ...prev,
                         productId: value,
-                        batchId: null, // Reset batch when product changes
+                        batchId: null,
                       }));
                     }}
                   >
@@ -445,11 +455,12 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
                 </div>
               </ModalBody>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Tutup
+                <Button color="danger" variant="flat" onPress={onClose}>
+                  Batal
                 </Button>
                 <Button
                   color="primary"
+                  variant="flat"
                   onPress={() => {
                     handleAddReturn();
                     onClose();

@@ -43,7 +43,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Total Stock in Warehouse
       const gudangRes = await fetch(
-        "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang",
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`,
         { headers }
       );
       if (!gudangRes.ok) throw new Error("Gagal memuat data stok gudang.");
@@ -52,7 +52,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Summed-up Stock
       const stokGudangRes = await fetch(
-        "https://brandis-backend.vercel.app/api/pimpinan/totalStokGudang",
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`,
         { headers }
       );
       if (!stokGudangRes.ok)
@@ -62,7 +62,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Expiring Batches
       const kadaluarsaRes = await fetch(
-        "https://brandis-backend.vercel.app/api/pimpinan/batchKadaluarsa",
+        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/batchKadaluarsa`,
         { headers }
       );
       if (!kadaluarsaRes.ok) throw new Error("Gagal memuat batch kadaluarsa.");
@@ -71,7 +71,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Batches Produced This Month
       const diproduksiRes = await fetch(
-        "https://brandis-backend.vercel.app/api/manajer/batchDiproduksiBulanIni",
+        `${process.env.NEXT_PUBLIC_API_URL}/manajer/batchDiproduksiBulanIni`,
         { headers }
       );
       if (!diproduksiRes.ok)
@@ -81,7 +81,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Low Stock Items
       const stokRendahRes = await fetch(
-        "https://brandis-backend.vercel.app/api/manajer/stokRendahDiGudang",
+        `${process.env.NEXT_PUBLIC_API_URL}/manajer/stokRendahDiGudang`,
         { headers }
       );
       if (!stokRendahRes.ok) throw new Error("Gagal memuat stok rendah.");
@@ -90,7 +90,7 @@ const DashboardManajer: React.FC = () => {
 
       // Fetch Total Returned Products
       const pengembalianRes = await fetch(
-        "https://brandis-backend.vercel.app/api/manajer/totalPengembalianProduk",
+        `${process.env.NEXT_PUBLIC_API_URL}/manajer/totalPengembalianProduk`,
         { headers }
       );
       if (!pengembalianRes.ok)
@@ -117,7 +117,7 @@ const DashboardManajer: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="container px-6 lg:px-12 py-6">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Manajer
       </h1>

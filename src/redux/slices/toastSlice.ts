@@ -6,7 +6,7 @@ import { toast, ToastOptions } from "react-toastify";
 interface ToastPayload {
   message: string;
   options?: ToastOptions;
-  isDarkMode: boolean; // Added dark mode flag
+  isDarkMode: boolean;
 }
 
 const toastSlice = createSlice({
@@ -20,8 +20,8 @@ const toastSlice = createSlice({
         autoClose: 3000,
         ...options,
         style: {
-          backgroundColor: isDarkMode ? "#333" : "#f4f4f4", // Dark mode color vs light mode color
-          color: isDarkMode ? "#fff" : "#000", // Adjust text color
+          backgroundColor: isDarkMode ? "#333" : "#f4f4f4",
+          color: isDarkMode ? "#fff" : "#000",
         },
       });
     },

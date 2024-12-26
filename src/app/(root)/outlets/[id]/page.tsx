@@ -39,7 +39,7 @@ const OutletDetail = () => {
         setError(null);
 
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/outlet/${id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`
         );
 
         if (!response.ok) {
@@ -75,7 +75,6 @@ const OutletDetail = () => {
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen text-red-600">
-        <div>Error: {error}</div>
       </div>
     );
   }
@@ -89,7 +88,7 @@ const OutletDetail = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-7xl">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <Card className="mb-4">
         <CardHeader>
           <h1 className="text-3xl font-bold">{outletData.nama}</h1>

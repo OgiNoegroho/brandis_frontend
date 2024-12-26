@@ -21,7 +21,7 @@ const Bendahara: React.FC = () => {
 
       // Fetch ringkasanFakturDistribusi
       const ringkasanRes = await fetch(
-        "https://brandis-backend.vercel.app/api/bendahara/ringkasanFakturDistribusi",
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/ringkasanFakturDistribusi`,
         { headers }
       );
       if (!ringkasanRes.ok) throw new Error("Gagal memuat ringkasan faktur.");
@@ -30,7 +30,7 @@ const Bendahara: React.FC = () => {
 
       // Fetch pendapatanBulanIni
       const pendapatanRes = await fetch(
-        "https://brandis-backend.vercel.app/api/bendahara/pendapatanBulanIni",
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/pendapatanBulanIni`,
         { headers }
       );
       if (!pendapatanRes.ok)
@@ -40,7 +40,7 @@ const Bendahara: React.FC = () => {
 
       // Fetch fakturJatuhTempoHariIni
       const jatuhTempoRes = await fetch(
-        "https://brandis-backend.vercel.app/api/bendahara/fakturJatuhTempoHariIni",
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/fakturJatuhTempoHariIni`,
         { headers }
       );
       if (!jatuhTempoRes.ok)
@@ -73,7 +73,7 @@ const Bendahara: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="p-5 bg-gray-50 min-h-screen">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-3xl font-bold mb-5 text-center text-indigo-600">
         Dashboard Bendahara
       </h1>

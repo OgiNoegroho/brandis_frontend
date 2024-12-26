@@ -17,8 +17,9 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
 type ProductEntry = {
   productName: string;
@@ -56,11 +57,6 @@ type FakturEntry = {
   payment_status: "Lunas" | "Menunggu";
 };
 
-
-type SavedDistribution = {
-  details: { batch_id: number; kuantitas_terjual: number }[];
-};
-
 type Product = {
   id: number;
   nama: string;
@@ -82,14 +78,9 @@ interface DistributionHistoryProps {
 const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) => {
   const [productEntries, setProductEntries] = useState<ProductEntry[]>([]);
   const [allBatches, setAllBatches] = useState<Batch[]>([]);
-  const [savedDistributions, setSavedDistributions] = useState<
-    SavedDistribution[]
-  >([]);
   const [distributions, setDistributions] = useState<DistributionTableEntry[]>(
     []
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFakturModalOpen, setIsFakturModalOpen] = useState(false);
@@ -115,31 +106,33 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     if (!date) return "N/A";
 
     const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, "0"); // Adds leading zero if day is less than 10
-    const month = String(d.getMonth() + 1).padStart(2, "0"); // Months are 0-based, so add 1
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
     const year = d.getFullYear();
 
-    return `${day}-${month}-${year}`; // Return in DDMMYYYY format
+    return `${day}-${month}-${year}`;
   };
 
-  // New state for dropdowns
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [loadingBatches, setLoadingBatches] = useState(false);
 
-  const token = useAppSelector((state: RootState) => state.auth.token);
+  const dispatch = useAppDispatch();
 
-  // Fetch products when component mounts
+  const token = useAppSelector((state: RootState) => state.auth.token);
+    const isDarkMode = useAppSelector(
+      (state: RootState) => state.global.isDarkMode
+    );
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Fetch products from API
   const fetchProducts = async () => {
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/products", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -154,13 +147,11 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       console.error(error);
     }
   };
-
-  // Fetch batches based on selected product
   const fetchBatches = async (productId: string) => {
     setLoadingBatches(true);
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/inventory/${productId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/inventory/${productId}`,
         {
           method: "GET",
           headers: {
@@ -173,10 +164,9 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       const data: Batch[] = await response.json();
 
-      // Update both states
-      setBatches(data); // For the dropdown
+      setBatches(data);
       setAllBatches((prevBatches) => {
-        // Create a new array with unique batches
+
         const newBatches = [...prevBatches];
         data.forEach((newBatch: Batch) => {
           if (
@@ -197,17 +187,13 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     }
   };
 
-  // Fetch all distributions for the outlet
   useEffect(() => {
     if (outletId) {
       fetchDistributions();
     }
   }, [outletId, token]);
 
-  // Fetch distributions method
   const fetchDistributions = async () => {
-    setIsLoading(true);
-    setError(null);
 
     try {
       const outletIdNumber = Number(outletId);
@@ -217,7 +203,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       }
 
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/distribusi/${outletIdNumber}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/distribusi/${outletIdNumber}`,
         {
           method: "GET",
           headers: {
@@ -234,26 +220,22 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       const data: DistributionTableEntry[] = await response.json();
 
-      // Validate response structure
       if (!Array.isArray(data)) {
         throw new Error("Invalid response structure: expected an array");
       }
 
       setDistributions(data);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
-      setError(errorMessage);
-      console.error("Error fetching distributions:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+          dispatch(
+            showErrorToast({ message: "Failed to load products", isDarkMode })
+          );
+        }
+      };
 
   const handleViewDetail = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/distribusi/detail/${distributionId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/distribusi/detail/${distributionId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -268,7 +250,6 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       const data: DistributionDetailEntry[] = await response.json();
 
-      // Validate response
       if (
         !Array.isArray(data) ||
         data.some(
@@ -282,14 +263,13 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       setIsDetailModalOpen(true);
     } catch (error) {
       console.error("Error fetching distribution details:", error);
-      // Optionally, set an error state or show a message in the modal
     }
   };
 
   const handleViewFaktur = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/api/faktur/${distributionId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -302,7 +282,6 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       const data: FakturEntry[] = await response.json();
 
-      // Validate response
       if (
         !Array.isArray(data) ||
         data.some(
@@ -317,31 +296,26 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       setIsFakturModalOpen(true);
     } catch (error) {
       console.error("Error fetching invoice details:", error);
-      // Optionally, set an error state to reflect issues in the modal
     }
   };
 
-  // Handle product selection
+
   const handleProductChange = (productId: string) => {
     setSelectedProduct(productId);
-    setSelectedBatch(""); // Reset batch when product changes
+    setSelectedBatch("");
 
-    // Find the selected product name for display
     const product = products.find((p) => p.id.toString() === productId);
     setNewProduct((prev) => ({
       ...prev,
       productName: product ? product.nama : "",
     }));
 
-    // Fetch batches for the selected product
     fetchBatches(productId);
   };
 
-  // Handle batch selection
   const handleBatchChange = (batchId: string) => {
     setSelectedBatch(batchId);
 
-    // Find the selected batch name for display
     const batch = batches.find((b) => b.batch_id.toString() === batchId);
     setNewProduct((prev) => ({
       ...prev,
@@ -349,22 +323,18 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     }));
   };
 
-  // Function to remove a product entry
   const handleRemoveProduct = (index: number) => {
     setProductEntries((prevEntries) =>
       prevEntries.filter((_, i) => i !== index)
     );
   };
 
-  // Function to handle adding a new product entry
-  // In handleAddProduct:
   const handleAddProduct = () => {
     if (!selectedProduct || !selectedBatch || !newProduct.quantity) {
       alert("Please fill in all product details");
       return;
     }
 
-    // Find the selected batch and product data
     const selectedBatchData = batches.find(
       (b) => b.batch_id.toString() === selectedBatch
     );
@@ -473,14 +443,17 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     };
 
     try {
-      const response = await fetch("https://brandis-backend.vercel.app/api/distribusi", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(distribusiData),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/distribusi`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(distribusiData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -494,13 +467,28 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       const result = await response.json();
       console.log("API response:", result);
 
+      // Reset form and fetch updated distributions
       setProductEntries([]);
       setIsSaveModalOpen(false);
       await fetchDistributions();
-      alert("Distribution saved successfully!");
+
+      // Show success toast
+      dispatch(
+        showSuccessToast({
+          message: "Distribution saved successfully!",
+          isDarkMode,
+        })
+      );
     } catch (error) {
       console.error("Failed to save distribution:", error);
-      alert(`Failed to save distribution: ${error}`);
+
+      // Show error toast
+      dispatch(
+        showErrorToast({
+          message: `Failed to save distribution: ${error || error}`,
+          isDarkMode,
+        })
+      );
     }
   };
 

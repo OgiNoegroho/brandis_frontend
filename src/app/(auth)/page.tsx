@@ -2,28 +2,30 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/redux/hooks";
-import { setToken } from "@/redux/slices/authSlice"; // Redux Toolkit slice
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice"; // Import toast actions
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { RootState } from "@/redux/store";
+import { setToken } from "@/redux/slices/authSlice";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice"; 
 import { Button, Card, Input } from "@nextui-org/react";
 import { Eye, EyeOff } from "lucide-react";
 
 const LogIn = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true); // Start loading
-
     try {
       const response = await fetch(
-        "https://brandis-backend.vercel.app/api/users/login",
+        `${process.env.NEXT_PUBLIC_API_URL}/users/login`,
         {
           method: "POST",
           headers: {
@@ -34,7 +36,7 @@ const LogIn = () => {
       );
 
       if (!response.ok) {
-        throw new Error("Login failed. Please check your credentials.");
+        throw new Error("Gagal login. Silakan cek kembali kredensial Anda.");
       }
 
       const data = await response.json();
@@ -46,7 +48,7 @@ const LogIn = () => {
       dispatch(
         showSuccessToast({
           message: "Login berhasil! Anda akan diarahkan ke dashboard.",
-          isDarkMode: false, // Change based on your theme
+          isDarkMode, // Change based on your theme
         })
       );
 
@@ -57,7 +59,7 @@ const LogIn = () => {
       dispatch(
         showErrorToast({
           message: "Login gagal. Silakan cek kembali kredensial Anda.",
-          isDarkMode: false, // Change based on your theme
+          isDarkMode, // Change based on your theme
         })
       );
     } finally {
@@ -69,18 +71,32 @@ const LogIn = () => {
     <div className="h-screen flex items-center justify-center px-4 sm:px-6 md:px-8 lg:px-12 py-12 sm:py-16">
       <Card className="w-full max-w-[350px] sm:max-w-[500px] md:max-w-[600px] lg:max-w-[800px] xl:max-w-[900px] 2xl:max-w-[1000px] bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col lg:flex-row">
         {/* Brand Section */}
-        <div className="w-full lg:w-1/2 bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 lg:p-12">
+        <div
+          className="w-full lg:w-1/2 bg-contain bg-center flex flex-col items-center justify-center p-6 sm:p-8 md:p-10 lg:p-12"
+          style={{
+            backgroundImage:
+              "url('https://res.cloudinary.com/dcwyr2sog/image/upload/v1735138539/Brandis/yvsozswglng42ckd0mgo.jpg')",
+          }}
+        >
           <div className="flex flex-col items-center space-y-6">
             <img
-              src="/brandis_logo.png"
+              src="https://res.cloudinary.com/dcwyr2sog/image/upload/f_auto,q_auto/v1/Brandis/akaaskzvkau4droz783h"
               alt="Brand Logo"
               className="h-20 sm:h-24 lg:h-36 object-contain"
             />
             <div className="text-center space-y-4">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+              <h1
+                className={`text-2xl sm:text-3xl lg:text-4xl font-bold ${
+                  isDarkMode ? "text-gray-900" : "text-black"
+                }`}
+              >
                 Selamat Datang di Brandis!
               </h1>
-              <p className="text-lg text-blue-100 max-w-md">
+              <p
+                className={`text-lg max-w-md ${
+                  isDarkMode ? "text-gray-900" : "text-black"
+                }`}
+              >
                 Kelola bisnis Anda dengan lebih efisien dan profesional
               </p>
             </div>

@@ -60,26 +60,15 @@ type Outlet = {
 const FinancialReportsDetails: React.FC = () => {
   const { id } = useParams();
   const [selectedOutlet, setSelectedOutlet] = useState<Outlet | null>(null);
-  const [distributions, setDistributions] = useState<DistributionTableEntry[]>(
-    []
-  );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [detailData, setDetailData] = useState<
-    DistributionDetailEntry[] | null
-  >(null);
+  const [distributions, setDistributions] = useState<DistributionTableEntry[]>([]);
+  const [detailData, setDetailData] = useState<DistributionDetailEntry[] | null>(null);
   const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<"Lunas" | "Menunggu">(
-    "Menunggu"
-  );
-  const [amountPaidInput, setAmountPaidInput] = useState<string>(""); // New state for jumlah_dibayar input
+  const [amountPaidInput, setAmountPaidInput] = useState<string>("");
   const [isAmountUpdating, setIsAmountUpdating] = useState(false);
 
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const isDarkMode = useAppSelector(
-    (state: RootState) => state.global.isDarkMode
-  );
+  const isDarkMode = useAppSelector((state: RootState) => state.global.isDarkMode);
 
   const formatDate = (date: string | Date): string => {
     const d = new Date(date);
@@ -91,15 +80,20 @@ const FinancialReportsDetails: React.FC = () => {
 
   const fetchOutletDetails = async () => {
     try {
-      const response = await fetch(`https://brandis-backend.vercel.app/outlet/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!response.ok) throw new Error("Failed to fetch outlet details");
+      if (!response.ok) throw new Error("Gagal mengambil detail outlet");
 
       const outletData: Outlet = await response.json();
       setSelectedOutlet(outletData);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+      dispatch(
+        showErrorToast({
+          message: error instanceof Error ? error.message : "sebuah kesalahan terjadi",
+          isDarkMode,
+        })
+      );
     }
   };
 
@@ -111,41 +105,40 @@ const FinancialReportsDetails: React.FC = () => {
   }, [id, token]);
 
   const fetchDistributions = async () => {
-    setIsLoading(true);
-    setError(null);
-
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/distribusi/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/distribusi/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch distributions");
+      if (!response.ok) throw new Error("gagal mengambil data distribusi");
 
       const data: DistributionTableEntry[] = await response.json();
       setDistributions(data);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
+      dispatch(
+        showErrorToast({
+          message: error instanceof Error ? error.message : "sebuah kesalahan terjadi",
+          isDarkMode,
+        })
+      );
     }
   };
 
   const handleViewDetail = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/distribusi/detail/${distributionId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/distribusi/detail/${distributionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch distribution details");
+      if (!response.ok) throw new Error("Gagal mengambil detail distribusi");
 
       const data: DistributionDetailEntry[] = await response.json();
       setDetailData(data);
     } catch (error) {
-      console.error("Error fetching distribution details:", error);
       dispatch(
         showErrorToast({
           message: "Gagal mengambil detail distribusi",
@@ -158,19 +151,15 @@ const FinancialReportsDetails: React.FC = () => {
   const handleViewFaktur = async (distributionId: number) => {
     try {
       const response = await fetch(
-        `https://brandis-backend.vercel.app/faktur/${distributionId}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch invoice details");
+      if (!response.ok) throw new Error("Gagal mengambil detail faktur");
 
       const data: FakturEntry[] = await response.json();
       setFakturData(data);
-      if (data[0]) {
-        setSelectedStatus(data[0].payment_status);
-      }
     } catch (error) {
-      console.error("Error fetching invoice details:", error);
       dispatch(
         showErrorToast({
           message: "Gagal mengambil detail faktur",
@@ -186,7 +175,7 @@ const FinancialReportsDetails: React.FC = () => {
       const encodedFakturId = encodeURIComponent(fakturId);
 
       const response = await fetch(
-        `https://brandis-backend.vercel.app/faktur/${encodedFakturId}/jumlah-dibayar`,
+        `${process.env.NEXT_PUBLIC_API_URL}/faktur/${encodedFakturId}/jumlah-dibayar`,
         {
           method: "PUT",
           headers: {
@@ -197,16 +186,13 @@ const FinancialReportsDetails: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update jumlah_dibayar");
+      if (!response.ok) throw new Error("Jumlah dibayar gagal diperbarui");
 
-      // Get the distribusi_id from current fakturData to use for refreshing
       const distribusiId = fakturData?.[0]?.distribusi_id;
       if (distribusiId) {
-        // Refetch the faktur data to get updated values
         await handleViewFaktur(distribusiId);
       }
 
-      // Clear the input
       setAmountPaidInput("");
 
       dispatch(
@@ -216,7 +202,6 @@ const FinancialReportsDetails: React.FC = () => {
         })
       );
     } catch (error) {
-      console.error("Error updating jumlah_dibayar:", error);
       dispatch(
         showErrorToast({
           message: "Gagal memperbarui jumlah dibayar",
@@ -231,30 +216,28 @@ const FinancialReportsDetails: React.FC = () => {
   const closeDetailModal = () => setDetailData(null);
   const closeFakturModal = () => setFakturData(null);
 
-  return (
-    <div>
-      {selectedOutlet ? (
-        <Card className="mb-4">
-          <CardHeader>
-            <h1 className="text-3xl font-bold">{selectedOutlet.nama}</h1>
-          </CardHeader>
-          <Divider />
-          <div className="grid grid-cols-1 gap-2 p-2">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
-              <MapPin className="h-5 w-5" />
-              <span>{selectedOutlet.alamat}</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-600">
-              <PhoneCall className="h-5 w-5" />
-              <span>{selectedOutlet.nomor_telepon}</span>
-            </div>
+ return (
+  <div className="container px-12 sm:px-6 lg:pl-0 content">
+    {selectedOutlet ? (
+      <Card className="mb-4">
+        <CardHeader>
+          <h1 className="text-3xl font-bold">{selectedOutlet.nama}</h1>
+        </CardHeader>
+        <Divider />
+        <div className="grid grid-cols-1 gap-2 p-2">
+          <div className="flex items-center gap-2 text-gray-600 mb-2">
+            <MapPin className="h-5 w-5" />
+            <span>{selectedOutlet.alamat}</span>
           </div>
-        </Card>
-      ) : (
-        <div className="text-center text-gray-500">
-          Loading outlet details...
+          <div className="flex items-center gap-2 text-gray-600">
+            <PhoneCall className="h-5 w-5" />
+            <span>{selectedOutlet.nomor_telepon}</span>
+          </div>
         </div>
-      )}
+      </Card>
+    ) : (
+      <p>Loading outlet details...</p>
+    )}
 
       <Card className="mb-4">
         <CardBody>
@@ -416,7 +399,6 @@ const FinancialReportsDetails: React.FC = () => {
 
               <div className="mt-6 border-t pt-4">
                 <div className="grid grid-cols-2 gap-8">
-                  {/* Left Column - Payment Amount */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <div>
@@ -451,7 +433,6 @@ const FinancialReportsDetails: React.FC = () => {
                           )}
                         </p>
 
-                        {/* Only show the update section if 'jumlah dibayar' is less than 'total keseluruhan' */}
                         {fakturData[0].amount_paid <
                           fakturData[0].grand_total && (
                           <div className="space-y-2 mt-2">
@@ -488,7 +469,6 @@ const FinancialReportsDetails: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Right Column - Payment Status */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <div>

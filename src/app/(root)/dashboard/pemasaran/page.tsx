@@ -22,7 +22,6 @@ const Pemasaran: React.FC = () => {
   const [outletStokRendah, setOutletStokRendah] = useState<any[]>([]);
   const [outletTerbaik, setOutletTerbaik] = useState<any[]>([]);
   const [produkDikembalikan, setProdukDikembalikan] = useState<any[]>([]);
-  const [error, setError] = useState<string | null>(null);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
@@ -39,12 +38,9 @@ const Pemasaran: React.FC = () => {
 
       const responses = await Promise.all(
         endpoints.map((endpoint) =>
-          fetch(
-            `https://brandis-backend.vercel.app/api/pemasaran/${endpoint}`,
-            {
-              headers,
-            }
-          ).then((res) => res.json())
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/pemasaran/${endpoint}`, {
+            headers,
+          }).then((res) => res.json())
         )
       );
 
@@ -63,8 +59,6 @@ const Pemasaran: React.FC = () => {
           isDarkMode: false,
         })
       );
-
-      setError(errorMessage); // Optionally display the error message within the component
     }
   };
 
@@ -73,11 +67,10 @@ const Pemasaran: React.FC = () => {
   }, [token]);
 
   return (
-    <div className="container px-6 lg:px-12 py-6">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Pemasaran
       </h1>
-      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <div className="grid grid-cols-4 gap-6">
         {/* Left Column (2 cols wide) */}

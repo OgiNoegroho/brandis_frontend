@@ -17,10 +17,10 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-// Stock data (with price) from /stock-overview
 interface StockOverview {
   produk_id: number;
   nama_produk: string;
@@ -28,7 +28,6 @@ interface StockOverview {
   kuantitas_stok: number;
 }
 
-// Sale data to display in the sales table
 interface Sale {
   penjualan_id: number;
   product_name: string;
@@ -36,38 +35,30 @@ interface Sale {
   dibuat_pada: string;
 }
 
-// Product data (without price) from /stock-overview-without-price
 interface ProductSelect {
   produk_id: number;
   nama_produk: string;
   kuantitas_stok: number;
 }
 
-// Sale submission data to handle the sale
-interface SaleSubmission {
-  outlet_id: string;
-  saleDetails: {
-    product_id: number;
-    kuantitas_terjual: number;
-  }[];
-}
-
-const StockOverview = ({ outletId }: { outletId: string }) => {
-  const [stockData, setStockData] = useState<StockOverview[]>([]); // With price
+const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
+  const [stockData, setStockData] = useState<StockOverview[]>([]);
   const [productSelectData, setProductSelectData] = useState<ProductSelect[]>(
     []
-  ); // Without price
+  );
   const [salesData, setSalesData] = useState<Sale[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [quantitySold, setQuantitySold] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const dispatch = useAppDispatch();
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
 
-
-    const formatDateTime = (isoDate: string): string => {
+  const formatDateTime = (isoDate: string): string => {
     const date = new Date(isoDate);
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
@@ -76,12 +67,12 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
     const minutes = date.getMinutes().toString().padStart(2, "0");
     return `${day}-${month}-${year} ${hours}:${minutes}`;
   };
-  // Fetch stock data (with price)
+
   useEffect(() => {
     const fetchStockData = async () => {
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/outlet/${outletId}/stock-overview`,
+          `${process.env.NEXT_PUBLIC_API_URL}/outlet/${outletId}/stock-overview`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -93,18 +84,17 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         const data: StockOverview[] = await response.json();
         setStockData(data);
       } catch (err) {
-        setError("Error fetching stock data");
+        showErrorToast({ message: "Error fetching stock data.", isDarkMode });
       }
     };
     if (outletId) fetchStockData();
   }, [outletId, token]);
 
-  // Fetch product select data (without price)
   useEffect(() => {
     const fetchProductSelectData = async () => {
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/outlet/${outletId}/stock-overview-without-price`,
+          `${process.env.NEXT_PUBLIC_API_URL}/outlet/${outletId}/stock-overview-without-price`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -117,18 +107,20 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         const data: ProductSelect[] = await response.json();
         setProductSelectData(data);
       } catch (err) {
-        setError("Error fetching product select data");
+        showErrorToast({
+          message: "Error fetching product select data.",
+          isDarkMode,
+        });
       }
     };
     if (outletId) fetchProductSelectData();
   }, [outletId, token]);
 
-  // Fetch sales data
   useEffect(() => {
     const fetchSalesData = async () => {
       try {
         const response = await fetch(
-          `https://brandis-backend.vercel.app/api/sales/${outletId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/sales/${outletId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -140,17 +132,14 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         const data: Sale[] = await response.json();
         setSalesData(data);
       } catch (err) {
-        setError("Error fetching sales data");
+        showErrorToast({ message: "Error fetching sales data.", isDarkMode });
       }
     };
     if (outletId) fetchSalesData();
   }, [outletId, token]);
 
-  // Handle sale submission
   const handleSaleSubmit = async () => {
-    setError(null);
     if (selectedProduct && quantitySold && parseInt(quantitySold) > 0) {
-      setIsSubmitting(true);
       try {
         const saleSubmission = {
           outlet_id: parseInt(outletId),
@@ -162,14 +151,17 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
           ],
         };
 
-        const response = await fetch(`https://brandis-backend.vercel.app/api/sales`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(saleSubmission),
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/sales`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(saleSubmission),
+          }
+        );
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -179,29 +171,42 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         }
 
         const updatedSales = await response.json();
-        // Check if the response is an array or a single object
         if (Array.isArray(updatedSales)) {
           setSalesData((prevSales) => [...prevSales, ...updatedSales]);
         } else {
           setSalesData((prevSales) => [...prevSales, updatedSales]);
         }
 
+        dispatch(
+          showSuccessToast({
+            message: "Sale submitted successfully!",
+            isDarkMode,
+          })
+        );
+
         setQuantitySold("");
         setSelectedProduct(null);
         setModalVisible(false);
       } catch (err: any) {
-        setError(err.message || "Error submitting sale.");
-      } finally {
-        setIsSubmitting(false);
+        dispatch(
+          showErrorToast({
+            message: "Error submitting sale.",
+            isDarkMode,
+          })
+        );
       }
     } else {
-      setError("Please select a product and enter a valid quantity.");
+      dispatch(
+        showErrorToast({
+          message: "Please select a product and enter a valid quantity.",
+          isDarkMode,
+        })
+      );
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Stock Overview Table */}
       <div>
         <h3 className="text-lg font-semibold">Stok Outlet</h3>
         <Divider className="my-2" />
@@ -229,12 +234,16 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         </Table>
       </div>
 
-      {/* Sales Data Table */}
       <div>
         <h3 className="text-lg font-semibold">Penjualan Outlet</h3>
         <Divider className="my-2" />
-        <Button color="primary" onClick={() => setModalVisible(true)}>
-          Add Sale
+        <Button
+          className="mb-2"
+          color="primary"
+          variant="flat"
+          onPress={() => setModalVisible(true)}
+        >
+          Tambah Penjualan
         </Button>
         <Table aria-label="Sales transactions">
           <TableHeader>
@@ -254,7 +263,6 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         </Table>
       </div>
 
-      {/* Add Sale Modal */}
       <Modal
         closeButton
         aria-labelledby="modal-title"
@@ -262,11 +270,7 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
         onClose={() => setModalVisible(false)}
       >
         <ModalContent>
-          <ModalHeader>
-            <Button id="modal-title" className="text-lg font-semibold mb-2">
-              Add Sale
-            </Button>
-          </ModalHeader>
+          <ModalHeader></ModalHeader>
           <ModalBody>
             <Select
               label="Select Product"
@@ -304,10 +308,11 @@ const StockOverview = ({ outletId }: { outletId: string }) => {
           <ModalFooter>
             <Button
               color="primary"
-              onClick={handleSaleSubmit}
-              isDisabled={isSubmitting || !selectedProduct || !quantitySold}
+              variant="flat"
+              onPress={handleSaleSubmit}
+              isDisabled={!selectedProduct || !quantitySold}
             >
-              {isSubmitting ? "Submitting..." : "Submit Sale"}
+              Simpan
             </Button>
           </ModalFooter>
         </ModalContent>
