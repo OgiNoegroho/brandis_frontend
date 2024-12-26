@@ -66,7 +66,7 @@ const FinancialReports = () => {
 
   return (
     <div className="pl-12">
-      <h1 className="text-2xl font-bold mb-2">Financial Reports</h1>
+      <h1 className="text-2xl font-bold mb-2">Laporan Outlet</h1>
 
      
         <div className="bg-white shadow-md rounded-lg overflow-hidden">

@@ -239,7 +239,7 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
         <Divider className="my-2" />
         <Button
           className="mb-2"
-          color="primary"
+          color="success"
           variant="flat"
           onPress={() => setModalVisible(true)}
         >
