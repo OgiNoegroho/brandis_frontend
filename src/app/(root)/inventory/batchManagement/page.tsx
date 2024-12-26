@@ -498,7 +498,7 @@ const BatchManagement: React.FC = () => {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableColumn>Nama Batch</TableColumn>
+                <TableColumn>No. Batch</TableColumn>
                 <TableColumn>Nama Produk</TableColumn>
                 <TableColumn>Kuantitas</TableColumn>
                 <TableColumn>Tanggal Produksi</TableColumn>

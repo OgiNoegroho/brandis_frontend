@@ -689,8 +689,8 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       <Divider className="mb-2" />
       <Table>
         <TableHeader>
-          <TableColumn>Faktur id</TableColumn>
-          <TableColumn>Batch id</TableColumn>
+          <TableColumn>No. Faktur</TableColumn>
+          <TableColumn>Id Batch</TableColumn>
           <TableColumn>Dibuat pada</TableColumn>
           <TableColumn>Aksi</TableColumn>
         </TableHeader>

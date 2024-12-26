@@ -49,9 +49,13 @@ const router = useRouter();
   const dispatch = useAppDispatch();
   const { id } = useParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const formatPrice = (price: number): string => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  };
+const formatPrice = (price: number): string => {
+  // Ensure the price is an integer and format it with periods as thousands separator
+  return Math.floor(price)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

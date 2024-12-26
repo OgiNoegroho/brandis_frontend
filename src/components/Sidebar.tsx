@@ -276,7 +276,7 @@ const Sidebar = () => {
       >
         <div className="flex items-center gap-3">
           <Image
-            src="/brandis_logo.png"
+            src="https://res.cloudinary.com/dcwyr2sog/image/upload/f_auto,q_auto/v1/Brandis/akaaskzvkau4droz783h"
             alt="Brandis Logo"
             width={isSidebarCollapsed ? 40 : 50}
             height={isSidebarCollapsed ? 40 : 50}
