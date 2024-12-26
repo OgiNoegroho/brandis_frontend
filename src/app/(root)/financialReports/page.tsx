@@ -65,34 +65,32 @@ const FinancialReports = () => {
   };
 
   return (
-    <div className="pl-12">
+    <div className="container px-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold mb-2">Laporan Outlet</h1>
 
-     
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
-          {outlets.map((outlet) => (
-            <div
-              key={outlet.id}
-              className="flex justify-between items-center border-b p-5 hover:bg-gray-100 transition"
-            >
-              <div>
-                <h2 className="text-lg font-semibold">{outlet.nama}</h2>
-                <p className="text-sm text-gray-600">{outlet.alamat}</p>
-                <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
-              </div>
-              <div className="flex space-x-2">
-                <Button
-                  onClick={() => handleViewDetails(outlet.id)}
-                  color="primary"
-                  variant="flat"
-                >
-                  Detail
-                </Button>
-              </div>
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        {outlets.map((outlet) => (
+          <div
+            key={outlet.id}
+            className="flex justify-between items-center border-b p-5 hover:bg-gray-100 transition"
+          >
+            <div>
+              <h2 className="text-lg font-semibold">{outlet.nama}</h2>
+              <p className="text-sm text-gray-600">{outlet.alamat}</p>
+              <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
             </div>
-          ))}
-        </div>
-      
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => handleViewDetails(outlet.id)}
+                color="primary"
+                variant="flat"
+              >
+                Detail
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
