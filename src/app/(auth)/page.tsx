@@ -128,7 +128,7 @@ const LogIn = () => {
                 required
                 autoComplete="email"
                 className="w-full px-4 py-2 text-gray-900"
-                placeholder="nama@perusahaan.com"
+                placeholder="Nama@gmail.com"
               />
             </div>
 
@@ -168,12 +168,6 @@ const LogIn = () => {
                 />
                 <span className="text-sm text-gray-600">Ingat saya</span>
               </label>
-              <a
-                href="#"
-                className="text-sm font-medium text-blue-600 hover:text-blue-500"
-              >
-                Lupa password?
-              </a>
             </div>
 
             <Button

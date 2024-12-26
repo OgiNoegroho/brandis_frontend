@@ -53,11 +53,11 @@ interface ReturnHistory {
 
 const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
   const dispatch = useAppDispatch();
-  
-    const token = useAppSelector((state: RootState) => state.auth.token);
-      const isDarkMode = useAppSelector(
-        (state: RootState) => state.global.isDarkMode
-      );
+
+  const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
   const [returnData, setReturnData] = useState<ReturnHistory[]>([]);
   const [returnHistory, setReturnHistory] = useState<ReturnHistory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -108,11 +108,11 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
         const productsList = await response.json();
         setProducts(productsList);
       } catch (error) {
-                dispatch(
-                  showErrorToast({ message: "Failed to fetch products", isDarkMode })
-                );
-              }
-            };
+        dispatch(
+          showErrorToast({ message: "Failed to fetch products", isDarkMode })
+        );
+      }
+    };
 
     if (outletId) fetchProducts();
   }, [outletId, token]);
@@ -139,11 +139,14 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
         const batchesList = await response.json();
         setBatches(batchesList);
       } catch (error) {
-          dispatch(
-            showErrorToast({ message: "Error fetching batches. Please try again later.", isDarkMode })
-          );
-        }
-      };
+        dispatch(
+          showErrorToast({
+            message: "Error fetching batches. Please try again later.",
+            isDarkMode,
+          })
+        );
+      }
+    };
 
     fetchBatches();
   }, [newReturn.productId, token]);
@@ -165,12 +168,14 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
         const history = await response.json();
         setReturnHistory(history);
       } catch (error) {
-          dispatch(
-            showErrorToast({ message: "Error fetching return history. Please try again later.", isDarkMode })
-          );
-        }
-      };
-    
+        dispatch(
+          showErrorToast({
+            message: "Error fetching return history. Please try again later.",
+            isDarkMode,
+          })
+        );
+      }
+    };
 
     if (outletId) fetchReturnHistory();
   }, [outletId, token]);
@@ -188,7 +193,10 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
     const quantity = Number(newReturn.quantity);
     if (isNaN(quantity) || quantity <= 0) {
-      showErrorToast({ message: "quantity must be a positive number", isDarkMode });
+      showErrorToast({
+        message: "quantity must be a positive number",
+        isDarkMode,
+      });
       return;
     }
 
@@ -198,7 +206,10 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
     const selectedBatch = batches.find((b) => b.batch_id === newReturn.batchId);
 
     if (!selectedProduct || !selectedBatch) {
-      showErrorToast({ message: "invalid product or batch selection", isDarkMode });
+      showErrorToast({
+        message: "invalid product or batch selection",
+        isDarkMode,
+      });
       return;
     }
 
@@ -277,7 +288,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold">Return Management</h3>
+      <h3 className="text-lg font-semibold">Manajemen retur</h3>
       <Divider className="mb-2" />
 
       <div className="flex justify-end mb-4">
@@ -334,14 +345,14 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
                 color="primary"
                 variant="flat"
               >
-                Save Returns
+                Simpan Retur
               </Button>
             </div>
           )}
         </>
       )}
 
-      <h3 className="text-lg font-semibold">Return History</h3>
+      <h3 className="text-lg font-semibold">Riwayat retur</h3>
       <Divider className="mb-2" />
       <Table>
         <TableHeader>
@@ -358,9 +369,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
               <TableCell>{item.batch_id}</TableCell>
               <TableCell>{item.quantity}</TableCell>
               <TableCell>{item.reason}</TableCell>
-              <TableCell>
-                {formatDate(item.return_date)}
-              </TableCell>
+              <TableCell>{formatDate(item.return_date)}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -382,7 +391,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
                 <div className="space-y-4">
                   <Select
                     label="Nama Produk"
-                    placeholder="Select Product"
+                    placeholder="Pilih Produk"
                     value={newReturn.productId?.toString() || ""}
                     onChange={(e) => {
                       const value = e.target.value
@@ -411,7 +420,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
                   <Select
                     label="Batch"
-                    placeholder="Select Batch"
+                    placeholder="Pilih Batch"
                     value={newReturn.batchId?.toString() || ""}
                     onChange={(e) => {
                       setNewReturn((prev) => ({
@@ -430,7 +439,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
                   <Input
                     type="number"
                     label="Kuantitas"
-                    placeholder="Enter quantity"
+                    placeholder="Masukkan Kuantitas"
                     value={newReturn.quantity.toString()}
                     min={1}
                     onChange={(e) => {
@@ -443,7 +452,7 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
                   <Input
                     label="Alasan"
-                    placeholder="Enter return reason"
+                    placeholder="Alasan Retur"
                     value={newReturn.reason}
                     onChange={(e) => {
                       setNewReturn((prev) => ({
