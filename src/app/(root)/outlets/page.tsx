@@ -38,7 +38,6 @@ const Outlet = () => {
 
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -58,7 +57,6 @@ const Outlet = () => {
   const fetchOutlets = async () => {
     try {
       setIsLoading(true);
-      setError(null);
 
       if (!token) {
         throw new Error("Authentication token not found");
@@ -77,15 +75,13 @@ const Outlet = () => {
 
       const data = await response.json();
       setOutlets(data);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
+    } catch (_) {
       dispatch(
         showErrorToast({
           message: "Gagal memuat data outlet",
           isDarkMode,
         })
       );
-      console.error("Error fetching outlets:", error);
     } finally {
       setIsLoading(false);
     }

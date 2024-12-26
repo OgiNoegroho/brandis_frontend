@@ -24,11 +24,8 @@ interface OutletData {
 
 const OutletDetail = () => {
   const { id } = useParams();
-  const [activeTab, setActiveTab] = useState<string>("stock");
   const [outletData, setOutletData] = useState<OutletData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  
 
   useEffect(() => {
     const fetchOutletDetails = async () => {
@@ -36,14 +33,14 @@ const OutletDetail = () => {
 
       try {
         setIsLoading(true);
-        setError(null);
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`
         );
 
         if (!response.ok) {
-          throw new Error(`Failed to fetch outlet details: ${response.status}`);
+          console.error(`Failed to fetch outlet details: ${response.status}`);
+          return;
         }
 
         const data = await response.json();
@@ -54,7 +51,6 @@ const OutletDetail = () => {
           nomor_telepon: data.nomor_telepon,
         });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
         console.error("Error fetching outlet details:", err);
       } finally {
         setIsLoading(false);
@@ -68,13 +64,6 @@ const OutletDetail = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen text-red-600">
       </div>
     );
   }
@@ -108,7 +97,6 @@ const OutletDetail = () => {
 
       <Tabs
         aria-label="options"
-        onSelectionChange={(key) => setActiveTab(String(key))}
         className="flex w-10/12 flex-col"
         variant="light"
       >

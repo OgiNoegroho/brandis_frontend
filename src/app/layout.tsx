@@ -8,8 +8,11 @@ import StoreProvider from "@/redux/provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Your App Name",
-  description: "Your app description",
+  title: "Brand Ikasari",
+  description: "Brandis Inventory Control And sales Management System",
+  icons: {
+    icon: "/brandisLogo.png",
+  },
 };
 
 export default function RootLayout({
