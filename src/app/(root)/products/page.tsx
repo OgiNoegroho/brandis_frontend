@@ -203,22 +203,23 @@ const ProductsPage = () => {
             product.images?.find((img) => img.isPrimary) || product.images?.[0];
           return (
             <Link key={product.id} href={`/products/${product.id}`} passHref>
-              <Card className="w-full">
-                <CardBody className="overflow-visible p-0">
+              <Card className="w-full h-full shadow-sm" isPressable>
+                <CardBody className="overflow-hidden p-0">
                   <Image
+                    alt={product.nama}
+                    className="w-full object-cover h-[140px] rounded-lg" // Fixed height and rounded corners
                     src={
                       primaryImage
                         ? primaryImage.url
                         : "/images/default-product.png"
                     }
-                    alt={product.nama}
-                    className="w-full h-64 object-cover cursor-pointer rounded-lg shadow-md transition-transform hover:scale-[1.02]"
+                    width={500} // Fixed width for all images
+                    height={500} // Fixed height for all images
                   />
                 </CardBody>
-
-                <CardFooter>
+                <CardFooter className="text-left">
                   <div className="flex flex-col justify-between w-full">
-                    <b className="truncate max-w-[140px]">{product.nama}</b>
+                    <b className="truncate max-w-[200px]">{product.nama}</b>
                     <p className="text-sm font-medium mt-1">
                       Rp. {new Intl.NumberFormat("id-ID").format(product.harga)}
                     </p>
