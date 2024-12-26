@@ -291,7 +291,7 @@ const formatPrice = (price: number): string => {
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     role="menuitem"
                   >
-                    View Full Image
+                    Lihat Gambar
                   </a>
                   <button
                     onClick={() => {
@@ -301,7 +301,7 @@ const formatPrice = (price: number): string => {
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     role="menuitem"
                   >
-                    Replace Image
+                    Ganti Gambar
                   </button>
                 </div>
               </div>
@@ -314,13 +314,13 @@ const formatPrice = (price: number): string => {
               Rp. {formatPrice(formData.harga)}
             </p>
             <div className="space-y-2">
-              <h4 className="font-medium text-gray-900">Composition</h4>
+              <h4 className="font-medium text-gray-900">Komposisi</h4>
               <p className="text-gray-700 text-sm sm:text-base whitespace-pre-wrap">
                 {formData.komposisi}
               </p>
             </div>
             <div className="space-y-2">
-              <h4 className="font-medium text-gray-900">Description</h4>
+              <h4 className="font-medium text-gray-900">Deskripsi</h4>
               <p className="text-gray-700 text-sm sm:text-base whitespace-pre-wrap">
                 {formData.deskripsi}
               </p>
@@ -352,7 +352,7 @@ const formatPrice = (price: number): string => {
 
       <Modal isOpen={editMode} onClose={() => setEditMode(false)} size="lg">
         <ModalContent className="sm:min-w-[500px]">
-          <ModalHeader>Edit Product</ModalHeader>
+          <ModalHeader>Edit Produk</ModalHeader>
           <ModalBody>
             <div className="space-y-4">
               <Input
@@ -385,9 +385,9 @@ const formatPrice = (price: number): string => {
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button onPress={() => setEditMode(false)}>Cancel</Button>
-            <Button onPress={handleEdit} disabled={loading} color="primary">
-              Save Changes
+            <Button onPress={() => setEditMode(false)} color="danger" variant="flat">Batal</Button>
+            <Button onPress={handleEdit} disabled={loading} color="primary" variant="flat">
+              Simpan
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -434,7 +434,7 @@ const formatPrice = (price: number): string => {
         onClose={() => setShowImageUploadModal(false)}
       >
         <ModalContent>
-          <ModalHeader>Upload New Image</ModalHeader>
+          <ModalHeader>Upload Gambar</ModalHeader>
           <ModalBody>
             <div className="space-y-4">
               <input
@@ -446,7 +446,7 @@ const formatPrice = (price: number): string => {
                 className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
               />
               {isImageUploading && (
-                <p className="text-sm text-gray-600">Uploading image...</p>
+                <p className="text-sm text-gray-600">Loading...</p>
               )}
             </div>
           </ModalBody>

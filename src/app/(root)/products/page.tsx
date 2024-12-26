@@ -212,10 +212,7 @@ const ProductsPage = () => {
                         : "/images/default-product.png"
                     }
                     alt={product.nama}
-                    className="w-full h-[140px] object-cover rounded-lg shadow-sm"
-                    width={140} // Set an appropriate width for the image
-                    height={140} // Set an appropriate height for the image
-                    layout="intrinsic" // Maintains aspect ratio based on width and height
+                    className="w-full h-64 object-cover cursor-pointer rounded-lg shadow-md transition-transform hover:scale-[1.02]"
                   />
                 </CardBody>
 
