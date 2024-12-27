@@ -14,6 +14,7 @@ import {
   TableCell,
   Button,
   Divider,
+  Chip,
 } from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
@@ -24,6 +25,7 @@ type DistributionTableEntry = {
   distribusi_id: number;
   distribusi_created_at: string;
   faktur_id: string;
+  status_pembayaran: string;
 };
 
 type DistributionDetailEntry = {
@@ -100,14 +102,14 @@ const FinancialReportsDetails: React.FC = () => {
   useEffect(() => {
     if (id) {
       fetchOutletDetails();
-      fetchDistributions();
+      fetchLaporanDistributions();
     }
   }, [id, token]);
 
-  const fetchDistributions = async () => {
+  const fetchLaporanDistributions = async () => {
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/distribusi/${id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/laporanOutlet/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -148,26 +150,27 @@ const FinancialReportsDetails: React.FC = () => {
     }
   };
 
-  const handleViewFaktur = async (distributionId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+const handleViewFaktur = async (distributionId: number) => {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-      if (!response.ok) throw new Error("Gagal mengambil detail faktur");
+    if (!response.ok) throw new Error("Gagal mengambil detail faktur");
 
-      const data: FakturEntry[] = await response.json();
-      setFakturData(data);
-    } catch (error) {
-      dispatch(
-        showErrorToast({
-          message: "Gagal mengambil detail faktur",
-          isDarkMode,
-        })
-      );
-    }
-  };
+    const data: FakturEntry[] = await response.json();
+    setFakturData(data);
+  } catch (error) {
+    dispatch(
+      showErrorToast({
+        message: "Gagal mengambil detail faktur",
+        isDarkMode,
+      })
+    );
+  }
+};
+
 
   const handleAmountUpdate = async (fakturId: string) => {
     setIsAmountUpdating(true);
@@ -188,10 +191,14 @@ const FinancialReportsDetails: React.FC = () => {
 
       if (!response.ok) throw new Error("Jumlah dibayar gagal diperbarui");
 
+      // Refresh faktur data
       const distribusiId = fakturData?.[0]?.distribusi_id;
       if (distribusiId) {
-        await handleViewFaktur(distribusiId);
+        await handleViewFaktur(distribusiId); // Refresh modal
       }
+
+      // Refresh the distributions table
+      await fetchLaporanDistributions();
 
       setAmountPaidInput("");
 
@@ -213,8 +220,49 @@ const FinancialReportsDetails: React.FC = () => {
     }
   };
 
-  const closeDetailModal = () => setDetailData(null);
-  const closeFakturModal = () => setFakturData(null);
+const closeDetailModal = () => {
+  setDetailData(null);
+};
+
+const closeFakturModal = () => {
+  setFakturData(null);
+};
+
+
+  const getStatus = (status: string) => {
+    switch (status) {
+      case "Lunas":
+        return (
+          <Chip
+            color="success"
+            variant="flat"
+            className="capitalize text-green-500 bg-green-50"
+          >
+            Lunas
+          </Chip>
+        );
+      case "Menunggu":
+        return (
+          <Chip
+            color="warning"
+            variant="flat"
+            className="capitalize text-yellow-500 bg-yellow-50"
+          >
+            Menunggu
+          </Chip>
+        );
+      default:
+        return (
+          <Chip
+            color="danger"
+            variant="flat"
+            className="capitalize text-red-500 bg-red-50"
+          >
+            Belum Bayar
+          </Chip>
+        );
+    }
+  };
 
  return (
    <div className="container px-12 sm:px-6 lg:pl-0 content">
@@ -248,6 +296,7 @@ const FinancialReportsDetails: React.FC = () => {
              <TableColumn>No Faktur</TableColumn>
              <TableColumn>No Distribusi</TableColumn>
              <TableColumn>Dibuat pada</TableColumn>
+             <TableColumn>Status Pembayaran</TableColumn>
              <TableColumn>Aksi</TableColumn>
            </TableHeader>
            <TableBody items={distributions}>
@@ -256,6 +305,7 @@ const FinancialReportsDetails: React.FC = () => {
                  <TableCell>{item.faktur_id}</TableCell>
                  <TableCell>{item.distribusi_id}</TableCell>
                  <TableCell>{formatDate(item.distribusi_created_at)}</TableCell>
+                 <TableCell>{getStatus(item.status_pembayaran)}</TableCell>
                  <TableCell>
                    <Button
                      onClick={() => handleViewDetail(item.distribusi_id)}

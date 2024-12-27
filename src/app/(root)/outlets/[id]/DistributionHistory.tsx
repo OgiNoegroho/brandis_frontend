@@ -499,7 +499,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       <div className="flex justify-end mb-4">
         <Button
-          onClick={() => setIsModalOpen(true)}
+          onPress={() => setIsModalOpen(true)}
           color="success"
           variant="flat"
         >
@@ -526,7 +526,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
                   <TableCell>{entry.distributionDate}</TableCell>
                   <TableCell>
                     <Button
-                      onClick={() => handleRemoveProduct(index)}
+                      onPress={() => handleRemoveProduct(index)}
                       color="danger"
                       variant="light"
                     >
@@ -540,7 +540,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
           <div className="flex justify-end mt-4">
             <Button
-              onClick={() => {
+              onPress={() => {
                 if (productEntries.length > 0) {
                   setIsSaveModalOpen(true);
                 } else {
@@ -689,8 +689,8 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       <Divider className="mb-2" />
       <Table>
         <TableHeader>
-          <TableColumn>No. Faktur</TableColumn>
-          <TableColumn>Id Batch</TableColumn>
+          <TableColumn>No Faktur</TableColumn>
+          <TableColumn>No Distribusi</TableColumn>
           <TableColumn>Dibuat pada</TableColumn>
           <TableColumn>Aksi</TableColumn>
         </TableHeader>
@@ -712,14 +712,14 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
               <TableCell>
                 <div className="flex space-x-2">
                   <Button
-                    onClick={() => handleViewDetail(item.distribusi_id)}
+                    onPress={() => handleViewDetail(item.distribusi_id)}
                     color="primary"
                     variant="flat"
                   >
                     Detail
                   </Button>
                   <Button
-                    onClick={() => handleViewFaktur(item.distribusi_id)}
+                    onPress={() => handleViewFaktur(item.distribusi_id)}
                     color="success"
                     variant="flat"
                   >
@@ -749,7 +749,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
                 {detailData?.map((detail) => (
                   <div key={detail.batch_id} className="space-y-2">
                     <p>
-                      <strong>Nama Batch:</strong> {detail.batch_name}
+                      <strong>Nomor Batch:</strong> {detail.batch_name}
                     </p>
                     <p>
                       <strong>Nama Produk:</strong> {detail.product_name}
@@ -764,7 +764,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
             </ModalBody>
             <ModalFooter>
               <Button
-                onClick={() => setIsDetailModalOpen(false)}
+                onPress={() => setIsDetailModalOpen(false)}
                 color="danger"
                 variant="flat"
               >
@@ -879,7 +879,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
             </ModalBody>
             <ModalFooter>
               <Button
-                onClick={() => setIsFakturModalOpen(false)}
+                onPress={() => setIsFakturModalOpen(false)}
                 color="danger"
                 variant="flat"
               >
