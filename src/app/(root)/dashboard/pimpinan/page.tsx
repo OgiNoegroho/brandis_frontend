@@ -1,3 +1,4 @@
+//C:\Users\Acer\Brandis\brandis_frontend\src\app\(root)\dashboard\pimpinan\page.tsx
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -98,6 +99,8 @@ const PimpinanDashboard: React.FC = () => {
     (state: RootState) => state.global.isDarkMode
   );
   const dispatch = useAppDispatch();
+  const tableClasses = "text-left rtl:text-right w-full"; // Base table classes
+  const cellClasses = "text-center"; // Center alignment for cells
 
   // Memoize the fetchData function to prevent unnecessary re-renders
   const fetchData = useCallback(async () => {
@@ -117,12 +120,12 @@ const PimpinanDashboard: React.FC = () => {
         0
       );
       setTotalPenjualan(totalSales);
-   setPenjualanData(
-     totalPenjualanData.map((item) => ({
-       product_name: item.product_name, // Keep the product_name
-       total_sales: item.total_sales, // Keep the total_sales
-     })) || []
-   );
+      setPenjualanData(
+        totalPenjualanData.map((item) => ({
+          product_name: item.product_name, // Keep the product_name
+          total_sales: item.total_sales, // Keep the total_sales
+        })) || []
+      );
 
       const totalDistribusiData: DistribusiData[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalDistribusi`
@@ -132,12 +135,12 @@ const PimpinanDashboard: React.FC = () => {
         0
       );
       setTotalDistribusi(totalDistribution);
-  setDistribusiData(
-    totalDistribusiData.map((item) => ({
-      product_name: item.product_name, // Keep the product_name
-      total_distribution: item.total_distribution, // Keep the total_distribution
-    })) || []
-  );
+      setDistribusiData(
+        totalDistribusiData.map((item) => ({
+          product_name: item.product_name, // Keep the product_name
+          total_distribution: item.total_distribution, // Keep the total_distribution
+        })) || []
+      );
 
       const topProdukTerlarisData: ProdukTerlaris[] = await fetchAPI(
         `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/topProdukTerlaris`
@@ -194,41 +197,39 @@ const PimpinanDashboard: React.FC = () => {
     },
   };
 
-const salesChartData = {
-  labels: penjualanData?.map((item) => item.product_name) || [], // Use product_name as labels
-  datasets: [
-    {
-      label: "Total Penjualan (Bulan Ini)",
-      data: penjualanData?.map((item) => parseFloat(item.total_sales)) || [], // Use total_sales for data
-      borderColor: "#4C6EF5",
-      backgroundColor: "rgba(76, 110, 245, 0.2)",
-      pointBackgroundColor: "#4C6EF5",
-      pointBorderColor: "#fff",
-      fill: true,
-      tension: 0.4,
-    },
-  ],
-};
+  const salesChartData = {
+    labels: penjualanData?.map((item) => item.product_name) || [], // Use product_name as labels
+    datasets: [
+      {
+        label: "Total Penjualan (Bulan Ini)",
+        data: penjualanData?.map((item) => parseFloat(item.total_sales)) || [], // Use total_sales for data
+        borderColor: "#4C6EF5",
+        backgroundColor: "rgba(76, 110, 245, 0.2)",
+        pointBackgroundColor: "#4C6EF5",
+        pointBorderColor: "#fff",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
 
-
- const distribusiChartData = {
-   labels: distribusiData?.map((item) => item.product_name) || [], // Use product_name as labels
-   datasets: [
-     {
-       label: "Total Distribusi (Bulan Ini)",
-       data:
-         distribusiData?.map((item) => parseFloat(item.total_distribution)) ||
-         [], // Use total_distribution for data
-       borderColor: "#34D399",
-       backgroundColor: "rgba(52, 211, 153, 0.2)",
-       pointBackgroundColor: "#34D399",
-       pointBorderColor: "#fff",
-       fill: true,
-       tension: 0.4,
-     },
-   ],
- };
-
+  const distribusiChartData = {
+    labels: distribusiData?.map((item) => item.product_name) || [], // Use product_name as labels
+    datasets: [
+      {
+        label: "Total Distribusi (Bulan Ini)",
+        data:
+          distribusiData?.map((item) => parseFloat(item.total_distribution)) ||
+          [], // Use total_distribution for data
+        borderColor: "#34D399",
+        backgroundColor: "rgba(52, 211, 153, 0.2)",
+        pointBackgroundColor: "#34D399",
+        pointBorderColor: "#fff",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
 
   const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat("id-ID", {
@@ -290,23 +291,29 @@ const salesChartData = {
             <h2 className="text-xl font-semibold">Total Stok Gudang</h2>
           </CardHeader>
           <CardBody>
-            <Table aria-label="Total stock table">
+            <Table aria-label="Total stock table" className={tableClasses}>
               <TableHeader>
-                <TableColumn>NAMA PRODUK</TableColumn>
-                <TableColumn>TOTAL STOK</TableColumn>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>TOTAL STOK</TableColumn>
               </TableHeader>
               <TableBody>
                 {totalStokGudang.length > 0 ? (
                   totalStokGudang.map((product, index) => (
                     <TableRow key={index}>
-                      <TableCell>{product.product_name}</TableCell>
-                      <TableCell>{product.total_stock}</TableCell>
+                      <TableCell className={cellClasses}>
+                        {product.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {product.total_stock}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell>No data available</TableCell>
-                    <TableCell>-</TableCell>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -322,28 +329,36 @@ const salesChartData = {
             <h2 className="text-xl font-semibold">Produk Terlaris Bulan Ini</h2>
           </CardHeader>
           <CardBody>
-            <Table aria-label="Top products table">
+            <Table aria-label="Top products table" className={tableClasses}>
               <TableHeader>
-                <TableColumn>NAMA PRODUK</TableColumn>
-                <TableColumn>TOTAL TERJUAL</TableColumn>
-                <TableColumn>TOTAL PENJUALAN</TableColumn>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>TOTAL TERJUAL</TableColumn>
+                <TableColumn className={cellClasses}>
+                  TOTAL PENJUALAN
+                </TableColumn>
               </TableHeader>
               <TableBody>
                 {topProdukTerlaris.length > 0 ? (
                   topProdukTerlaris.map((produk, index) => (
                     <TableRow key={index}>
-                      <TableCell>{produk.product_name}</TableCell>
-                      <TableCell>{produk.quantity_sold}</TableCell>
-                      <TableCell>
+                      <TableCell className={cellClasses}>
+                        {produk.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {produk.quantity_sold}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
                         {formatCurrency(produk.total_sales)}
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell>No data available</TableCell>
-                    <TableCell>-</TableCell>
-                    <TableCell>-</TableCell>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -363,23 +378,31 @@ const salesChartData = {
             </h2>
           </CardHeader>
           <CardBody>
-            <Table aria-label="Expiring batch table">
+            <Table aria-label="Expiring batch table" className={tableClasses}>
               <TableHeader>
-                <TableColumn>NAMA PRODUK</TableColumn>
-                <TableColumn>TANGGAL KADALUARSA</TableColumn>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>
+                  TANGGAL KADALUARSA
+                </TableColumn>
               </TableHeader>
               <TableBody>
                 {batchKadaluarsa.length > 0 ? (
                   batchKadaluarsa.map((batch, index) => (
                     <TableRow key={index}>
-                      <TableCell>{batch.product_name}</TableCell>
-                      <TableCell>{formatDate(batch.expiry_date)}</TableCell>
+                      <TableCell className={cellClasses}>
+                        {batch.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {formatDate(batch.expiry_date)}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell>No data available</TableCell>
-                    <TableCell>-</TableCell>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
                   </TableRow>
                 )}
               </TableBody>

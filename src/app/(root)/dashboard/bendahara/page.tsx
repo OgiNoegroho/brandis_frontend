@@ -11,12 +11,22 @@ interface RingkasanFaktur {
   total_tagihan: number;
 }
 
+interface OverdueInvoice {
+  id: string;
+  status_pembayaran: string;
+  tanggal_faktur: string;
+  tanggal_jatuh_tempo: string;
+  jumlah_tagihan: number;
+  jumlah_dibayar: number;
+}
+
 const Bendahara: React.FC = () => {
   const [ringkasanFaktur, setRingkasanFaktur] = useState<RingkasanFaktur[]>([]);
   const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
     null
   );
   const [fakturJatuhTempo, setFakturJatuhTempo] = useState<number | null>(null);
+  const [overdueInvoices, setOverdueInvoices] = useState<OverdueInvoice[]>([]);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
@@ -55,6 +65,16 @@ const Bendahara: React.FC = () => {
       const jatuhTempoData = await jatuhTempoRes.json();
       setFakturJatuhTempo(jatuhTempoData[0]?.faktur_jatuh_tempo || 0);
 
+      // Fetch overdueInvoices
+      const overdueRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/overdueInvoices`,
+        { headers }
+      );
+      if (!overdueRes.ok)
+        throw new Error("Gagal memuat faktur yang telah jatuh tempo.");
+      const overdueData: OverdueInvoice[] = await overdueRes.json();
+      setOverdueInvoices(overdueData);
+
       // Show success toast for successful data fetch
       dispatch(
         showSuccessToast({
@@ -81,10 +101,11 @@ const Bendahara: React.FC = () => {
 
   return (
     <div className="container px-12 sm:px-6 lg:pl-0 content">
-      <h1 className="text-3xl font-bold mb-5 text-center text-indigo-600">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Bendahara
       </h1>
 
+      {/* Ringkasan Faktur Distribusi */}
       <section className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
           Ringkasan Faktur Distribusi
@@ -128,6 +149,7 @@ const Bendahara: React.FC = () => {
         </div>
       </section>
 
+      {/* Pendapatan Bulan Ini */}
       <section className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
           Pendapatan Bulan Ini
@@ -142,6 +164,7 @@ const Bendahara: React.FC = () => {
         </div>
       </section>
 
+      {/* Faktur Jatuh Tempo Hari Ini */}
       <section className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
           Faktur Jatuh Tempo Hari Ini
@@ -153,6 +176,60 @@ const Bendahara: React.FC = () => {
           <p className="text-lg text-gray-600 mt-2">
             Jumlah faktur yang harus dilunasi hari ini
           </p>
+        </div>
+      </section>
+
+      {/* Overdue Invoices */}
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Faktur Jatuh Tempo
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-200 text-center">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 border border-gray-200">ID Faktur</th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Status Pembayaran
+                </th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Tanggal Jatuh Tempo
+                </th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Jumlah Tagihan
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {overdueInvoices.length > 0 ? (
+                overdueInvoices.map((invoice, index) => (
+                  <tr
+                    key={index}
+                    className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                  >
+                    <td className="px-4 py-2 border border-gray-200">
+                      {invoice.id}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {invoice.status_pembayaran}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {invoice.tanggal_jatuh_tempo}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {invoice.jumlah_tagihan}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-4">
+                    No overdue invoices
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </section>
     </div>

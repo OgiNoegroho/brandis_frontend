@@ -1,207 +1,213 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import { FaWarehouse, FaArrowDown, FaTrophy, FaUndo } from "react-icons/fa";
+import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
 import {
   Card,
   CardHeader,
   CardBody,
   Table,
-  TableBody,
-  TableCell,
-  TableColumn,
-  TableRow,
   TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+  Chip,
 } from "@nextui-org/react";
-import { showErrorToast } from "@/redux/slices/toastSlice";
 
-const Pemasaran: React.FC = () => {
-  const [totalStokOutlet, setTotalStokOutlet] = useState<any[]>([]);
-  const [outletStokRendah, setOutletStokRendah] = useState<any[]>([]);
-  const [outletTerbaik, setOutletTerbaik] = useState<any[]>([]);
-  const [produkDikembalikan, setProdukDikembalikan] = useState<any[]>([]);
+// Define types
+interface RingkasanFaktur {
+  status_pembayaran: string;
+  total_tagihan: number;
+}
+
+interface OverdueInvoice {
+  id: string;
+  status_pembayaran: string;
+  tanggal_faktur: string;
+  tanggal_jatuh_tempo: string;
+  jumlah_tagihan: number;
+  jumlah_dibayar: number;
+}
+
+const Bendahara: React.FC = () => {
+  const [ringkasanFaktur, setRingkasanFaktur] = useState<RingkasanFaktur[]>([]);
+  const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
+    null
+  );
+  const [fakturJatuhTempo, setFakturJatuhTempo] = useState<number | null>(null);
+  const [overdueInvoices, setOverdueInvoices] = useState<OverdueInvoice[]>([]);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const endpoints = [
-        "totalStokOutlet",
-        "outletStokRendah",
-        "outletTerbaik",
-        "totalProdukDikembalikan",
-      ];
 
-      const responses = await Promise.all(
-        endpoints.map((endpoint) =>
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/pemasaran/${endpoint}`, {
-            headers,
-          }).then((res) => res.json())
-        )
+      // Fetch ringkasanFakturDistribusi
+      const ringkasanRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/ringkasanFakturDistribusi`,
+        { headers }
       );
+      if (!ringkasanRes.ok) throw new Error("Gagal memuat ringkasan faktur.");
+      const ringkasanData: RingkasanFaktur[] = await ringkasanRes.json();
+      setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
 
-      setTotalStokOutlet(responses[0]);
-      setOutletStokRendah(responses[1]);
-      setOutletTerbaik(responses[2]);
-      setProdukDikembalikan(responses[3]);
+      // ... (rest of the fetch calls remain the same)
     } catch (err: any) {
-      console.error("Error fetching data:", err);
-      const errorMessage = err.message || "Error fetching data";
-
-      // Dispatch error toast notification
       dispatch(
         showErrorToast({
-          message: errorMessage,
+          message: err.message || "Terjadi kesalahan saat memuat data.",
           isDarkMode: false,
         })
       );
     }
-  };
+  }, [token, dispatch]);
 
   useEffect(() => {
-    fetchData();
-  }, [token]);
+    if (token) {
+      fetchData();
+    }
+  }, [token, fetchData]);
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "lunas":
+        return "success";
+      case "belum lunas":
+        return "warning";
+      case "terlambat":
+        return "danger";
+      default:
+        return "default";
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+    }).format(amount);
+  };
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
-        Dashboard Pemasaran
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+        Dashboard Bendahara
       </h1>
 
-      <div className="grid grid-cols-4 gap-6">
-        {/* Left Column (2 cols wide) */}
-        <div className="col-span-3 grid grid-rows-2 gap-6">
-          {/* Total Stok Outlet */}
-          <Card className="shadow-lg">
-            <CardHeader className="flex flex-col items-center">
-              <FaWarehouse className="text-4xl text-indigo-500 mb-2" />
-              <h2 className="text-lg font-semibold">Total Stok Outlet</h2>
-            </CardHeader>
-            <CardBody>
-              <Table aria-label="Total Stok Outlet">
-                <TableHeader>
-                  <TableColumn>OUTLET</TableColumn>
-                  <TableColumn>PRODUK</TableColumn>
-                  <TableColumn>KUANTITAS</TableColumn>
-                </TableHeader>
-                <TableBody>
-                  {totalStokOutlet.map((outlet, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{outlet.outlet_nama}</TableCell>
-                      <TableCell>{outlet.jumlah_produk}</TableCell>
-                      <TableCell>{outlet.total_kuantitas}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardBody>
-          </Card>
+      {/* Summary Cards Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Pendapatan Card */}
+        <Card className="bg-gradient-to-br from-green-50 to-green-100">
+          <CardBody className="text-center py-8">
+            <p className="text-xl text-gray-600 mb-2">Pendapatan Bulan Ini</p>
+            <p className="text-3xl font-bold text-green-600">
+              {pendapatanBulanIni !== null
+                ? formatCurrency(pendapatanBulanIni)
+                : "Loading..."}
+            </p>
+          </CardBody>
+        </Card>
 
-          {/* Bottom Row with two cards */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Outlet Terbaik */}
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-col items-center">
-                <FaTrophy className="text-4xl text-yellow-500 mb-2" />
-                <h2 className="text-lg font-semibold">
-                  Outlet dengan Penjualan Terbaik
-                </h2>
-              </CardHeader>
-              <CardBody>
-                {outletTerbaik.length > 0 ? (
-                  outletTerbaik.map((outlet, index) => (
-                    <div
-                      key={index}
-                      className="p-2 mb-2 bg-white rounded shadow-sm"
-                    >
-                      <p className="text-sm">
-                        <span className="font-medium">
-                          {outlet.outlet_nama}
-                        </span>{" "}
-                        - {outlet.produk_nama}:{" "}
-                        <span className="text-green-500">
-                          {outlet.total_terjual}
-                        </span>
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">
-                    No best selling outlet found.
-                  </p>
-                )}
-              </CardBody>
-            </Card>
+        {/* Faktur Jatuh Tempo Card */}
+        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
+          <CardBody className="text-center py-8">
+            <p className="text-xl text-gray-600 mb-2">
+              Faktur Jatuh Tempo Hari Ini
+            </p>
+            <p className="text-3xl font-bold text-orange-600">
+              {fakturJatuhTempo !== null ? fakturJatuhTempo : "Loading..."}
+            </p>
+          </CardBody>
+        </Card>
 
-            {/* Produk Dikembalikan */}
-            <Card className="shadow-lg">
-              <CardHeader className="flex flex-col items-center">
-                <FaUndo className="text-4xl text-indigo-500 mb-2" />
-                <h2 className="text-lg font-semibold">Produk Dikembalikan</h2>
-              </CardHeader>
-              <CardBody>
-                {produkDikembalikan.length > 0 ? (
-                  produkDikembalikan.map((data, index) => (
-                    <div
-                      key={index}
-                      className="p-2 mb-2 bg-white rounded shadow-sm"
-                    >
-                      <p className="text-sm">
-                        <span className="font-medium">{data.outlet_nama}</span>{" "}
-                        - {data.produk_nama}:{" "}
-                        <span className="text-orange-500">
-                          {data.total_dikembalikan}
-                        </span>
-                        <span className="text-gray-500 ml-2">
-                          ({data.bulan_pengembalian})
-                        </span>
-                      </p>
-                    </div>
-                  ))
-                ) : (
-                  <p className="text-center text-gray-500">
-                    No returned products found.
-                  </p>
-                )}
-              </CardBody>
-            </Card>
-          </div>
-        </div>
-
-        {/* Right Column (1 col wide) - Outlet Stok Rendah */}
-        <Card className="shadow-lg row-span-2">
-          <CardHeader className="flex flex-col items-center">
-            <FaArrowDown className="text-4xl text-red-500 mb-2" />
-            <h2 className="text-lg font-semibold">Outlet dengan Stok Rendah</h2>
-          </CardHeader>
-          <CardBody>
-            {outletStokRendah.length > 0 ? (
-              outletStokRendah.map((outlet, index) => (
-                <div
-                  key={index}
-                  className="p-2 mb-2 bg-white rounded shadow-sm"
-                >
-                  <p className="text-sm">
-                    <span className="font-medium">{outlet.outlet_nama}</span> -{" "}
-                    {outlet.produk_nama}:{" "}
-                    <span className="text-red-500">{outlet.stok}</span>
-                  </p>
-                </div>
-              ))
-            ) : (
-              <p className="text-center text-gray-500">
-                No outlet with low stock found.
-              </p>
-            )}
+        {/* Total Tagihan Card */}
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+          <CardBody className="text-center py-8">
+            <p className="text-xl text-gray-600 mb-2">Total Tagihan</p>
+            <p className="text-3xl font-bold text-blue-600">
+              {formatCurrency(
+                ringkasanFaktur.reduce(
+                  (acc, curr) => acc + curr.total_tagihan,
+                  0
+                )
+              )}
+            </p>
           </CardBody>
         </Card>
       </div>
+
+      {/* Ringkasan Faktur Table */}
+      <Card className="mb-8">
+        <CardHeader className="flex justify-center">
+          <h2 className="text-xl font-semibold">Ringkasan Faktur Distribusi</h2>
+        </CardHeader>
+        <CardBody>
+          <Table aria-label="Ringkasan Faktur Distribusi">
+            <TableHeader>
+              <TableColumn>STATUS PEMBAYARAN</TableColumn>
+              <TableColumn>TOTAL TAGIHAN</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {ringkasanFaktur.map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <Chip
+                      color={getStatusColor(item.status_pembayaran)}
+                      variant="flat"
+                    >
+                      {item.status_pembayaran}
+                    </Chip>
+                  </TableCell>
+                  <TableCell>{formatCurrency(item.total_tagihan)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
+
+      {/* Overdue Invoices Table */}
+      <Card>
+        <CardHeader className="flex justify-center">
+          <h2 className="text-xl font-semibold">Faktur Jatuh Tempo</h2>
+        </CardHeader>
+        <CardBody>
+          <Table aria-label="Faktur Jatuh Tempo">
+            <TableHeader>
+              <TableColumn>ID FAKTUR</TableColumn>
+              <TableColumn>STATUS</TableColumn>
+              <TableColumn>TANGGAL JATUH TEMPO</TableColumn>
+              <TableColumn>JUMLAH TAGIHAN</TableColumn>
+            </TableHeader>
+            <TableBody>
+              {overdueInvoices.map((invoice, index) => (
+                <TableRow key={index}>
+                  <TableCell>{invoice.id}</TableCell>
+                  <TableCell>
+                    <Chip
+                      color={getStatusColor(invoice.status_pembayaran)}
+                      variant="flat"
+                    >
+                      {invoice.status_pembayaran}
+                    </Chip>
+                  </TableCell>
+                  <TableCell>{invoice.tanggal_jatuh_tempo}</TableCell>
+                  <TableCell>
+                    {formatCurrency(invoice.jumlah_tagihan)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
     </div>
   );
 };
 
-export default Pemasaran;
+export default Bendahara;

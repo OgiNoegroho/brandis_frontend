@@ -8,6 +8,7 @@ import {
   FaExclamationTriangle,
   FaPlusSquare,
   FaUndo,
+  FaCalendarAlt,
 } from "react-icons/fa";
 import {
   Card,
@@ -20,9 +21,29 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { showErrorToast } from "@/redux/slices/toastSlice";
 
-// Define interfaces for API responses
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 interface GudangData {
   product_name: string;
   total_stock: number;
@@ -33,93 +54,93 @@ interface StokRendah {
   kuantitas: number;
 }
 
+interface BatchKadaluarsa {
+  product_name: string;
+  expiry_date: string;
+}
+
+interface ProduksiData {
+  product_name: string;
+  quantity: number;
+}
+
+interface PengembalianData {
+  product_name: string;
+  outlet_name: string;
+  quantity: number;
+}
+
 const DashboardManajer: React.FC = () => {
   const [gudangData, setGudangData] = useState<GudangData[]>([]);
-  const [totalStokGudang, setTotalStokGudang] = useState<number | null>(null);
-  const [batchKadaluarsa, setBatchKadaluarsa] = useState<number | null>(null);
-  const [batchDiproduksiBulanIni, setBatchDiproduksiBulanIni] = useState<
-    number | null
-  >(null);
+  
+  const [batchKadaluarsa, setBatchKadaluarsa] = useState<BatchKadaluarsa[]>([]);
+  const [produksiData, setProduksiData] = useState<ProduksiData[]>([]);
   const [stokRendahGudang, setStokRendahGudang] = useState<StokRendah[]>([]);
-  const [totalPengembalianProduk, setTotalPengembalianProduk] = useState<
-    number | null
-  >(null);
+  const [pengembalianData, setPengembalianData] = useState<PengembalianData[]>(
+    []
+  );
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
   const dispatch = useAppDispatch();
+  const tableClasses = "text-left rtl:text-right w-full"; // Base table classes
+  const cellClasses = "text-center"; // Center alignment for cells
+
+  const formatDate = (date: string | Date): string => {
+    const d = new Date(date);
+    return `${String(d.getDate()).padStart(2, "0")}-${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}-${d.getFullYear()}`;
+  };
 
   const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch Total Stock in Warehouse
-      const gudangRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`,
-        { headers }
-      );
-      if (!gudangRes.ok) throw new Error("Gagal memuat data stok gudang.");
-      const gudangData: GudangData[] = await gudangRes.json();
+      const fetchAPI = async (url: string) => {
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+      };
+
+      const [
+        gudangData,
+        batchKadaluarsaData,
+        produksiData,
+        stokRendahData,
+        pengembalianData,
+      ] = await Promise.all([
+        fetchAPI(`${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`),
+        fetchAPI(`${process.env.NEXT_PUBLIC_API_URL}/pimpinan/batchKadaluarsa`),
+        fetchAPI(
+          `${process.env.NEXT_PUBLIC_API_URL}/manajer/batchDiproduksiBulanIni`
+        ),
+        fetchAPI(
+          `${process.env.NEXT_PUBLIC_API_URL}/manajer/stokRendahDiGudang`
+        ),
+        fetchAPI(
+          `${process.env.NEXT_PUBLIC_API_URL}/manajer/totalPengembalianProduk`
+        ),
+      ]);
+
       setGudangData(Array.isArray(gudangData) ? gudangData : []);
-
-      // Fetch Summed-up Stock
-      const stokGudangRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/totalStokGudang`,
-        { headers }
-      );
-      if (!stokGudangRes.ok)
-        throw new Error("Gagal memuat jumlah total stok gudang.");
-      const stokGudangData = await stokGudangRes.json();
-      setTotalStokGudang(stokGudangData[0]?.total_stock || 0);
-
-      // Fetch Expiring Batches
-      const kadaluarsaRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/pimpinan/batchKadaluarsa`,
-        { headers }
-      );
-      if (!kadaluarsaRes.ok) throw new Error("Gagal memuat batch kadaluarsa.");
-      const kadaluarsaData = await kadaluarsaRes.json();
-      setBatchKadaluarsa(kadaluarsaData[0]?.total_batch_kadaluarsa || 0);
-
-      // Fetch Batches Produced This Month
-      const diproduksiRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/manajer/batchDiproduksiBulanIni`,
-        { headers }
-      );
-      if (!diproduksiRes.ok)
-        throw new Error("Gagal memuat data batch diproduksi bulan ini.");
-      const diproduksiData = await diproduksiRes.json();
-      setBatchDiproduksiBulanIni(diproduksiData[0]?.batch_diproduksi || 0);
-
-      // Fetch Low Stock Items
-      const stokRendahRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/manajer/stokRendahDiGudang`,
-        { headers }
-      );
-      if (!stokRendahRes.ok) throw new Error("Gagal memuat stok rendah.");
-      const stokRendahData: StokRendah[] = await stokRendahRes.json();
+      setBatchKadaluarsa(batchKadaluarsaData);
+      setProduksiData(Array.isArray(produksiData) ? produksiData : []);
       setStokRendahGudang(Array.isArray(stokRendahData) ? stokRendahData : []);
-
-      // Fetch Total Returned Products
-      const pengembalianRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/manajer/totalPengembalianProduk`,
-        { headers }
-      );
-      if (!pengembalianRes.ok)
-        throw new Error("Gagal memuat data produk yang dikembalikan.");
-      const pengembalianData = await pengembalianRes.json();
-      setTotalPengembalianProduk(
-        pengembalianData[0]?.total_produk_dikembalikan || 0
+      setPengembalianData(
+        Array.isArray(pengembalianData) ? pengembalianData : []
       );
     } catch (err: any) {
-      // Show error toast
       dispatch(
         showErrorToast({
           message: err.message || "Terjadi kesalahan saat memuat data.",
-          isDarkMode: false,
+          isDarkMode: isDarkMode,
         })
       );
     }
-  }, [token, dispatch]);
+  }, [token, dispatch, isDarkMode]);
 
   useEffect(() => {
     if (token) {
@@ -127,88 +148,98 @@ const DashboardManajer: React.FC = () => {
     }
   }, [token, fetchData]);
 
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top" as const,
+        labels: {
+          color: isDarkMode ? "#FFF" : "#333",
+        },
+      },
+    },
+    scales: {
+      y: {
+        ticks: { color: isDarkMode ? "#FFF" : "#333" },
+        grid: {
+          color: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+        },
+      },
+      x: {
+        ticks: { color: isDarkMode ? "#FFF" : "#333" },
+        grid: {
+          color: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+        },
+      },
+    },
+  };
+
+  const stockChartData = {
+    labels: gudangData.map((item) => item.product_name),
+    datasets: [
+      {
+        label: "Stok Gudang",
+        data: gudangData.map((item) => item.total_stock),
+        borderColor: "#4C6EF5",
+        backgroundColor: "rgba(76, 110, 245, 0.2)",
+        pointBackgroundColor: "#4C6EF5",
+        pointBorderColor: "#fff",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
+  };
+
   return (
     <div className="container px-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Manajer
       </h1>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+        {/* Total Stok Gudang */}
         <Card className="shadow-lg">
           <CardHeader className="flex flex-col items-center">
             <FaWarehouse className="text-4xl text-blue-600 mb-2" />
             <h2 className="text-lg font-semibold">Total Stok Gudang</h2>
-            <p className="text-xl font-bold">
-              {totalStokGudang !== null ? totalStokGudang : "Loading..."}
-            </p>
           </CardHeader>
+          <CardBody>
+            <div className="w-full h-48">
+              <Line data={stockChartData} options={chartOptions} />
+            </div>
+          </CardBody>
         </Card>
 
-        <Card className="shadow-lg">
-          <CardHeader className="flex flex-col items-center">
-            <FaExclamationTriangle className="text-4xl text-red-500 mb-2" />
-            <h2 className="text-lg font-semibold">Batch Kadaluarsa</h2>
-            <p className="text-xl font-bold">
-              {batchKadaluarsa !== null ? batchKadaluarsa : "Loading..."}
-            </p>
-          </CardHeader>
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        {/* Produksi */}
         <Card className="shadow-lg">
           <CardHeader className="flex flex-col items-center">
             <FaPlusSquare className="text-4xl text-green-500 mb-2" />
-            <h2 className="text-lg font-semibold">
-              Batch Diproduksi Bulan Ini
-            </h2>
-            <p className="text-xl font-bold">
-              {batchDiproduksiBulanIni !== null
-                ? batchDiproduksiBulanIni
-                : "Loading..."}
-            </p>
-          </CardHeader>
-        </Card>
-
-        <Card className="shadow-lg">
-          <CardHeader className="flex flex-col items-center">
-            <FaUndo className="text-4xl text-yellow-500 mb-2" />
-            <h2 className="text-lg font-semibold">Total Pengembalian Produk</h2>
-            <p className="text-xl font-bold">
-              {totalPengembalianProduk !== null
-                ? totalPengembalianProduk
-                : "Loading..."}
-            </p>
-          </CardHeader>
-        </Card>
-      </div>
-
-      {/* Data Tables */}
-      <div className="mt-8">
-        <Card className="shadow-lg mb-8">
-          <CardHeader className="flex items-center">
-            <FaWarehouse className="text-xl mr-2 text-gray-600" />
-            <h2 className="text-xl font-semibold">Data Gudang</h2>
+            <h2 className="text-lg font-semibold">Produksi Bulan Ini</h2>
           </CardHeader>
           <CardBody>
-            <Table aria-label="Warehouse Data Table">
+            <Table aria-label="Production data table" className={tableClasses}>
               <TableHeader>
-                <TableColumn>Nama Barang</TableColumn>
-                <TableColumn>Jumlah Stok</TableColumn>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>KUANTITAS</TableColumn>
               </TableHeader>
               <TableBody>
-                {gudangData.length > 0 ? (
-                  gudangData.map((item, index) => (
+                {produksiData.length > 0 ? (
+                  produksiData.map((item, index) => (
                     <TableRow key={index}>
-                      <TableCell>{item.product_name}</TableCell>
-                      <TableCell>{item.total_stock}</TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.quantity}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell>No data available</TableCell>
-                    <TableCell>-</TableCell>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
                   </TableRow>
                 )}
               </TableBody>
@@ -216,29 +247,157 @@ const DashboardManajer: React.FC = () => {
           </CardBody>
         </Card>
 
+        {/* Pengembalian */}
         <Card className="shadow-lg">
+          <CardHeader className="flex flex-col items-center">
+            <FaUndo className="text-4xl text-yellow-500 mb-2" />
+            <h2 className="text-lg font-semibold">Pengembalian Produk</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Returns data table" className={tableClasses}>
+              <TableHeader>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>OUTLET</TableColumn>
+                <TableColumn className={cellClasses}>KUANTITAS</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {pengembalianData.length > 0 ? (
+                  pengembalianData.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.outlet_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.quantity}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+
+        {/* Low Stock Items */}
+        <Card className="shadow-lg lg:col-span-2">
           <CardHeader className="flex items-center">
-            <FaWarehouse className="text-xl mr-2 text-gray-600" />
+            <FaExclamationTriangle className="text-xl mr-2 text-red-500" />
             <h2 className="text-xl font-semibold">Stok Rendah di Gudang</h2>
           </CardHeader>
           <CardBody>
-            <Table aria-label="Low stock table">
+            <Table aria-label="Low stock table" className={tableClasses}>
               <TableHeader>
-                <TableColumn>Nama Barang</TableColumn>
-                <TableColumn>Kuantitas</TableColumn>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>KUANTITAS</TableColumn>
               </TableHeader>
               <TableBody>
                 {stokRendahGudang.length > 0 ? (
                   stokRendahGudang.map((item, index) => (
                     <TableRow key={index}>
-                      <TableCell>{item.nama}</TableCell>
-                      <TableCell>{item.kuantitas}</TableCell>
+                      <TableCell className={cellClasses}>{item.nama}</TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.kuantitas}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell>No data available</TableCell>
-                    <TableCell>-</TableCell>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+
+        {/* Warehouse Data */}
+        <Card className="shadow-lg lg:col-span-1">
+          <CardHeader className="flex items-center">
+            <FaWarehouse className="text-xl mr-2 text-gray-600" />
+            <h2 className="text-xl font-semibold">Data Gudang</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Warehouse data table" className={tableClasses}>
+              <TableHeader>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>TOTAL STOK</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {gudangData.length > 0 ? (
+                  gudangData.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.total_stock}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell>
+                      {" "}
+                      className={cellClasses}No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      </div>
+
+      {/* Expiring Batches */}
+      <div className="grid grid-cols-1 gap-4">
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaCalendarAlt className="text-xl mr-2 text-gray-600" />
+            <h2 className="text-xl font-semibold">
+              Batch Mendekati Kadaluarsa
+            </h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Expiring batch table" className={tableClasses}>
+              <TableHeader>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>
+                  TANGGAL KADALUARSA
+                </TableColumn>
+              </TableHeader>
+              <TableBody>
+                {batchKadaluarsa.length > 0 ? (
+                  batchKadaluarsa.map((batch, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {batch.product_name}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {formatDate(batch.expiry_date)}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
                   </TableRow>
                 )}
               </TableBody>
