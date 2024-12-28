@@ -42,6 +42,7 @@ type Product = {
 const BatchManagement: React.FC = () => {
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
+    const role = useAppSelector((state: RootState) => state.auth.role);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
@@ -294,19 +295,24 @@ const formatDate = (dateString: string): string => {
     fetchProducts();
   }, [token]);
 
+    const onlyRole = role === "Pimpinan" || role === "Manajer";
+
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Manajemen Batch</h2>
-        <Button
-          className=""
-          color="success"
-          variant="flat"
-          onPress={handleAddNewBatch}
-        >
-          Tambah Batch
-        </Button>
+        {onlyRole && (
+          <Button
+            className=""
+            color="success"
+            variant="flat"
+            onPress={handleAddNewBatch}
+          >
+            Tambah Batch
+          </Button>
+        )}
       </div>
+
       <Modal isOpen={showAddModal} onClose={closeAddModal}>
         <ModalContent>
           {(onClose) => (
@@ -530,6 +536,8 @@ const formatDate = (dateString: string): string => {
                         >
                           Detail
                         </Button>
+                        {onlyRole && (
+                          <>
                         <Button
                           className=""
                           color="warning"
@@ -546,6 +554,8 @@ const formatDate = (dateString: string): string => {
                         >
                           Hapus
                         </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>

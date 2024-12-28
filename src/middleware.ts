@@ -13,10 +13,8 @@ const allowedRoles = {
   "/products": ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"],
   "/outlets": ["Pimpinan", "Manajer", "Pemasaran"],
   "/financialReports": ["Pimpinan", "Bendahara"],
-  "/inventory/stockManagement": ["Pimpinan", "Manajer"],
-  "/inventory/batchManagement": ["Pimpinan", "Manajer"],
-  "/inventory": ["Pimpinan", "Manajer"],
-  // Add more paths as needed
+  "/inventory/stockManagement": ["Pimpinan", "Pemasaran"],
+  "/inventory/batchManagement": ["Pimpinan", "Pemasaran"],
 };
 
 export function middleware(request: NextRequest) {

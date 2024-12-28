@@ -190,7 +190,7 @@ const Sidebar = () => {
         href: "/outlets",
         icon: House,
         label: "Outlet",
-        roles: ["Pimpinan", "Manajer", "Pemasaran"],
+        roles: ["Pimpinan", "Pemasaran"],
       },
       {
         href: "/financialReports",
@@ -303,7 +303,7 @@ const Sidebar = () => {
                 isSubLink={link.isSubLink}
               />
               {/* Add Inventory section immediately after Products */}
-              {isProductLink && (role === "Pimpinan" || role === "Manajer") && (
+              {isProductLink && (role === "Pimpinan" || role === "Manajer" || role === "Pemasaran") && (
                 <div ref={inventoryRef} className="relative">
                   <div
                     onClick={toggleInventoryDropdown}
