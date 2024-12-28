@@ -54,7 +54,7 @@ type FakturEntry = {
   grand_total: number;
   amount_paid: number;
   balance_due: number;
-  payment_status: "Lunas" | "Menunggu";
+  payment_status: "Lunas" | "Belum Lunas";
 };
 
 type Product = {
@@ -97,8 +97,8 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
   });
   const [invoiceDate, setInvoiceDate] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState<"Lunas" | "Menunggu">(
-    "Menunggu"
+  const [paymentStatus, setPaymentStatus] = useState<"Lunas" | "Belum Lunas">(
+    "Belum Lunas"
   );
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
@@ -503,7 +503,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
           color="success"
           variant="flat"
         >
-          Tambah Produk
+          Tambah Distribusi
         </Button>
       </div>
 
@@ -586,14 +586,14 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
                 placeholder="Pilih Status"
                 value={paymentStatus}
                 onChange={(e) =>
-                  setPaymentStatus(e.target.value as "Lunas" | "Menunggu")
+                  setPaymentStatus(e.target.value as "Lunas" | "Belum Lunas")
                 }
               >
                 <SelectItem key="Lunas" value="Lunas">
                   Lunas
                 </SelectItem>
-                <SelectItem key="Menunggu" value="Menunggu">
-                  Menunggu
+                <SelectItem key="Belum Lunas" value="Belum Lunas">
+                  Belum Lunas
                 </SelectItem>
               </Select>
             </ModalBody>
@@ -625,7 +625,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
         >
           <ModalContent>
             <ModalHeader>
-              <h3 className="text-xl font-semibold">Tambah Produk Baru</h3>
+              <h3 className="text-xl font-semibold">Tambah Distribusi Baru</h3>
             </ModalHeader>
             <ModalBody>
               <Select

@@ -245,6 +245,7 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
         >
           Tambah Penjualan
         </Button>
+        
         <Table aria-label="Sales transactions">
           <TableHeader>
             <TableColumn>Nama Produk</TableColumn>

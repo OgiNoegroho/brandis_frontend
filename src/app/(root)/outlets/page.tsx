@@ -299,7 +299,7 @@ const Outlet = () => {
     return <div className="p-6 text-center">Loading outlets...</div>;
   }
 
-  const onlyRole = role === "Pimpinan" || role === "Manajer";
+  const onlyRole = role === "Pimpinan" || role === "Pemasaran";
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

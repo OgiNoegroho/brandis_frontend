@@ -54,7 +54,7 @@ type FakturEntry = {
   grand_total: number;
   amount_paid: number;
   balance_due: number;
-  payment_status: "Lunas" | "Menunggu";
+  payment_status: "Lunas" | "Belum Lunas";
   distribusi_id: number;
 };
 
@@ -256,14 +256,14 @@ const FinancialReportsDetails: React.FC = () => {
             Lunas
           </Chip>
         );
-      case "Menunggu":
+      case "Belum Lunas":
         return (
           <Chip
             color="warning"
             variant="flat"
             className="capitalize text-yellow-500 bg-yellow-50"
           >
-            Menunggu
+            Belum Lunas
           </Chip>
         );
       default:
@@ -304,7 +304,7 @@ const FinancialReportsDetails: React.FC = () => {
 
       <Card className="mb-4">
         <CardBody>
-          <h3 className="text-lg font-semibold">Laporan Outlet</h3>
+          <h3 className="text-lg font-semibold">Laporan Distribusi pada Outlet</h3>
           <Divider className="mb-2" />
           <Table aria-label="Distribution Table">
             <TableHeader>
@@ -324,23 +324,22 @@ const FinancialReportsDetails: React.FC = () => {
                   </TableCell>
                   <TableCell>{getStatus(item.status_pembayaran)}</TableCell>
                   <TableCell>
+                    <div className="flex space-x-2">
                     <Button
-                      onClick={() => handleViewDetail(item.distribusi_id)}
-                      className="mr-2"
-                      size="sm"
+                      onPress={() => handleViewDetail(item.distribusi_id)}
                       variant="flat"
                       color="primary"
                     >
                       Detail
                     </Button>
                     <Button
-                      onClick={() => handleViewFaktur(item.distribusi_id)}
-                      size="sm"
+                      onPress={() => handleViewFaktur(item.distribusi_id)}
                       variant="flat"
                       color="success"
                     >
                       Lihat Faktur
                     </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               )}
