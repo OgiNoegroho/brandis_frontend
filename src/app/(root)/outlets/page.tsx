@@ -6,6 +6,9 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 import {
+  Card,
+  CardBody,
+  CardFooter,
   Modal,
   ModalContent,
   ModalHeader,
@@ -14,6 +17,7 @@ import {
   Button,
   Input,
 } from "@nextui-org/react";
+
 
 interface Outlet {
   id: string;
@@ -32,6 +36,7 @@ const Outlet = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const role = useAppSelector((state: RootState) => state.auth.role);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
@@ -62,12 +67,15 @@ const Outlet = () => {
         throw new Error("Authentication token not found");
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/outlet`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -128,18 +136,21 @@ const Outlet = () => {
 
       if (!token) throw new Error("Authentication token not found");
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/outlet`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          nama: formData.outletName,
-          alamat: formData.address,
-          nomor_telepon: formData.phone,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            nama: formData.outletName,
+            alamat: formData.address,
+            nomor_telepon: formData.phone,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -288,17 +299,21 @@ const Outlet = () => {
     return <div className="p-6 text-center">Loading outlets...</div>;
   }
 
+  const onlyRole = role === "Pimpinan" || role === "Manajer";
+
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Outlet</h1>
-        <Button
-          variant="flat"
-          color="success"
-          onPress={() => setShowCreateModal(true)}
-        >
-          Tambah Outlet
-        </Button>
+        {onlyRole && (
+          <Button
+            variant="flat"
+            color="success"
+            onPress={() => setShowCreateModal(true)}
+          >
+            Tambah Outlet
+          </Button>
+        )}
       </div>
 
       {outlets.length === 0 ? (
@@ -306,48 +321,59 @@ const Outlet = () => {
           No outlets found. Add your first outlet to get started.
         </div>
       ) : (
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {outlets.map((outlet) => (
-            <div
-              key={outlet.id}
-              className="flex justify-between items-center border-b p-5 hover:bg-gray-100 transition"
-            >
-              <div>
-                <h2 className="text-lg font-semibold">{outlet.nama}</h2>
-                <p className="text-sm text-gray-600">{outlet.alamat}</p>
-                <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
-              </div>
-              <div className="flex space-x-2">
+            <Card key={outlet.id} className="shadow-md flex flex-col h-full">
+              <CardBody className="flex-grow">
+                <div>
+                  <h2 className="text-lg font-semibold">{outlet.nama}</h2>
+                  <p className="text-sm text-gray-600">{outlet.alamat}</p>
+                  <p className="text-sm text-gray-600">
+                    {outlet.nomor_telepon}
+                  </p>
+                </div>
+              </CardBody>
+
+              <CardFooter className="flex justify-end items-center space-x-2 mt-4">
                 <Button
                   onPress={() => handleViewDetails(outlet.id)}
                   variant="flat"
                   color="primary"
+                  size="sm"
                 >
                   Detail
                 </Button>
-                <Button
-                  onPress={() => handleOpenEditModal(outlet)}
-                  variant="flat"
-                  color="warning"
-                >
-                  Edit
-                </Button>
-                <Button
-                  onPress={() => {
-                    setSelectedOutlet(outlet);
-                    setShowDeleteModal(true);
-                  }}
-                  variant="flat"
-                  color="danger"
-                >
-                  Hapus
-                </Button>
-              </div>
-            </div>
+                {onlyRole && (
+                  <>
+                    <Button
+                      onPress={() => handleOpenEditModal(outlet)}
+                      variant="flat"
+                      color="warning"
+                      size="sm"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      onPress={() => {
+                        setSelectedOutlet(outlet);
+                        setShowDeleteModal(true);
+                      }}
+                      variant="flat"
+                      color="danger"
+                      size="sm"
+                    >
+                      Hapus
+                    </Button>
+                  </>
+                )}
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}
 
+      {/* Modals for Add, Edit, and Delete */}
+      {/* Add Modal */}
       <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
         <ModalContent>
           <ModalHeader>Tambah Outlet Baru</ModalHeader>
@@ -386,6 +412,7 @@ const Outlet = () => {
         </ModalContent>
       </Modal>
 
+      {/* Edit Modal */}
       {showEditModal && selectedOutlet && (
         <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)}>
           <ModalContent>
@@ -426,6 +453,7 @@ const Outlet = () => {
         </Modal>
       )}
 
+      {/* Delete Modal */}
       {showDeleteModal && selectedOutlet && (
         <Modal
           isOpen={showDeleteModal}
@@ -438,11 +466,6 @@ const Outlet = () => {
                 Apakah Anda yakin ingin menghapus outlet{" "}
                 <strong>{selectedOutlet.nama}</strong>? Tindakan ini tidak dapat
                 dibatalkan.
-              </p>
-              <p className="text-red-600 italic mt-2">
-                <strong>Catatan:</strong> Outlet yang telah digunakan dalam
-                transaksi atau memiliki data terkait mungkin tidak dapat dihapus
-                untuk menjaga integritas data.
               </p>
             </ModalBody>
             <ModalFooter>

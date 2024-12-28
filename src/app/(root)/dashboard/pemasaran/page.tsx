@@ -3,69 +3,110 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
+import {
+  FaStore,
+  FaExclamationTriangle,
+  FaChartLine,
+  FaUndo,
+} from "react-icons/fa";
 import {
   Card,
   CardHeader,
   CardBody,
   Table,
-  TableHeader,
-  TableColumn,
   TableBody,
-  TableRow,
   TableCell,
-  Chip,
+  TableColumn,
+  TableHeader,
+  TableRow,
 } from "@nextui-org/react";
+import { showErrorToast } from "@/redux/slices/toastSlice";
 
-// Define types
-interface RingkasanFaktur {
-  status_pembayaran: string;
-  total_tagihan: number;
+interface OutletStock {
+  outlet_nama: string;
+  jumlah_produk: number;
+  total_kuantitas: number;
 }
 
-interface OverdueInvoice {
-  id: string;
-  status_pembayaran: string;
-  tanggal_faktur: string;
-  tanggal_jatuh_tempo: string;
-  jumlah_tagihan: number;
-  jumlah_dibayar: number;
+interface LowStock {
+  outlet_nama: string;
+  produk_nama: string;
+  stok: number;
 }
 
-const Bendahara: React.FC = () => {
-  const [ringkasanFaktur, setRingkasanFaktur] = useState<RingkasanFaktur[]>([]);
-  const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
-    null
+interface OutletPerformance {
+  outlet_nama: string;
+  total_terjual: number;
+}
+
+interface PengembalianData {
+  produk_nama: string;
+  outlet_nama: string;
+  total_dikembalikan: number;
+  bulan_pengembalian: string;
+}
+
+const DashboardPemasaran: React.FC = () => {
+  const [outletStock, setOutletStock] = useState<OutletStock[]>([]);
+  const [lowStock, setLowStock] = useState<LowStock[]>([]);
+  const [bestOutlet, setBestOutlet] = useState<OutletPerformance[]>([]);
+  const [worstOutlet, setWorstOutlet] = useState<OutletPerformance[]>([]);
+  const [pengembalianData, setPengembalianData] = useState<PengembalianData[]>(
+    []
   );
-  const [fakturJatuhTempo, setFakturJatuhTempo] = useState<number | null>(null);
-  const [overdueInvoices, setOverdueInvoices] = useState<OverdueInvoice[]>([]);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
   const dispatch = useAppDispatch();
+  const tableClasses = "text-left rtl:text-right w-full"; // Base table classes
+  const cellClasses = "text-center"; // Center alignment for cells
 
   const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch ringkasanFakturDistribusi
-      const ringkasanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/ringkasanFakturDistribusi`,
-        { headers }
-      );
-      if (!ringkasanRes.ok) throw new Error("Gagal memuat ringkasan faktur.");
-      const ringkasanData: RingkasanFaktur[] = await ringkasanRes.json();
-      setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
+      const fetchAPI = async (url: string) => {
+        const res = await fetch(url, { headers });
+        if (!res.ok) throw new Error(`Failed to fetch data from ${url}`);
+        return res.json();
+      };
 
-      // ... (rest of the fetch calls remain the same)
+      const [
+        outletStockData,
+        lowStockData,
+        bestOutletData,
+        worstOutletData,
+        pengembalianData,
+      ] = await Promise.all([
+        fetchAPI(
+          `${process.env.NEXT_PUBLIC_API_URL}/pemasaran/totalStokOutlet`
+        ),
+        fetchAPI(
+          `${process.env.NEXT_PUBLIC_API_URL}/pemasaran/outletStokRendah`
+        ),
+        fetchAPI(`${process.env.NEXT_PUBLIC_API_URL}/pemasaran/outletTerbaik`),
+        fetchAPI(`${process.env.NEXT_PUBLIC_API_URL}/pemasaran/outletTerendah`),
+        fetchAPI(
+          `${process.env.NEXT_PUBLIC_API_URL}/pemasaran/totalProdukDikembalikan`
+        ),
+      ]);
+
+      setOutletStock(outletStockData);
+      setLowStock(lowStockData);
+      setBestOutlet(bestOutletData);
+      setWorstOutlet(worstOutletData);
+      setPengembalianData(pengembalianData);
     } catch (err: any) {
       dispatch(
         showErrorToast({
           message: err.message || "Terjadi kesalahan saat memuat data.",
-          isDarkMode: false,
+          isDarkMode: isDarkMode,
         })
       );
     }
-  }, [token, dispatch]);
+  }, [token, dispatch, isDarkMode]);
 
   useEffect(() => {
     if (token) {
@@ -73,141 +114,228 @@ const Bendahara: React.FC = () => {
     }
   }, [token, fetchData]);
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "lunas":
-        return "success";
-      case "belum lunas":
-        return "warning";
-      case "terlambat":
-        return "danger";
-      default:
-        return "default";
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(amount);
-  };
-
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8 text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-        Dashboard Bendahara
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+        Dashboard Pemasaran
       </h1>
 
-      {/* Summary Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {/* Pendapatan Card */}
-        <Card className="bg-gradient-to-br from-green-50 to-green-100">
-          <CardBody className="text-center py-8">
-            <p className="text-xl text-gray-600 mb-2">Pendapatan Bulan Ini</p>
-            <p className="text-3xl font-bold text-green-600">
-              {pendapatanBulanIni !== null
-                ? formatCurrency(pendapatanBulanIni)
-                : "Loading..."}
-            </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Best Performing Outlets */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaChartLine className="text-xl mr-2 text-green-500" />
+            <h2 className="text-lg font-semibold">Outlet Penjualan Terbaik</h2>
+          </CardHeader>
+          <CardBody>
+            <Table
+              aria-label="Best performing outlets table"
+              className={tableClasses}
+            >
+              <TableHeader>
+                <TableColumn className={cellClasses}>OUTLET</TableColumn>
+                <TableColumn className={cellClasses}>TOTAL TERJUAL</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {bestOutlet && bestOutlet.length > 0 ? (
+                  bestOutlet.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.outlet_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.total_terjual}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardBody>
         </Card>
 
-        {/* Faktur Jatuh Tempo Card */}
-        <Card className="bg-gradient-to-br from-orange-50 to-orange-100">
-          <CardBody className="text-center py-8">
-            <p className="text-xl text-gray-600 mb-2">
-              Faktur Jatuh Tempo Hari Ini
-            </p>
-            <p className="text-3xl font-bold text-orange-600">
-              {fakturJatuhTempo !== null ? fakturJatuhTempo : "Loading..."}
-            </p>
-          </CardBody>
-        </Card>
-
-        {/* Total Tagihan Card */}
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
-          <CardBody className="text-center py-8">
-            <p className="text-xl text-gray-600 mb-2">Total Tagihan</p>
-            <p className="text-3xl font-bold text-blue-600">
-              {formatCurrency(
-                ringkasanFaktur.reduce(
-                  (acc, curr) => acc + curr.total_tagihan,
-                  0
-                )
-              )}
-            </p>
+        {/* Worst Performing Outlets */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaChartLine className="text-xl mr-2 text-red-500" />
+            <h2 className="text-lg font-semibold">Outlet Penjualan Terendah</h2>
+          </CardHeader>
+          <CardBody>
+            <Table
+              aria-label="Worst performing outlets table"
+              className={tableClasses}
+            >
+              <TableHeader>
+                <TableColumn className={cellClasses}>OUTLET</TableColumn>
+                <TableColumn className={cellClasses}>TOTAL TERJUAL</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {worstOutlet && worstOutlet.length > 0 ? (
+                  worstOutlet.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.outlet_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.total_terjual}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
           </CardBody>
         </Card>
       </div>
 
-      {/* Ringkasan Faktur Table */}
-      <Card className="mb-8">
-        <CardHeader className="flex justify-center">
-          <h2 className="text-xl font-semibold">Ringkasan Faktur Distribusi</h2>
-        </CardHeader>
-        <CardBody>
-          <Table aria-label="Ringkasan Faktur Distribusi">
-            <TableHeader>
-              <TableColumn>STATUS PEMBAYARAN</TableColumn>
-              <TableColumn>TOTAL TAGIHAN</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {ringkasanFaktur.map((item, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <Chip
-                      color={getStatusColor(item.status_pembayaran)}
-                      variant="flat"
-                    >
-                      {item.status_pembayaran}
-                    </Chip>
-                  </TableCell>
-                  <TableCell>{formatCurrency(item.total_tagihan)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
+      <div className="grid grid-cols-1 gap-6 mb-6">
+        {/* Pengembalian */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaUndo className="text-xl mr-2 text-yellow-500" />
+            <h2 className="text-lg font-semibold">Pengembalian Produk</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Returns data table" className={tableClasses}>
+              <TableHeader>
+                <TableColumn className={cellClasses}>NAMA PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>OUTLET</TableColumn>
+                <TableColumn className={cellClasses}>
+                  JUMLAH DIKEMBALIKAN
+                </TableColumn>
+                <TableColumn className={cellClasses}>BULAN</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {pengembalianData.length > 0 ? (
+                  pengembalianData.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.produk_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.outlet_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.total_dikembalikan}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.bulan_pengembalian}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
 
-      {/* Overdue Invoices Table */}
-      <Card>
-        <CardHeader className="flex justify-center">
-          <h2 className="text-xl font-semibold">Faktur Jatuh Tempo</h2>
-        </CardHeader>
-        <CardBody>
-          <Table aria-label="Faktur Jatuh Tempo">
-            <TableHeader>
-              <TableColumn>ID FAKTUR</TableColumn>
-              <TableColumn>STATUS</TableColumn>
-              <TableColumn>TANGGAL JATUH TEMPO</TableColumn>
-              <TableColumn>JUMLAH TAGIHAN</TableColumn>
-            </TableHeader>
-            <TableBody>
-              {overdueInvoices.map((invoice, index) => (
-                <TableRow key={index}>
-                  <TableCell>{invoice.id}</TableCell>
-                  <TableCell>
-                    <Chip
-                      color={getStatusColor(invoice.status_pembayaran)}
-                      variant="flat"
-                    >
-                      {invoice.status_pembayaran}
-                    </Chip>
-                  </TableCell>
-                  <TableCell>{invoice.tanggal_jatuh_tempo}</TableCell>
-                  <TableCell>
-                    {formatCurrency(invoice.jumlah_tagihan)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardBody>
-      </Card>
+        {/* Outlet Stock Table */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaStore className="text-xl mr-2 text-blue-600" />
+            <h2 className="text-xl font-semibold">Stok Outlet</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Outlet stock table" className={tableClasses}>
+              <TableHeader>
+                <TableColumn className={cellClasses}>OUTLET</TableColumn>
+                <TableColumn className={cellClasses}>JUMLAH PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>TOTAL STOK</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {outletStock.length > 0 ? (
+                  outletStock.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.outlet_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.jumlah_produk}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.total_kuantitas}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+
+        {/* Low Stock Table */}
+        <Card className="shadow-lg">
+          <CardHeader className="flex items-center">
+            <FaExclamationTriangle className="text-xl mr-2 text-red-500" />
+            <h2 className="text-xl font-semibold">Stok Rendah di Outlet</h2>
+          </CardHeader>
+          <CardBody>
+            <Table aria-label="Low stock table" className={tableClasses}>
+              <TableHeader>
+                <TableColumn className={cellClasses}>OUTLET</TableColumn>
+                <TableColumn className={cellClasses}>PRODUK</TableColumn>
+                <TableColumn className={cellClasses}>STOK</TableColumn>
+              </TableHeader>
+              <TableBody>
+                {lowStock.length > 0 ? (
+                  lowStock.map((item, index) => (
+                    <TableRow key={index}>
+                      <TableCell className={cellClasses}>
+                        {item.outlet_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>
+                        {item.produk_nama}
+                      </TableCell>
+                      <TableCell className={cellClasses}>{item.stok}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell className={cellClasses}>
+                      No data available
+                    </TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                    <TableCell className={cellClasses}>-</TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 };
 
-export default Bendahara;
+export default DashboardPemasaran;

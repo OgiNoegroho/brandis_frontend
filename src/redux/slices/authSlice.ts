@@ -5,6 +5,9 @@ import {
   saveTokenToLocalStorage,
   removeTokenFromLocalStorage,
   getRoleFromToken,
+  saveTokenToCookies,
+  removeTokenFromCookies,
+  getTokenFromCookies,
 } from "@/utils/authUtils";
 import { Role } from "@/types/auth";
 
@@ -13,9 +16,16 @@ interface AuthState {
   role: Role | null;
 }
 
+// Check both localStorage and cookies for existing token
+const getInitialToken = (): string | null => {
+  const localStorageToken = getTokenFromLocalStorage();
+  const cookieToken = getTokenFromCookies();
+  return localStorageToken || cookieToken;
+};
+
 const initialState: AuthState = {
-  token: getTokenFromLocalStorage(),
-  role: null,
+  token: getInitialToken(),
+  role: getInitialToken() ? getRoleFromToken(getInitialToken()!) : null,
 };
 
 const authSlice = createSlice({
@@ -23,15 +33,29 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     setToken: (state, action: PayloadAction<string>) => {
-      state.token = action.payload;
-      const role = getRoleFromToken(action.payload);
-      state.role = role as Role | null;
-      saveTokenToLocalStorage(action.payload);
+      const token = action.payload;
+      state.token = token;
+      state.role = getRoleFromToken(token);
+
+      // Save token to both storage mechanisms
+      Promise.all([
+        saveTokenToLocalStorage(token),
+        saveTokenToCookies(token),
+      ]).catch((error) => {
+        console.error("Error saving token:", error);
+      });
     },
     removeToken: (state) => {
       state.token = null;
       state.role = null;
-      removeTokenFromLocalStorage();
+
+      // Remove token from both storage mechanisms
+      Promise.all([
+        removeTokenFromLocalStorage(),
+        removeTokenFromCookies(),
+      ]).catch((error) => {
+        console.error("Error removing token:", error);
+      });
     },
   },
 });

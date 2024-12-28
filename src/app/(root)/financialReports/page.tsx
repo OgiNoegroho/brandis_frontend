@@ -4,7 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import { Button } from "@nextui-org/react";
+import {
+  Card,
+  CardBody,
+  CardFooter,
+  Button,
+} from "@nextui-org/react";
 import { showErrorToast } from "@/redux/slices/toastSlice";
 
 interface Outlet {
@@ -16,13 +21,13 @@ interface Outlet {
 
 const FinancialReports = () => {
   const router = useRouter();
-  const [outlets, setOutlets] = useState<Outlet[]>([]);
-
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
+
+  const [outlets, setOutlets] = useState<Outlet[]>([]);
 
   const fetchOutlets = async () => {
     try {
@@ -49,7 +54,8 @@ const FinancialReports = () => {
     } catch (error) {
       dispatch(
         showErrorToast({
-          message: error instanceof Error ? error.message : "Sebuah kesalahan terjadi",
+          message:
+            error instanceof Error ? error.message : "Sebuah kesalahan terjadi",
           isDarkMode,
         })
       );
@@ -65,30 +71,31 @@ const FinancialReports = () => {
   };
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
-      <h1 className="text-2xl font-bold mb-2">Laporan Outlet</h1>
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
+      <h1 className="text-2xl font-bold mb-6">Laporan Outlet</h1>
 
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {outlets.map((outlet) => (
-          <div
-            key={outlet.id}
-            className="flex justify-between items-center border-b p-5 hover:bg-gray-100 transition"
-          >
-            <div>
-              <h2 className="text-lg font-semibold">{outlet.nama}</h2>
-              <p className="text-sm text-gray-600">{outlet.alamat}</p>
-              <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
-            </div>
-            <div className="flex space-x-2">
+          <Card key={outlet.id} className="shadow-md flex flex-col h-full">
+            <CardBody className="flex-grow">
+              <div>
+                <h2 className="text-lg font-semibold">{outlet.nama}</h2>
+                <p className="text-sm text-gray-600">{outlet.alamat}</p>
+                <p className="text-sm text-gray-600">{outlet.nomor_telepon}</p>
+              </div>
+            </CardBody>
+
+            <CardFooter className="flex justify-end items-center space-x-2 mt-4">
               <Button
-                onClick={() => handleViewDetails(outlet.id)}
-                color="primary"
+                onPress={() => handleViewDetails(outlet.id)}
                 variant="flat"
+                color="primary"
+                size="sm"
               >
                 Detail
               </Button>
-            </div>
-          </div>
+            </CardFooter>
+          </Card>
         ))}
       </div>
     </div>

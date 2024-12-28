@@ -5,7 +5,6 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
 
-// Define types
 interface RingkasanFaktur {
   status_pembayaran: string;
   total_tagihan: number;
@@ -20,7 +19,7 @@ interface OverdueInvoice {
   jumlah_dibayar: number;
 }
 
-const Bendahara: React.FC = () => {
+const DashboardBendahara: React.FC = () => {
   const [ringkasanFaktur, setRingkasanFaktur] = useState<RingkasanFaktur[]>([]);
   const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
     null
@@ -100,7 +99,7 @@ const Bendahara: React.FC = () => {
   }, [token, fetchData]);
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Bendahara
       </h1>
@@ -236,4 +235,4 @@ const Bendahara: React.FC = () => {
   );
 };
 
-export default Bendahara;
+export default DashboardBendahara;

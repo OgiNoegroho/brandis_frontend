@@ -241,7 +241,7 @@ const PimpinanDashboard: React.FC = () => {
   };
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         Dashboard Pimpinan
       </h1>

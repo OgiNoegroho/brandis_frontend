@@ -41,21 +41,23 @@ const ProductDetail = () => {
     komposisi: "",
     deskripsi: "",
   });
-const router = useRouter();
+
+  const router = useRouter();
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const role = useAppSelector((state: RootState) => state.auth.role);
+  const dispatch = useAppDispatch();
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
-  const dispatch = useAppDispatch();
+
   const { id } = useParams();
   const dropdownRef = useRef<HTMLDivElement>(null);
-const formatPrice = (price: number): string => {
-  // Ensure the price is an integer and format it with periods as thousands separator
-  return Math.floor(price)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-};
 
+  const formatPrice = (price: number): string => {
+    return Math.floor(price)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -69,7 +71,7 @@ const formatPrice = (price: number): string => {
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isDarkMode]); // Add isDarkMode as a dependency
+  }, [isDarkMode]);
 
   useEffect(() => {
     if (!id) return;
@@ -152,7 +154,7 @@ const formatPrice = (price: number): string => {
       if (!response.ok) throw new Error("Gagal mengganti gambar produk");
 
       const updatedProduct = await response.json();
-      setProduct(updatedProduct);
+      setProduct(updatedProduct); // Ensure the image is updated
       setShowImageUploadModal(false);
       dispatch(
         showSuccessToast({
@@ -192,7 +194,7 @@ const formatPrice = (price: number): string => {
       if (!response.ok) throw new Error("Gagal mengupdate produk");
 
       const updatedProduct = await response.json();
-      setProduct(updatedProduct);
+      setProduct(updatedProduct); // Update product details and image if changed
       setEditMode(false);
       dispatch(
         showSuccessToast({
@@ -211,53 +213,57 @@ const formatPrice = (price: number): string => {
     }
   };
 
- const handleDelete = async () => {
-   if (!token || !product) return;
+  const handleDelete = async () => {
+    if (!token || !product) return;
 
-   try {
-     const response = await fetch(
-       `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
-       {
-         method: "DELETE",
-         headers: {
-           Authorization: `Bearer ${token}`,
-         },
-       }
-     );
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-     if (!response.ok) throw new Error("Gagal menghapus produk");
+      if (!response.ok) throw new Error("Gagal menghapus produk");
 
-     router.push("/products"); // Navigate to the products page after deletion
-     dispatch(
-       showSuccessToast({
-         message: "Produk berhasil dihapus!",
-         isDarkMode,
-       })
-     );
-   } catch (err) {
-     console.error(err);
-     dispatch(
-       showErrorToast({
-         message: "Gagal menghapus produk, silahkan coba lagi.",
-         isDarkMode,
-       })
-     );
-   }
- };
+      router.push("/products"); // Navigate to the products page after deletion
+      dispatch(
+        showSuccessToast({
+          message: "Produk berhasil dihapus!",
+          isDarkMode,
+        })
+      );
+    } catch (err) {
+      console.error(err);
+      dispatch(
+        showErrorToast({
+          message: "Gagal menghapus produk, silahkan coba lagi.",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
+  const onlyRole = role === "Pimpinan" || role === "Manajer";
 
   if (loading)
     return (
-      <p className="text-gray-500 text-center">Loading product details...</p>
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="animate-pulse text-lg">Loading...
+        </p>
+      </div>
     );
   if (!product)
-    return <p className="text-gray-500 text-center">No product found.</p>;
+    return <div className="text-center text-gray-500">No product found.</div>;
 
   const primaryImage =
     product.images?.find((img) => img.isPrimary) || product.images?.[0];
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8">
           <div className="relative w-full max-w-md mx-auto lg:mx-0">
@@ -327,24 +333,28 @@ const formatPrice = (price: number): string => {
             </div>
 
             <div className="pt-6 flex justify-end gap-3">
-              <Button
-                color="warning"
-                variant="flat"
-                onPress={() => setEditMode(true)}
-                size="lg"
-                className="w-32 sm:w-40"
-              >
-                Edit
-              </Button>
-              <Button
-                color="danger"
-                variant="flat"
-                onPress={() => setShowDeleteConfirmation(true)}
-                size="lg"
-                className="w-32 sm:w-40"
-              >
-                Hapus
-              </Button>
+              {onlyRole && (
+                <>
+                  <Button
+                    color="warning"
+                    variant="flat"
+                    onPress={() => setEditMode(true)}
+                    size="lg"
+                    className="w-32 sm:w-40"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    color="danger"
+                    variant="flat"
+                    onPress={() => setShowDeleteConfirmation(true)}
+                    size="lg"
+                    className="w-32 sm:w-40"
+                  >
+                    Hapus
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -385,8 +395,19 @@ const formatPrice = (price: number): string => {
             </div>
           </ModalBody>
           <ModalFooter>
-            <Button onPress={() => setEditMode(false)} color="danger" variant="flat">Batal</Button>
-            <Button onPress={handleEdit} disabled={loading} color="primary" variant="flat">
+            <Button
+              onPress={() => setEditMode(false)}
+              color="danger"
+              variant="flat"
+            >
+              Batal
+            </Button>
+            <Button
+              onPress={handleEdit}
+              disabled={loading}
+              color="primary"
+              variant="flat"
+            >
               Simpan
             </Button>
           </ModalFooter>

@@ -77,7 +77,7 @@ const OutletDetail = () => {
   }
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <Card className="mb-4">
         <CardHeader>
           <h1 className="text-3xl font-bold">{outletData.nama}</h1>

@@ -15,6 +15,12 @@ import {
   Button,
   Divider,
   Chip,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Input
 } from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
@@ -62,15 +68,21 @@ type Outlet = {
 const FinancialReportsDetails: React.FC = () => {
   const { id } = useParams();
   const [selectedOutlet, setSelectedOutlet] = useState<Outlet | null>(null);
-  const [distributions, setDistributions] = useState<DistributionTableEntry[]>([]);
-  const [detailData, setDetailData] = useState<DistributionDetailEntry[] | null>(null);
+  const [distributions, setDistributions] = useState<DistributionTableEntry[]>(
+    []
+  );
+  const [detailData, setDetailData] = useState<
+    DistributionDetailEntry[] | null
+  >(null);
   const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
   const [amountPaidInput, setAmountPaidInput] = useState<string>("");
   const [isAmountUpdating, setIsAmountUpdating] = useState(false);
 
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const isDarkMode = useAppSelector((state: RootState) => state.global.isDarkMode);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
 
   const formatDate = (date: string | Date): string => {
     const d = new Date(date);
@@ -82,9 +94,12 @@ const FinancialReportsDetails: React.FC = () => {
 
   const fetchOutletDetails = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (!response.ok) throw new Error("Gagal mengambil detail outlet");
 
       const outletData: Outlet = await response.json();
@@ -92,7 +107,8 @@ const FinancialReportsDetails: React.FC = () => {
     } catch (error) {
       dispatch(
         showErrorToast({
-          message: error instanceof Error ? error.message : "sebuah kesalahan terjadi",
+          message:
+            error instanceof Error ? error.message : "sebuah kesalahan terjadi",
           isDarkMode,
         })
       );
@@ -122,7 +138,8 @@ const FinancialReportsDetails: React.FC = () => {
     } catch (error) {
       dispatch(
         showErrorToast({
-          message: error instanceof Error ? error.message : "sebuah kesalahan terjadi",
+          message:
+            error instanceof Error ? error.message : "sebuah kesalahan terjadi",
           isDarkMode,
         })
       );
@@ -150,27 +167,26 @@ const FinancialReportsDetails: React.FC = () => {
     }
   };
 
-const handleViewFaktur = async (distributionId: number) => {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+  const handleViewFaktur = async (distributionId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-    if (!response.ok) throw new Error("Gagal mengambil detail faktur");
+      if (!response.ok) throw new Error("Gagal mengambil detail faktur");
 
-    const data: FakturEntry[] = await response.json();
-    setFakturData(data);
-  } catch (error) {
-    dispatch(
-      showErrorToast({
-        message: "Gagal mengambil detail faktur",
-        isDarkMode,
-      })
-    );
-  }
-};
-
+      const data: FakturEntry[] = await response.json();
+      setFakturData(data);
+    } catch (error) {
+      dispatch(
+        showErrorToast({
+          message: "Gagal mengambil detail faktur",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
   const handleAmountUpdate = async (fakturId: string) => {
     setIsAmountUpdating(true);
@@ -220,14 +236,13 @@ const handleViewFaktur = async (distributionId: number) => {
     }
   };
 
-const closeDetailModal = () => {
-  setDetailData(null);
-};
+  const closeDetailModal = () => {
+    setDetailData(null);
+  };
 
-const closeFakturModal = () => {
-  setFakturData(null);
-};
-
+  const closeFakturModal = () => {
+    setFakturData(null);
+  };
 
   const getStatus = (status: string) => {
     switch (status) {
@@ -264,279 +279,293 @@ const closeFakturModal = () => {
     }
   };
 
- return (
-   <div className="container px-12 sm:px-6 lg:pl-0 content">
-     {selectedOutlet ? (
-       <Card className="mb-4">
-         <CardHeader>
-           <h1 className="text-3xl font-bold">{selectedOutlet.nama}</h1>
-         </CardHeader>
-         <Divider />
-         <div className="grid grid-cols-1 gap-2 p-2">
-           <div className="flex items-center gap-2 text-gray-600 mb-2">
-             <MapPin className="h-5 w-5" />
-             <span>{selectedOutlet.alamat}</span>
-           </div>
-           <div className="flex items-center gap-2 text-gray-600">
-             <PhoneCall className="h-5 w-5" />
-             <span>{selectedOutlet.nomor_telepon}</span>
-           </div>
-         </div>
-       </Card>
-     ) : (
-       <p>Loading outlet details...</p>
-     )}
+  return (
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
+      {selectedOutlet ? (
+        <Card className="mb-4">
+          <CardHeader>
+            <h1 className="text-3xl font-bold">{selectedOutlet.nama}</h1>
+          </CardHeader>
+          <Divider />
+          <div className="grid grid-cols-1 gap-2 p-2">
+            <div className="flex items-center gap-2 text-gray-600 mb-2">
+              <MapPin className="h-5 w-5" />
+              <span>{selectedOutlet.alamat}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600">
+              <PhoneCall className="h-5 w-5" />
+              <span>{selectedOutlet.nomor_telepon}</span>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <p>Loading outlet details...</p>
+      )}
 
-     <Card className="mb-4">
-       <CardBody>
-         <h3 className="text-lg font-semibold">Laporan Outlet</h3>
-         <Divider className="mb-2" />
-         <Table aria-label="Distribution Table">
-           <TableHeader>
-             <TableColumn>No Faktur</TableColumn>
-             <TableColumn>No Distribusi</TableColumn>
-             <TableColumn>Dibuat pada</TableColumn>
-             <TableColumn>Status Pembayaran</TableColumn>
-             <TableColumn>Aksi</TableColumn>
-           </TableHeader>
-           <TableBody items={distributions}>
-             {(item) => (
-               <TableRow key={item.distribusi_id}>
-                 <TableCell>{item.faktur_id}</TableCell>
-                 <TableCell>{item.distribusi_id}</TableCell>
-                 <TableCell>{formatDate(item.distribusi_created_at)}</TableCell>
-                 <TableCell>{getStatus(item.status_pembayaran)}</TableCell>
-                 <TableCell>
-                   <Button
-                     onClick={() => handleViewDetail(item.distribusi_id)}
-                     className="mr-2"
-                     size="sm"
-                     variant="flat"
-                     color="primary"
-                   >
-                     Detail
-                   </Button>
-                   <Button
-                     onClick={() => handleViewFaktur(item.distribusi_id)}
-                     size="sm"
-                     variant="flat"
-                     color="success"
-                   >
-                     Lihat Faktur
-                   </Button>
-                 </TableCell>
-               </TableRow>
-             )}
-           </TableBody>
-         </Table>
-       </CardBody>
-     </Card>
+      <Card className="mb-4">
+        <CardBody>
+          <h3 className="text-lg font-semibold">Laporan Outlet</h3>
+          <Divider className="mb-2" />
+          <Table aria-label="Distribution Table">
+            <TableHeader>
+              <TableColumn>No Faktur</TableColumn>
+              <TableColumn>No Distribusi</TableColumn>
+              <TableColumn>Dibuat pada</TableColumn>
+              <TableColumn>Status Pembayaran</TableColumn>
+              <TableColumn>Aksi</TableColumn>
+            </TableHeader>
+            <TableBody items={distributions}>
+              {(item) => (
+                <TableRow key={item.distribusi_id}>
+                  <TableCell>{item.faktur_id}</TableCell>
+                  <TableCell>{item.distribusi_id}</TableCell>
+                  <TableCell>
+                    {formatDate(item.distribusi_created_at)}
+                  </TableCell>
+                  <TableCell>{getStatus(item.status_pembayaran)}</TableCell>
+                  <TableCell>
+                    <Button
+                      onClick={() => handleViewDetail(item.distribusi_id)}
+                      className="mr-2"
+                      size="sm"
+                      variant="flat"
+                      color="primary"
+                    >
+                      Detail
+                    </Button>
+                    <Button
+                      onClick={() => handleViewFaktur(item.distribusi_id)}
+                      size="sm"
+                      variant="flat"
+                      color="success"
+                    >
+                      Lihat Faktur
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
 
-     {detailData && (
-       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-         <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-4">
-           <div className="flex justify-between items-center border-b pb-2 mb-4">
-             <h3 className="text-xl font-semibold">Detail Distribusi</h3>
-             <Button
-               onClick={closeDetailModal}
-               className="text-red-500 hover:text-red-700"
-               variant="light"
-             >
-               Tutup
-             </Button>
-           </div>
-           <table className="w-full border-collapse">
-             <thead>
-               <tr>
-                 <th className="border-b text-left px-4 py-2">Nama Batch</th>
-                 <th className="border-b text-left px-4 py-2">Nama Produk</th>
-                 <th className="border-b text-left px-4 py-2">Kuantitas</th>
-               </tr>
-             </thead>
-             <tbody>
-               {detailData.map((detail) => (
-                 <tr key={detail.batch_id}>
-                   <td className="border-t px-4 py-2">{detail.batch_name}</td>
-                   <td className="border-t px-4 py-2">{detail.product_name}</td>
-                   <td className="border-t px-4 py-2">{detail.quantity}</td>
-                 </tr>
-               ))}
-             </tbody>
-           </table>
-         </div>
-       </div>
-     )}
+      {/* Detail Modal */}
+      <Modal isOpen={!!detailData} onClose={closeDetailModal} size="md">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Detail Distribusi
+              </ModalHeader>
+              <ModalBody>
+                <Table aria-label="Detail distribusi table">
+                  <TableHeader>
+                    <TableColumn>Nama Batch</TableColumn>
+                    <TableColumn>Nama Produk</TableColumn>
+                    <TableColumn>Kuantitas</TableColumn>
+                  </TableHeader>
+                  <TableBody items={detailData || []}>
+                    {(item) => (
+                      <TableRow key={item.batch_id}>
+                        <TableCell>{item.batch_name}</TableCell>
+                        <TableCell>{item.product_name}</TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Tutup
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
 
-     {fakturData && (
-       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-         <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl mx-4 p-6">
-           <div className="flex justify-between items-center border-b pb-3 mb-4">
-             <h3 className="text-2xl font-semibold">Detail Faktur</h3>
-             <Button onClick={closeFakturModal} variant="light" color="danger">
-               Tutup
-             </Button>
-           </div>
+      {/* Faktur Modal */}
+      <Modal
+        isOpen={!!fakturData}
+        onClose={closeFakturModal}
+        size="2xl"
+        scrollBehavior="inside"
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                Detail Faktur
+              </ModalHeader>
+              <ModalBody>
+                {fakturData && fakturData.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p>
+                          <strong>Nomor Faktur:</strong>{" "}
+                          {fakturData[0].invoice_number}
+                        </p>
+                        <p>
+                          <strong>Tanggal Faktur:</strong>{" "}
+                          {formatDate(fakturData[0].invoice_date)}
+                        </p>
+                        <p>
+                          <strong>Tanggal Jatuh Tempo:</strong>{" "}
+                          {formatDate(fakturData[0].due_date)}
+                        </p>
+                      </div>
+                      <div>
+                        <p>
+                          <strong>Nama Outlet:</strong>{" "}
+                          {fakturData[0].outlet_name}
+                        </p>
+                        <p>
+                          <strong>Alamat Outlet:</strong>{" "}
+                          {fakturData[0].outlet_address}
+                        </p>
+                      </div>
+                    </div>
 
-           <div className="space-y-4">
-             <div className="grid grid-cols-2 gap-4">
-               <div>
-                 <p>
-                   <strong>Nomor Faktur:</strong> {fakturData[0].invoice_number}
-                 </p>
-                 <p>
-                   <strong>Tanggal Faktur:</strong>{" "}
-                   {formatDate(fakturData[0].invoice_date)}
-                 </p>
-                 <p>
-                   <strong>Tanggal Jatuh Tempo:</strong>{" "}
-                   {formatDate(fakturData[0].due_date)}
-                 </p>
-               </div>
-               <div>
-                 <p>
-                   <strong>Nama Outlet:</strong> {fakturData[0].outlet_name}
-                 </p>
-                 <p>
-                   <strong>Alamat Outlet:</strong>{" "}
-                   {fakturData[0].outlet_address}
-                 </p>
-               </div>
-             </div>
+                    <Table
+                      aria-label="Faktur details table"
+                      selectionMode="none"
+                    >
+                      <TableHeader>
+                        <TableColumn>Nama Produk</TableColumn>
+                        <TableColumn>Kuantitas</TableColumn>
+                        <TableColumn>Harga Satuan</TableColumn>
+                        <TableColumn>Total Harga</TableColumn>
+                      </TableHeader>
+                      <TableBody items={fakturData}>
+                        {(item: FakturEntry) => (
+                          <TableRow
+                            key={`${item.invoice_number}-${item.product_name}`}
+                          >
+                            <TableCell>{item.product_name}</TableCell>
+                            <TableCell>{item.total_quantity}</TableCell>
+                            <TableCell>
+                              {Number(item.unit_price).toLocaleString("id-ID", {
+                                minimumFractionDigits: 0,
+                              })}
+                            </TableCell>
+                            <TableCell>
+                              {Number(item.total_price).toLocaleString(
+                                "id-ID",
+                                {
+                                  minimumFractionDigits: 0,
+                                }
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
 
-             <table className="w-full border-collapse">
-               <thead>
-                 <tr>
-                   <th className="border-b text-left px-4 py-2">Nama Produk</th>
-                   <th className="border-b text-left px-4 py-2">Kuantitas</th>
-                   <th className="border-b text-left px-4 py-2">
-                     Harga Satuan
-                   </th>
-                   <th className="border-b text-left px-4 py-2">Total Harga</th>
-                 </tr>
-               </thead>
-               <tbody>
-                 {fakturData.map((item, idx) => (
-                   <tr key={idx}>
-                     <td className="border-t px-4 py-2">{item.product_name}</td>
-                     <td className="border-t px-4 py-2">
-                       {item.total_quantity}
-                     </td>
-                     <td className="border-t px-4 py-2">
-                       {Number(item.unit_price).toLocaleString("id-ID", {
-                         minimumFractionDigits: 0,
-                       })}
-                     </td>
-                     <td className="border-t px-4 py-2">
-                       {Number(item.total_price).toLocaleString("id-ID", {
-                         minimumFractionDigits: 0,
-                       })}
-                     </td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
+                    <div className="mt-6 border-t pt-4">
+                      <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-lg font-semibold">
+                              Informasi Pembayaran
+                            </p>
+                            <p className="mt-2">
+                              <strong>Total Keseluruhan:</strong>{" "}
+                              {Number(fakturData[0].grand_total).toLocaleString(
+                                "id-ID",
+                                {
+                                  minimumFractionDigits: 0,
+                                }
+                              )}
+                            </p>
+                            <p>
+                              <strong>Jumlah Dibayar:</strong>{" "}
+                              {Number(fakturData[0].amount_paid).toLocaleString(
+                                "id-ID",
+                                {
+                                  minimumFractionDigits: 0,
+                                }
+                              )}
+                            </p>
+                            <p>
+                              <strong>Sisa Pembayaran:</strong>{" "}
+                              {Number(fakturData[0].balance_due).toLocaleString(
+                                "id-ID",
+                                {
+                                  minimumFractionDigits: 0,
+                                }
+                              )}
+                            </p>
 
-             <div className="mt-6 border-t pt-4">
-               <div className="grid grid-cols-2 gap-8">
-                 <div className="space-y-4">
-                   <div className="flex justify-between items-center">
-                     <div>
-                       <p className="text-lg font-semibold">
-                         Informasi Pembayaran
-                       </p>
-                       <p className="mt-2">
-                         <strong>Total Keseluruhan:</strong>{" "}
-                         {Number(fakturData[0].grand_total).toLocaleString(
-                           "id-ID",
-                           {
-                             minimumFractionDigits: 0,
-                           }
-                         )}
-                       </p>
-                       <p>
-                         <strong>Jumlah Dibayar:</strong>{" "}
-                         {Number(fakturData[0].amount_paid).toLocaleString(
-                           "id-ID",
-                           {
-                             minimumFractionDigits: 0,
-                           }
-                         )}
-                       </p>
-                       <p>
-                         <strong>Sisa Pembayaran:</strong>{" "}
-                         {Number(fakturData[0].balance_due).toLocaleString(
-                           "id-ID",
-                           {
-                             minimumFractionDigits: 0,
-                           }
-                         )}
-                       </p>
+                            {fakturData[0].amount_paid <
+                              fakturData[0].grand_total && (
+                              <div className="space-y-2 mt-2">
+                                <p>
+                                  <strong>Update Jumlah Dibayar</strong>
+                                </p>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    value={amountPaidInput}
+                                    onValueChange={setAmountPaidInput}
+                                    placeholder="Masukkan Jumlah"
+                                    min={0}
+                                    className="max-w-[200px]"
+                                  />
+                                  <Button
+                                    color="primary"
+                                    variant="flat"
+                                    isLoading={isAmountUpdating}
+                                    onPress={() =>
+                                      handleAmountUpdate(
+                                        fakturData[0].invoice_number
+                                      )
+                                    }
+                                  >
+                                    Update
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
 
-                       {fakturData[0].amount_paid <
-                         fakturData[0].grand_total && (
-                         <div className="space-y-2 mt-2">
-                           <p>
-                             <strong>Update Jumlah Dibayar</strong>
-                           </p>
-                           <div className="flex items-center gap-2">
-                             <input
-                               type="number"
-                               value={amountPaidInput}
-                               onChange={(e) =>
-                                 setAmountPaidInput(e.target.value)
-                               }
-                               className="px-4 py-2 border rounded w-48"
-                               min="0"
-                               placeholder="Masukkan Jumlah"
-                             />
-                             <Button
-                               color="primary"
-                               variant="flat"
-                               onClick={() =>
-                                 handleAmountUpdate(
-                                   fakturData[0].invoice_number
-                                 )
-                               }
-                               isLoading={isAmountUpdating}
-                             >
-                               Update
-                             </Button>
-                           </div>
-                         </div>
-                       )}
-                     </div>
-                   </div>
-                 </div>
-
-                 <div className="space-y-4">
-                   <div className="flex justify-between items-center">
-                     <div>
-                       <p className="text-lg font-semibold">
-                         Status Pembayaran
-                       </p>
-                       <p className="mt-2">
-                         <strong>Status Saat Ini:</strong>{" "}
-                         <span
-                           className={`font-medium ${
-                             fakturData[0].payment_status === "Lunas"
-                               ? "text-green-600"
-                               : "text-yellow-600"
-                           }`}
-                         >
-                           {fakturData[0].payment_status}
-                         </span>
-                       </p>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
-         </div>
-       </div>
-     )}
-   </div>
- );
+                        <div className="space-y-4">
+                          <div>
+                            <p className="text-lg font-semibold">
+                              Status Pembayaran
+                            </p>
+                            <p className="mt-2">
+                              <strong>Status Saat Ini:</strong>{" "}
+                              <span
+                                className={`font-medium ${
+                                  fakturData[0].payment_status === "Lunas"
+                                    ? "text-green-600"
+                                    : "text-yellow-600"
+                                }`}
+                              >
+                                {fakturData[0].payment_status}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="flat" onPress={onClose}>
+                  Tutup
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+    </div>
+  );
 };
 
 export default FinancialReportsDetails;

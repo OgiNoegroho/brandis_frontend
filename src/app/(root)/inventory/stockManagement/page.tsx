@@ -180,7 +180,7 @@ const formatDate = (dateString: string): string => {
   };
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-semibold">Manajemen Stok</h1>
       </div>

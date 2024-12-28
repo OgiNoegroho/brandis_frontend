@@ -295,7 +295,7 @@ const formatDate = (dateString: string): string => {
   }, [token]);
 
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Manajemen Batch</h2>
         <Button

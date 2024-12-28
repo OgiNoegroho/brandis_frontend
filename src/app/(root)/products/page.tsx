@@ -32,6 +32,13 @@ interface Product {
 }
 
 const ProductsPage = () => {
+  const token = useAppSelector((state: RootState) => state.auth.token);
+  const role = useAppSelector((state: RootState) => state.auth.role);
+  const dispatch = useAppDispatch();
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
+
   const [products, setProducts] = useState<Product[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newProduct, setNewProduct] = useState({
@@ -43,13 +50,6 @@ const ProductsPage = () => {
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Loading state
-
-  const token = useAppSelector((state: RootState) => state.auth.token);
-  const dispatch = useAppDispatch();
-
-  const isDarkMode = useAppSelector(
-    (state: RootState) => state.global.isDarkMode
-  );
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -64,11 +64,14 @@ const ProductsPage = () => {
       }
 
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/products`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         if (!response.ok) throw new Error("Gagal mengambil produk.");
 
@@ -87,6 +90,8 @@ const ProductsPage = () => {
 
     fetchProducts();
   }, [token, dispatch, isDarkMode]);
+
+
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -136,13 +141,16 @@ const ProductsPage = () => {
           formData.append("image", newProduct.image);
         }
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/products`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: formData,
+          }
+        );
 
         if (!response.ok) throw new Error("Gagal menambahkan produk");
 
@@ -167,7 +175,8 @@ const ProductsPage = () => {
         console.error(err);
         dispatch(
           showErrorToast({
-            message: "Terjadi kesalahan saat menambah produk, Silahkan coba kembali.",
+            message:
+              "Terjadi kesalahan saat menambah produk, Silahkan coba kembali.",
             isDarkMode,
           })
         );
@@ -183,18 +192,22 @@ const ProductsPage = () => {
       );
     }
   };
-
+  
+  const onlyRole = role === "Pimpinan" || role === "Manajer";
   return (
-    <div className="container px-12 sm:px-6 lg:pl-0 content ">
+    <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Daftar Produk</h2>
-        <Button
-          variant="flat"
-          color="success"
-          onPress={() => setIsModalOpen(true)}
-        >
-          Tambah Produk
-        </Button>
+
+        {onlyRole && (
+          <Button
+            variant="flat"
+            color="success"
+            onPress={() => setIsModalOpen(true)}
+          >
+            Tambah Produk
+          </Button>
+        )}
       </div>
 
       <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">

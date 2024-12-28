@@ -42,7 +42,7 @@ const LogIn = () => {
       const data = await response.json();
 
       // Dispatch token to Redux store
-      dispatch(setToken(data.token));
+      dispatch(setToken(data.token)); // This triggers saving token in local storage and cookies
 
       // Show success toast
       dispatch(

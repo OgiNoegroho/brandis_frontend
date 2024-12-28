@@ -1,6 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { setIsSidebarCollapsed } from "@/redux/slices/globalSlice";
-import { removeToken } from "@/redux/slices/authSlice";
 import {
   Archive,
   Clipboard,
@@ -14,7 +13,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
 import React, { useState, useEffect, useRef } from "react";
 import { Role } from "@/types/auth";
 
@@ -74,7 +72,6 @@ const SidebarLink = ({
 
 const Sidebar = () => {
   const dispatch = useAppDispatch();
-  const router = useRouter();
   const [isMobile, setIsMobile] = useState(false);
   const [wasOpenBeforeMobile, setWasOpenBeforeMobile] = useState(false);
   const isSidebarCollapsed = useAppSelector(
@@ -199,7 +196,7 @@ const Sidebar = () => {
         href: "/financialReports",
         icon: ChartColumn,
         label: "Laporan Outlet",
-        roles: ["Pimpinan", "Manajer", "Bendahara"],
+        roles: ["Pimpinan", "Bendahara"],
       },
     ];
 
