@@ -66,6 +66,7 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
   const [returnData, setReturnData] = useState<ReturnHistory[]>([]);
   const [returnHistory, setReturnHistory] = useState<ReturnHistory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [newReturn, setNewReturn] = useState<NewReturn>({
@@ -337,21 +338,67 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
             </TableBody>
           </Table>
 
-          {returnData.length > 0 && (
-            <div className="flex justify-end mt-4">
-              <Button
-                onClick={handleSaveReturns}
-                color="primary"
-                variant="flat"
-              >
-                Simpan Retur
-              </Button>
-            </div>
-          )}
+          <div className="flex justify-end mt-4">
+            <Button
+              onClick={() => setIsConfirmationModalOpen(true)}
+              color="primary"
+              variant="flat"
+            >
+              Simpan Retur
+            </Button>
+          </div>
         </>
       )}
 
-      <h3 className="text-lg font-semibold">Riwayat retur</h3>
+      {/* Confirmation Modal */}
+      <Modal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        closeButton
+      >
+        <ModalContent>
+          <ModalHeader>
+            <h3 className="text-xl font-semibold">Konfirmasi Retur</h3>
+          </ModalHeader>
+          <ModalBody>
+            <div className="space-y-4">
+              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <p className="text-yellow-700 font-medium">Perhatian!</p>
+                <p className="text-yellow-600 text-sm mt-1">
+                  Setelah retur disimpan:
+                  <br />
+                  - Data tidak dapat diubah atau dihapus
+                  <br />
+                  - Kuantitas batch akan disesuaikan dengan jumlah retur
+                  <br />- Retur akan tercatat dalam sistem
+                </p>
+              </div>
+              <p>Apakah Anda yakin ingin melanjutkan?</p>
+            </div>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="danger"
+              variant="flat"
+              onPress={() => setIsConfirmationModalOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              color="primary"
+              variant="flat"
+              onPress={() => {
+                setIsConfirmationModalOpen(false);
+                handleSaveReturns();
+              }}
+            >
+              Ya, Lanjutkan
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      <h3 className="text-lg font-semibold mt-8">Riwayat retur</h3>
       <Divider className="mb-2" />
       <Table>
         <TableHeader>
@@ -374,6 +421,7 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
         </TableBody>
       </Table>
 
+      {/* Add Return Modal */}
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

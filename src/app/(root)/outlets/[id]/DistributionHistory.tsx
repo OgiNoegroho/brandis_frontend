@@ -72,6 +72,24 @@ type Batch = {
   produksi_pada: string;
 };
 
+interface DistributionModalProps {
+  isModalOpen: boolean;
+  setIsModalOpen: (isOpen: boolean) => void;
+  products: Product[];
+  batches: Batch[];
+  selectedProduct: string;
+  setSelectedProduct: (productId: string) => void;
+  selectedBatch: string;
+  setSelectedBatch: (batchId: string) => void;
+  newProduct: ProductEntry;
+  setNewProduct: (product: ProductEntry) => void;
+  loadingBatches: boolean;
+  handleProductChange: (productId: string) => void;
+  handleBatchChange: (batchId: string) => void;
+  handleAddProduct: () => void;
+  productEntries: ProductEntry[];
+}
+
 type DistributionHistoryProps = {
   outletId: string;
 }
@@ -96,6 +114,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isFakturModalOpen, setIsFakturModalOpen] = useState(false);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   // Data states
   const [detailData, setDetailData] = useState<
@@ -294,25 +313,34 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
     }
   };
 
-  const handleProductChange = (productId: string) => {
-    setSelectedProduct(productId);
-    setSelectedBatch("");
-    const product = products.find((p) => p.id.toString() === productId);
-    setNewProduct((prev) => ({
-      ...prev,
-      productName: product ? product.nama : "",
-    }));
-    fetchBatches(productId);
-  };
+const handleProductChange = (productId: string) => {
+  setSelectedProduct(productId);
+  setSelectedBatch(""); // Reset batch selection when product changes
 
-  const handleBatchChange = (batchId: string) => {
-    setSelectedBatch(batchId);
-    const batch = batches.find((b) => b.batch_id.toString() === batchId);
+  const product = products.find((p) => p.id.toString() === productId);
+  setNewProduct((prev) => ({
+    ...prev,
+    productName: product ? product.nama : "",
+    batchName: "", // Reset batch name when product changes
+    quantity: prev.quantity, // Preserve quantity if it exists
+  }));
+
+  fetchBatches(productId);
+};
+
+const handleBatchChange = (batchId: string) => {
+  console.log("Selected batch ID:", batchId); // For debugging
+  setSelectedBatch(batchId);
+
+  const batch = batches.find((b) => b.batch_id.toString() === batchId);
+  if (batch) {
     setNewProduct((prev) => ({
       ...prev,
-      batchName: batch ? batch.nama_batch : "",
+      batchName: batch.nama_batch,
+      quantity: prev.quantity,
     }));
-  };
+  }
+};
 
   const handleRemoveProduct = (index: number) => {
     setProductEntries((prevEntries) =>
@@ -463,7 +491,6 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
     <div>
       <h3 className="text-lg font-semibold">Distribusi Baru</h3>
       <Divider className="mb-2" />
-
       <div className="flex justify-end mb-4">
         <Button
           onPress={() => setIsModalOpen(true)}
@@ -473,7 +500,6 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
           Tambah Distribusi
         </Button>
       </div>
-
       {productEntries.length > 0 && (
         <>
           <Table aria-label="Pre-distribution">
@@ -509,7 +535,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
             <Button
               onPress={() => {
                 if (productEntries.length > 0) {
-                  setIsSaveModalOpen(true);
+                  setIsConfirmationModalOpen(true); // New state for confirmation modal
                 } else {
                   alert(
                     "Silakan tambahkan produk sebelum menyimpan distribusi."
@@ -523,6 +549,53 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
             </Button>
           </div>
         </>
+      )}
+
+      {/* New Confirmation Modal */}
+      {isConfirmationModalOpen && (
+        <Modal
+          isOpen={isConfirmationModalOpen}
+          onClose={() => setIsConfirmationModalOpen(false)}
+          closeButton
+        >
+          <ModalContent>
+            <ModalHeader>
+              <h3 className="text-xl font-semibold">Konfirmasi Penyimpanan</h3>
+            </ModalHeader>
+            <ModalBody>
+              <div className="space-y-4">
+                <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <p className="text-yellow-700 font-medium">Perhatian!</p>
+                  <p className="text-yellow-600 text-sm mt-1">
+                    Setelah distribusi disimpan: - Data tidak dapat diubah atau
+                    dihapus - Kuantitas batch akan berkurang sesuai dengan
+                    distribusi - Faktur akan langsung diterbitkan
+                  </p>
+                </div>
+                <p>Apakah Anda yakin ingin melanjutkan?</p>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                color="danger"
+                variant="flat"
+                onPress={() => setIsConfirmationModalOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                color="primary"
+                variant="flat"
+                onPress={() => {
+                  setIsConfirmationModalOpen(false);
+                  setIsSaveModalOpen(true);
+                }}
+              >
+                Ya, Lanjutkan
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       )}
 
       {isSaveModalOpen && (
@@ -584,73 +657,87 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
         </Modal>
       )}
 
-      {isModalOpen && (
-        <Modal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          closeButton
-        >
-          <ModalContent>
-            <ModalHeader>
-              <h3 className="text-xl font-semibold">Tambah Distribusi Baru</h3>
-            </ModalHeader>
-            <ModalBody>
-              <Select
-                label="Nama Produk"
-                placeholder="Pilih Produk"
-                value={selectedProduct}
-                onChange={(e) => handleProductChange(e.target.value)}
-              >
-                {products.map((product) => (
-                  <SelectItem key={product.id} value={product.id}>
-                    {product.nama}
-                  </SelectItem>
-                ))}
-              </Select>
-              <Select
-                label="Nama Batch"
-                placeholder={
-                  loadingBatches ? "Memuat batches..." : "Pilih Batch"
-                }
-                value={selectedBatch}
-                disabled={!selectedProduct || loadingBatches}
-                onChange={(e) => handleBatchChange(e.target.value)}
-              >
-                {batches.map((batch) => (
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        closeButton
+      >
+        <ModalContent>
+          <ModalHeader>
+            <h3 className="text-xl font-semibold">Tambah Distribusi Baru</h3>
+          </ModalHeader>
+          <ModalBody>
+            <Select
+              label="Nama Produk"
+              placeholder="Pilih Produk"
+              selectedKeys={
+                selectedProduct ? new Set([selectedProduct]) : new Set([])
+              }
+              onChange={(e) => handleProductChange(e.target.value)}
+            >
+              {products.map((product) => (
+                <SelectItem key={product.id} value={product.id.toString()}>
+                  {product.nama}
+                </SelectItem>
+              ))}
+            </Select>
+            <Select
+              label="Nama Batch"
+              placeholder="Pilih Batch"
+              selectedKeys={
+                selectedBatch ? new Set([selectedBatch]) : new Set([])
+              }
+              disabled={!selectedProduct || loadingBatches}
+              onSelectionChange={(e) =>
+                handleBatchChange(Array.from(e)[0]?.toString() || "")
+              }
+            >
+              {batches.map((batch: Batch) => {
+                // Check if this batch is already selected in productEntries
+                const isAlreadySelected = productEntries.some(
+                  (entry: ProductEntry) => entry.batchName === batch.nama_batch
+                );
+
+                return (
                   <SelectItem
-                    key={batch.batch_id}
+                    key={batch.batch_id.toString()}
                     value={batch.batch_id.toString()}
+                    className={isAlreadySelected ? "opacity-50" : ""}
+                    isDisabled={isAlreadySelected}
                   >
-                    {batch.nama_batch} (kuantitas: {batch.kuantitas_batch},
-                    kadaluarsa:{" "}
-                    {new Date(batch.tanggal_kadaluarsa).toLocaleDateString()})
+                    {`${batch.nama_batch} (kuantitas: ${
+                      batch.kuantitas_batch
+                    }, kadaluarsa: ${new Date(
+                      batch.tanggal_kadaluarsa
+                    ).toLocaleDateString()})`}
                   </SelectItem>
-                ))}
-              </Select>
-              <Input
-                type="number"
-                label="Kuantitas"
-                value={newProduct.quantity}
-                onChange={(e) =>
-                  setNewProduct({ ...newProduct, quantity: e.target.value })
-                }
-              />
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                color="danger"
-                variant="flat"
-                onPress={() => setIsModalOpen(false)}
-              >
-                Batal
-              </Button>
-              <Button color="primary" variant="flat" onPress={handleAddProduct}>
-                Tambah
-              </Button>
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
-      )}
+                );
+              })}
+            </Select>
+            <Input
+              type="number"
+              label="Kuantitas"
+              value={newProduct.quantity.toString()}
+              min={1}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, quantity: e.target.value })
+              }
+            />
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              color="danger"
+              variant="flat"
+              onPress={() => setIsModalOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button color="primary" variant="flat" onPress={handleAddProduct}>
+              Tambah
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
 
       <h3 className="text-lg font-semibold">Riwayat Distribusi</h3>
       <Divider className="mb-2" />
@@ -698,7 +785,6 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
           )}
         </TableBody>
       </Table>
-
       {isDetailModalOpen && (
         <Modal
           isOpen={isDetailModalOpen}
@@ -741,7 +827,6 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
           </ModalContent>
         </Modal>
       )}
-
       {isFakturModalOpen && (
         <Modal
           isOpen={isFakturModalOpen}
