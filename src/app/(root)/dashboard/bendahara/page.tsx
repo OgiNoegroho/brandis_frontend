@@ -3,261 +3,279 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
+import {
+  FaMoneyCheckAlt,
+  FaChartPie,
+  FaFileInvoiceDollar,
+  FaWallet,
+  FaSync,
+} from "react-icons/fa";
+import {
+  Card,
+  CardHeader,
+  CardBody,
+  Table,
+  TableBody,
+  TableCell,
+  TableColumn,
+  TableHeader,
+  TableRow,
+  Spinner,
+} from "@nextui-org/react";
 import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
 
+// Updated Types to match API response
 interface OverdueInvoice {
-  faktur_id: string;
-  distribusi_id: string;
+  faktur_id: number;
+  distribusi_id: number;
   tanggal_faktur: string;
   tanggal_jatuh_tempo: string;
-  overdue_days: number;
-  jumlah_tagihan: number;
-  jumlah_dibayar: number;
-  sisa_tagihan: number;
+  overdue_days: string; // Changed to string as it comes from PostgreSQL calculation
+  jumlah_tagihan: string; // Changed to string as it comes as decimal string
+  jumlah_dibayar: string;
+  sisa_tagihan: string;
 }
 
-interface FinancialSummary {
+interface FinancialSummaryByOutlet {
   outlet_name: string;
-  total_revenue: number;
-  total_debt: number;
-  remaining_balance: number;
+  total_invoices: string; // Changed to string as it comes as string from PostgreSQL count
+  total_tagihan: string;
+  total_dibayar: string;
+  total_outstanding: string;
 }
+
+interface PaymentStatusDistribution {
+  status_pembayaran: string;
+  jumlah_faktur: string;
+  total_tagihan: string;
+  total_dibayar: string;
+}
+
+// Updated helper functions to handle string inputs
+const formatCurrency = (amount: string | number) => {
+  const numericAmount =
+    typeof amount === "string" ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(numericAmount);
+};
+
+const formatDate = (dateString: string) => {
+  return new Date(dateString).toLocaleDateString("id-ID", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
 const DashboardBendahara: React.FC = () => {
-  const [totalOutstandingInvoices, setTotalOutstandingInvoices] = useState<
-    number | null
-  >(null);
+  // State with updated types
   const [overdueInvoices, setOverdueInvoices] = useState<OverdueInvoice[]>([]);
-  const [financialSummary, setFinancialSummary] = useState<FinancialSummary[]>(
-    []
-  );
-  const [monthlyFinancialTrends, setMonthlyFinancialTrends] = useState<any[]>(
-    []
-  );
-  const [returnsSummary, setReturnsSummary] = useState<any>(null);
+  const [financialSummary, setFinancialSummary] = useState<
+    FinancialSummaryByOutlet[]
+  >([]);
+  const [paymentDistribution, setPaymentDistribution] = useState<
+    PaymentStatusDistribution[]
+  >([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
   const dispatch = useAppDispatch();
 
   const fetchData = useCallback(async () => {
+    if (!token) {
+      dispatch(
+        showErrorToast({
+          message: "Token not found. Please log in again.",
+          isDarkMode,
+        })
+      );
+      return;
+    }
+
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      const outstandingRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/totalOutstandingInvoices`,
-        { headers }
-      );
-      if (!outstandingRes.ok)
-        throw new Error("Gagal memuat total faktur belum terbayar.");
-      const outstandingData = await outstandingRes.json();
-      setTotalOutstandingInvoices(outstandingData.total_outstanding_amount);
+      const fetchAPI = async (url: string) => {
+        const res = await fetch(url, { headers });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(
+            errorData.message || `HTTP error! status: ${res.status}`
+          );
+        }
+        return res.json();
+      };
 
-      const overdueRes = await fetch(
+      const apiUrls = [
         `${process.env.NEXT_PUBLIC_API_URL}/bendahara/overdueInvoices`,
-        { headers }
-      );
-      if (!overdueRes.ok)
-        throw new Error("Gagal memuat faktur yang telah jatuh tempo.");
-      const overdueData: OverdueInvoice[] = await overdueRes.json();
-      setOverdueInvoices(overdueData);
-
-      const financialRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/bendahara/financialSummaryByOutlet`,
-        { headers }
-      );
-      if (!financialRes.ok)
-        throw new Error("Gagal memuat ringkasan keuangan outlet.");
-      const financialData: FinancialSummary[] = await financialRes.json();
-      setFinancialSummary(financialData);
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/paymentStatusDistribution`,
+      ];
 
-      const trendsRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/monthlyFinancialTrends`,
-        { headers }
-      );
-      if (!trendsRes.ok) throw new Error("Gagal memuat tren keuangan bulanan.");
-      const trendsData = await trendsRes.json();
-      setMonthlyFinancialTrends(trendsData);
+      const [overdueResponse, summaryResponse, distributionResponse] =
+        await Promise.all(apiUrls.map(fetchAPI));
 
-      const returnsRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/returnsSummary`,
-        { headers }
-      );
-      if (!returnsRes.ok) throw new Error("Gagal memuat ringkasan retur.");
-      const returnsData = await returnsRes.json();
-      setReturnsSummary(returnsData);
+      // Handle direct array responses
+      setOverdueInvoices(overdueResponse || []);
+      setFinancialSummary(summaryResponse || []);
+      setPaymentDistribution(distributionResponse || []);
 
       dispatch(
         showSuccessToast({
-          message: "Data berhasil dimuat.",
-          isDarkMode: false,
+          message: "Dashboard data successfully loaded",
+          isDarkMode,
         })
       );
-    } catch (err: any) {
+    } catch (error: any) {
       dispatch(
         showErrorToast({
-          message: err.message || "Terjadi kesalahan saat memuat data.",
-          isDarkMode: false,
+          message: error.message || "Failed to load dashboard data",
+          isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
     }
-  }, [token, dispatch]);
+  }, [dispatch, isDarkMode, token]);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchData();
+  };
 
   useEffect(() => {
-    if (token) {
-      fetchData();
-    }
-  }, [token, fetchData]);
+    fetchData();
+  }, [fetchData]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container pl-12 sm:px-6 lg:pl-0 content">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
-        Dashboard Bendahara
-      </h1>
-
-      {/* Total Outstanding Invoices */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Total Faktur Belum Terbayar
-        </h2>
-        <div className="p-6 bg-red-50 rounded-md text-center">
-          <p className="text-3xl font-bold text-red-800">
-            {totalOutstandingInvoices !== null
-              ? totalOutstandingInvoices
-              : "Loading..."}
-          </p>
-          <p className="text-lg text-gray-600 mt-2">
-            Jumlah total faktur yang belum terbayar
-          </p>
-        </div>
-      </section>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+          Dashboard Bendahara
+        </h1>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+        >
+          {isRefreshing ? (
+            <Spinner size="sm" color="white" />
+          ) : (
+            <FaSync
+              className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+            />
+          )}
+          {isRefreshing ? "Memperbarui..." : "Refresh Data"}
+        </button>
+      </div>
 
       {/* Overdue Invoices */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Faktur Jatuh Tempo
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full border-collapse border border-gray-200 text-center">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 border border-gray-200">ID Faktur</th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Status Pembayaran
-                </th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Tanggal Jatuh Tempo
-                </th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Jumlah Tagihan
-                </th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Hari Terlambat
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {overdueInvoices.length > 0 ? (
-                overdueInvoices.map((invoice, index) => (
-                  <tr
-                    key={index}
-                    className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
-                  >
-                    <td className="px-4 py-2 border border-gray-200">
-                      {invoice.faktur_id}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {invoice.sisa_tagihan > 0 ? "Belum Dibayar" : "Lunas"}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {invoice.tanggal_jatuh_tempo}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {invoice.jumlah_tagihan}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {invoice.overdue_days}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="py-4">
-                    No overdue invoices
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <Card className="shadow-lg mb-6">
+        <CardHeader className="flex items-center">
+          <FaFileInvoiceDollar className="text-xl mr-2 text-red-500" />
+          <h2 className="text-lg font-semibold">Overdue Invoices</h2>
+        </CardHeader>
+        <CardBody>
+          <Table aria-label="Overdue Invoices">
+            <TableHeader>
+              <TableColumn>FAKTUR ID</TableColumn>
+              <TableColumn>DISTRIBUSI ID</TableColumn>
+              <TableColumn>TANGGAL JATUH TEMPO</TableColumn>
+              <TableColumn>HARI TERLAMBAT</TableColumn>
+              <TableColumn>SISA TAGIHAN</TableColumn>
+            </TableHeader>
+            <TableBody emptyContent="Tidak ada faktur yang jatuh tempo">
+              {overdueInvoices.map((invoice) => (
+                <TableRow key={invoice.faktur_id}>
+                  <TableCell>{invoice.faktur_id}</TableCell>
+                  <TableCell>{invoice.distribusi_id}</TableCell>
+                  <TableCell>
+                    {formatDate(invoice.tanggal_jatuh_tempo)}
+                  </TableCell>
+                  <TableCell>{parseInt(invoice.overdue_days)} hari</TableCell>
+                  <TableCell>{formatCurrency(invoice.sisa_tagihan)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
 
       {/* Financial Summary by Outlet */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Ringkasan Keuangan Outlet
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full border-collapse border border-gray-200 text-center">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 border border-gray-200">Outlet</th>
-                <th className="px-4 py-2 border border-gray-200">Pendapatan</th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Total Hutang
-                </th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Saldo Tersisa
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {financialSummary.length > 0 ? (
-                financialSummary.map((summary, index) => (
-                  <tr
-                    key={index}
-                    className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
-                  >
-                    <td className="px-4 py-2 border border-gray-200">
-                      {summary.outlet_name}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {summary.total_revenue}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {summary.total_debt}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {summary.remaining_balance}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="py-4">
-                    No financial data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <Card className="shadow-lg mb-6">
+        <CardHeader className="flex items-center">
+          <FaWallet className="text-xl mr-2 text-green-500" />
+          <h2 className="text-lg font-semibold">Financial Summary by Outlet</h2>
+        </CardHeader>
+        <CardBody>
+          <Table aria-label="Financial Summary">
+            <TableHeader>
+              <TableColumn>OUTLET</TableColumn>
+              <TableColumn>TOTAL INVOICES</TableColumn>
+              <TableColumn>TOTAL TAGIHAN</TableColumn>
+              <TableColumn>TOTAL DIBAYAR</TableColumn>
+              <TableColumn>OUTSTANDING</TableColumn>
+            </TableHeader>
+            <TableBody emptyContent="Tidak ada data tersedia">
+              {financialSummary.map((summary, index) => (
+                <TableRow key={index}>
+                  <TableCell>{summary.outlet_name}</TableCell>
+                  <TableCell>{summary.total_invoices}</TableCell>
+                  <TableCell>{formatCurrency(summary.total_tagihan)}</TableCell>
+                  <TableCell>{formatCurrency(summary.total_dibayar)}</TableCell>
+                  <TableCell>
+                    {formatCurrency(summary.total_outstanding)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
 
-      {/* Monthly Financial Trends */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Tren Keuangan Bulanan
-        </h2>
-        <pre>{JSON.stringify(monthlyFinancialTrends, null, 2)}</pre>
-      </section>
-
-      {/* Returns Summary */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Ringkasan Retur
-        </h2>
-        <pre>{JSON.stringify(returnsSummary, null, 2)}</pre>
-      </section>
+      {/* Payment Status Distribution */}
+      <Card className="shadow-lg">
+        <CardHeader className="flex items-center">
+          <FaChartPie className="text-xl mr-2 text-purple-500" />
+          <h2 className="text-lg font-semibold">Payment Status Distribution</h2>
+        </CardHeader>
+        <CardBody>
+          <Table aria-label="Payment Status Distribution">
+            <TableHeader>
+              <TableColumn>STATUS</TableColumn>
+              <TableColumn>JUMLAH FAKTUR</TableColumn>
+              <TableColumn>TOTAL TAGIHAN</TableColumn>
+              <TableColumn>TOTAL DIBAYAR</TableColumn>
+            </TableHeader>
+            <TableBody emptyContent="Tidak ada data tersedia">
+              {paymentDistribution.map((status, index) => (
+                <TableRow key={index}>
+                  <TableCell>{status.status_pembayaran}</TableCell>
+                  <TableCell>{status.jumlah_faktur}</TableCell>
+                  <TableCell>{formatCurrency(status.total_tagihan)}</TableCell>
+                  <TableCell>{formatCurrency(status.total_dibayar)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardBody>
+      </Card>
     </div>
   );
 };
