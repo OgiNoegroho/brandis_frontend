@@ -15,48 +15,43 @@ import StockOverview from "./StockOverview";
 import DistributionHistory from "./DistributionHistory";
 import ReturnManagement from "./ReturnManagement";
 
-interface OutletData {
+type OutletData = {
   id: string;
   nama: string;
   alamat: string;
   nomor_telepon: string;
-}
+};
 
 const OutletDetail = () => {
   const { id } = useParams();
   const [outletData, setOutletData] = useState<OutletData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // API Calls
+  const fetchOutletDetails = async () => {
+    if (!id) return;
+    try {
+      setIsLoading(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`
+      );
+      if (!response.ok) throw new Error("Gagal mengambil detail outlet.");
+      const data = await response.json();
+      setOutletData({
+        id: data.id,
+        nama: data.nama,
+        alamat: data.alamat,
+        nomor_telepon: data.nomor_telepon,
+      });
+    } catch (err) {
+      console.error("Error fetching outlet details:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // useEffect Hook
   useEffect(() => {
-    const fetchOutletDetails = async () => {
-      if (!id) return;
-
-      try {
-        setIsLoading(true);
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`
-        );
-
-        if (!response.ok) {
-          console.error(`Failed to fetch outlet details: ${response.status}`);
-          return;
-        }
-
-        const data = await response.json();
-        setOutletData({
-          id: data.id,
-          nama: data.nama,
-          alamat: data.alamat,
-          nomor_telepon: data.nomor_telepon,
-        });
-      } catch (err) {
-        console.error("Error fetching outlet details:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchOutletDetails();
   }, [id]);
 
@@ -71,7 +66,7 @@ const OutletDetail = () => {
   if (!outletData) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-gray-500">Outlet not found.</div>
+        <div className="text-gray-500">Outlet tidak ditemukan.</div>
       </div>
     );
   }

@@ -16,7 +16,6 @@ interface AuthState {
   role: Role | null;
 }
 
-// Check both localStorage and cookies for existing token
 const getInitialToken = (): string | null => {
   const localStorageToken = getTokenFromLocalStorage();
   const cookieToken = getTokenFromCookies();
@@ -37,7 +36,6 @@ const authSlice = createSlice({
       state.token = token;
       state.role = getRoleFromToken(token);
 
-      // Save token to both storage mechanisms
       Promise.all([
         saveTokenToLocalStorage(token),
         saveTokenToCookies(token),
@@ -49,7 +47,6 @@ const authSlice = createSlice({
       state.token = null;
       state.role = null;
 
-      // Remove token from both storage mechanisms
       Promise.all([
         removeTokenFromLocalStorage(),
         removeTokenFromCookies(),

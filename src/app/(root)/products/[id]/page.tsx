@@ -16,7 +16,7 @@ import {
 } from "@nextui-org/react";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-interface Product {
+type Product = {
   id: string;
   nama: string;
   harga: number;
@@ -229,7 +229,7 @@ const ProductDetail = () => {
 
       if (!response.ok) throw new Error("Gagal menghapus produk");
 
-      router.push("/products"); // Navigate to the products page after deletion
+      router.push("/products");
       dispatch(
         showSuccessToast({
           message: "Produk berhasil dihapus!",

@@ -24,6 +24,7 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
+// Types
 type Batch = {
   batch_id: number;
   nama_batch: string;
@@ -40,28 +41,55 @@ type Product = {
 };
 
 const BatchManagement: React.FC = () => {
+  // Redux
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
-    const role = useAppSelector((state: RootState) => state.auth.role);
+  const role = useAppSelector((state: RootState) => state.auth.role);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
+  // States
   const [batches, setBatches] = useState<Batch[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [emptyBatches, setEmptyBatches] = useState<Batch[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [batchToDelete, setBatchToDelete] = useState<Batch | null>(null);
 
+  // Form States
   const [batchName, setBatchName] = useState("");
   const [productId, setProductId] = useState("");
   const [quantity, setQuantity] = useState(0);
   const [productionDate, setProductionDate] = useState("");
   const [expirationDate, setExpirationDate] = useState("");
 
+  // Modal States
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Access Control
+  const onlyRole = role === "Pimpinan" || role === "Manajer";
+
+  // Utility Functions
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const resetFormFields = () => {
+    setBatchName("");
+    setProductId("");
+    setQuantity(0);
+    setProductionDate("");
+    setExpirationDate("");
+  };
+
+  // API Calls
   const fetchBatches = async () => {
     try {
       const response = await fetch(
@@ -71,13 +99,16 @@ const BatchManagement: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch batches");
+      if (!response.ok) throw new Error("Data batch tidak dapat dimuat");
 
       const data = await response.json();
       setBatches(data);
     } catch (error) {
       dispatch(
-        showErrorToast({ message: "Failed to load batches", isDarkMode })
+        showErrorToast({
+          message: "Gagal memuat data batch",
+          isDarkMode,
+        })
       );
     }
   };
@@ -91,17 +122,76 @@ const BatchManagement: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch products");
+      if (!response.ok) throw new Error("Data produk tidak dapat dimuat");
 
       const data = await response.json();
       setProducts(data);
     } catch (error) {
       dispatch(
-        showErrorToast({ message: "Failed to load products", isDarkMode })
+        showErrorToast({
+          message: "Gagal memuat data produk",
+          isDarkMode,
+        })
       );
     }
   };
 
+  const fetchEmptyBatches = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/empty`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Data batch kosong tidak dapat dimuat");
+
+      const data = await response.json();
+      setEmptyBatches(data);
+    } catch (error) {
+      dispatch(
+        showErrorToast({
+          message: "Gagal memuat data batch kosong",
+          isDarkMode,
+        })
+      );
+    }
+  };
+
+  const fetchBatchDetails = async (batchId: number) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/${batchId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (!response.ok) throw new Error("Detail batch tidak dapat dimuat");
+
+      const [data] = await response.json();
+      setSelectedBatch({
+        batch_id: data.batch_id,
+        nama_batch: data.nama_batch,
+        nama_produk: data.nama_produk,
+        kuantitas: data.kuantitas_batch,
+        dibuat_pada: formatDate(data.dibuat_pada),
+        tanggal_kadaluarsa: formatDate(data.tanggal_kadaluarsa),
+        diperbarui_pada: formatDate(data.diperbarui_pada),
+      });
+      setShowDetailModal(true);
+    } catch (error) {
+      dispatch(
+        showErrorToast({
+          message: "Gagal memuat detail batch",
+          isDarkMode,
+        })
+      );
+    }
+  };
+
+  // CRUD Operations
   const addBatch = async () => {
     try {
       const response = await fetch(
@@ -121,7 +211,7 @@ const BatchManagement: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to add batch");
+      if (!response.ok) throw new Error("Gagal menambah batch");
 
       const newBatch = await response.json();
       setBatches([...batches, newBatch]);
@@ -158,7 +248,7 @@ const BatchManagement: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update batch");
+      if (!response.ok) throw new Error("Gagal memperbarui batch");
 
       const updatedBatch = await response.json();
       setBatches(
@@ -190,7 +280,7 @@ const BatchManagement: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Failed to delete batch");
+      if (!response.ok) throw new Error("Gagal menghapus batch");
 
       setBatches(
         batches.filter((batch) => batch.batch_id !== batchToDelete.batch_id)
@@ -207,35 +297,7 @@ const BatchManagement: React.FC = () => {
     }
   };
 
-  const fetchBatchDetails = async (batchId: number) => {
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/${batchId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to fetch batch details");
-
-      const [data] = await response.json();
-      setSelectedBatch({
-        batch_id: data.batch_id,
-        nama_batch: data.nama_batch,
-        nama_produk: data.nama_produk,
-        kuantitas: data.kuantitas_batch,
-        dibuat_pada: formatDate(data.dibuat_pada),
-        tanggal_kadaluarsa: formatDate(data.tanggal_kadaluarsa),
-        diperbarui_pada: formatDate(data.diperbarui_pada),
-      });
-      setShowDetailModal(true);
-    } catch (error) {
-      dispatch(
-        showErrorToast({ message: "Gagal mengambil detail batch", isDarkMode })
-      );
-    }
-  };
-
+  // Event Handlers
   const handleDeleteBatch = (batch: Batch) => {
     setBatchToDelete(batch);
     setShowDeleteModal(true);
@@ -246,11 +308,6 @@ const BatchManagement: React.FC = () => {
     setShowAddModal(true);
   };
 
-  const closeAddModal = () => {
-    setShowAddModal(false);
-    resetFormFields();
-  };
-
   const handleEditBatch = (batch: Batch) => {
     setSelectedBatch(batch);
     setBatchName(batch.nama_batch);
@@ -259,6 +316,12 @@ const BatchManagement: React.FC = () => {
     setProductionDate(formatDate(batch.dibuat_pada));
     setExpirationDate(formatDate(batch.tanggal_kadaluarsa));
     setShowEditModal(true);
+  };
+
+  // Modal Handlers
+  const closeAddModal = () => {
+    setShowAddModal(false);
+    resetFormFields();
   };
 
   const closeEditModal = () => {
@@ -272,30 +335,12 @@ const BatchManagement: React.FC = () => {
     setSelectedBatch(null);
   };
 
-  const resetFormFields = () => {
-    setBatchName("");
-    setProductId("");
-    setQuantity(0);
-    setProductionDate("");
-    setExpirationDate("");
-  };
-  
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
-  const year = date.getFullYear();
-
-  return `${day}-${month}-${year}`;
-};
-
-
+  // Effects
   useEffect(() => {
     fetchBatches();
     fetchProducts();
+    fetchEmptyBatches();
   }, [token]);
-
-    const onlyRole = role === "Pimpinan" || role === "Manajer";
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
@@ -476,34 +521,38 @@ const formatDate = (dateString: string): string => {
 
       <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
         <ModalContent>
-          <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
-          <ModalBody>
-            <p>
-              Apakah Anda yakin ingin menghapus batch{" "}
-              <strong>{batchToDelete?.nama_batch}</strong>?
-            </p>
-            <p style={{ color: "red", fontStyle: "italic" }}>
-              <strong>Catatan:</strong> Batch yang telah digunakan dalam proses
-              produksi atau transaksi mungkin tidak dapat dihapus untuk
-              memastikan integritas data.
-            </p>
-          </ModalBody>
-          <ModalFooter>
-            <Button
-              color="default"
-              variant="flat"
-              onPress={() => setShowDeleteModal(false)}
-            >
-              Batal
-            </Button>
-            <Button color="danger" variant="flat" onPress={confirmDeleteBatch}>
-              Hapus
-            </Button>
-          </ModalFooter>
+          {(onClose) => (
+            <>
+              <ModalHeader>Konfirmasi Penghapusan</ModalHeader>
+              <ModalBody>
+                <p>
+                  Apakah Anda yakin ingin menghapus batch{" "}
+                  <strong>{batchToDelete?.nama_batch}</strong>?
+                </p>
+                <p className="text-red-500 italic">
+                  <strong>Catatan:</strong> Batch yang telah digunakan dalam
+                  proses produksi atau transaksi mungkin tidak dapat dihapus
+                  untuk memastikan integritas data.
+                </p>
+              </ModalBody>
+              <ModalFooter>
+                <Button color="default" variant="flat" onPress={onClose}>
+                  Batal
+                </Button>
+                <Button
+                  color="danger"
+                  variant="flat"
+                  onPress={confirmDeleteBatch}
+                >
+                  Hapus
+                </Button>
+              </ModalFooter>
+            </>
+          )}
         </ModalContent>
       </Modal>
 
-      {/* Batch Table */}
+      {/* Active Batches Table */}
       <Card>
         <CardBody>
           <div className="overflow-x-auto">
@@ -538,22 +587,22 @@ const formatDate = (dateString: string): string => {
                         </Button>
                         {onlyRole && (
                           <>
-                        <Button
-                          className=""
-                          color="warning"
-                          variant="flat"
-                          onPress={() => handleEditBatch(batch)}
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          className=""
-                          color="danger"
-                          variant="flat"
-                          onPress={() => handleDeleteBatch(batch)}
-                        >
-                          Hapus
-                        </Button>
+                            <Button
+                              className=""
+                              color="warning"
+                              variant="flat"
+                              onPress={() => handleEditBatch(batch)}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              className=""
+                              color="danger"
+                              variant="flat"
+                              onPress={() => handleDeleteBatch(batch)}
+                            >
+                              Hapus
+                            </Button>
                           </>
                         )}
                       </div>
@@ -565,6 +614,60 @@ const formatDate = (dateString: string): string => {
           </div>
         </CardBody>
       </Card>
+
+      {/* Empty Batches Table */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-6">Batch Kosong</h2>
+        <Card>
+          <CardBody>
+            <div className="overflow-x-auto">
+              <Table
+                aria-label="Empty Batches Table"
+              >
+                <TableHeader>
+                  <TableColumn>No. Batch</TableColumn>
+                  <TableColumn>Nama Produk</TableColumn>
+                  <TableColumn>Tanggal Produksi</TableColumn>
+                  <TableColumn>Tanggal Kedaluwarsa</TableColumn>
+                  <TableColumn>Aksi</TableColumn>
+                </TableHeader>
+                <TableBody items={emptyBatches}>
+                  {(batch) => (
+                    <TableRow key={batch.batch_id}>
+                      <TableCell>{batch.nama_batch}</TableCell>
+                      <TableCell>{batch.nama_produk}</TableCell>
+                      <TableCell>{formatDate(batch.dibuat_pada)}</TableCell>
+                      <TableCell>
+                        {formatDate(batch.tanggal_kadaluarsa)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            color="primary"
+                            variant="flat"
+                            onPress={() => fetchBatchDetails(batch.batch_id)}
+                          >
+                            Detail
+                          </Button>
+                          {onlyRole && (
+                            <Button
+                              color="danger"
+                              variant="flat"
+                              onPress={() => handleDeleteBatch(batch)}
+                            >
+                              Hapus
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardBody>
+        </Card>
+      </div>
     </div>
   );
 };

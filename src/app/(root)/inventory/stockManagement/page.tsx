@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Info } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import { showErrorToast } from "@/redux/slices/toastSlice"; // Import the action
+import { showErrorToast } from "@/redux/slices/toastSlice";
 import {
   Card,
   CardBody,
@@ -24,11 +24,12 @@ import {
   Divider,
 } from "@nextui-org/react";
 
+// Types
 type Product = {
   produk_id: number;
   nama_produk: string;
   kuantitas: number;
-  ketersediaan: "In stock" | "Low stock" | "Out of stock";
+  ketersediaan: "Stok Tersedia" | "Stok Menipis" | "Stok Habis";
 };
 
 type BatchDetail = {
@@ -40,63 +41,104 @@ type BatchDetail = {
 };
 
 const StockManagement: React.FC = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [batchDetails, setBatchDetails] = useState<BatchDetail[]>([]);
-  const [loadingBatchDetails, setLoadingBatchDetails] = useState(false);
-
+  // Redux
+  const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
-  const dispatch = useAppDispatch();
 
-const formatDate = (dateString: string): string => {
-  const date = new Date(dateString);
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
-  const year = date.getFullYear();
+  // States
+  const [products, setProducts] = useState<Product[]>([]);
+  const [batchDetails, setBatchDetails] = useState<BatchDetail[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingBatchDetails, setLoadingBatchDetails] = useState(false);
 
-  return `${day}-${month}-${year}`;
-};
+  // Utility Functions
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
 
+  const getStatus = (status: Product["ketersediaan"]) => {
+    switch (status) {
+      case "Stok Tersedia":
+        return (
+          <Chip
+            color="success"
+            variant="flat"
+            className="capitalize text-green-500 bg-green-50"
+          >
+            Stok Tersedia
+          </Chip>
+        );
+      case "Stok Habis":
+        return (
+          <Chip
+            color="danger"
+            variant="flat"
+            className="capitalize text-red-500 bg-red-50"
+          >
+            Stok Habis
+          </Chip>
+        );
+      case "Stok Menipis":
+        return (
+          <Chip
+            color="warning"
+            variant="flat"
+            className="capitalize text-yellow-500 bg-yellow-50"
+          >
+            Stok Menipis
+          </Chip>
+        );
+      default:
+        return null;
+    }
+  };
 
-  useEffect(() => {
-    const fetchInventory = async () => {
-      if (!token) {
-        console.error("No token available");
-        return;
-      }
+  // API Calls
+  const fetchInventory = async () => {
+    if (!token) {
+      console.error("Token tidak tersedia");
+      return;
+    }
 
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/inventory`, {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/inventory`,
+        {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch Inventory.");
         }
+      );
 
-        const data = await response.json();
-        setProducts(data);
-      } catch (error) {
-        console.error("Error fetching inventory:", error);
-        dispatch(
-          showErrorToast({ message: "Failed to load inventory.", isDarkMode })
-        );
+      if (!response.ok) {
+        throw new Error("Gagal mengambil data inventori");
       }
-    };
 
-    fetchInventory();
-  }, [token, dispatch, isDarkMode]);
+      const data = await response.json();
+      setProducts(data);
+    } catch (error) {
+      console.error("Error mengambil inventori:", error);
+      dispatch(
+        showErrorToast({
+          message: "Gagal memuat data inventori",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
   const fetchInventoryDetail = async (produkId: number) => {
     if (!token) {
-      console.error("No token available");
+      console.error("Token tidak tersedia");
       return;
     }
 
@@ -114,59 +156,26 @@ const formatDate = (dateString: string): string => {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch batch details.");
+        throw new Error("Gagal mengambil detail batch");
       }
 
       const data = await response.json();
       setBatchDetails(data);
     } catch (error) {
-      console.error("Error fetching batch details:", error);
+      console.error("Error mengambil detail batch:", error);
       dispatch(
-        showErrorToast({ message: "Failed to load batch details.", isDarkMode })
-      ); // Show error toast
+        showErrorToast({
+          message: "Gagal memuat detail batch",
+          isDarkMode,
+        })
+      );
       setBatchDetails([]);
     } finally {
       setLoadingBatchDetails(false);
     }
   };
 
-  const getStatus = (status: Product["ketersediaan"]) => {
-    switch (status) {
-      case "In stock":
-        return (
-          <Chip
-            color="success"
-            variant="flat"
-            className="capitalize text-green-500 bg-green-50"
-          >
-            In Stock
-          </Chip>
-        );
-      case "Out of stock":
-        return (
-          <Chip
-            color="danger"
-            variant="flat"
-            className="capitalize text-red-500 bg-red-50"
-          >
-            Out of Stock
-          </Chip>
-        );
-      case "Low stock":
-        return (
-          <Chip
-            color="warning"
-            variant="flat"
-            className="capitalize text-yellow-500 bg-yellow-50"
-          >
-            Low Stock
-          </Chip>
-        );
-      default:
-        return null;
-    }
-  };
-
+  // Event Handlers
   const handleDetailClick = async (product: Product) => {
     setSelectedProduct(product);
     setIsModalOpen(true);
@@ -178,6 +187,11 @@ const formatDate = (dateString: string): string => {
     setIsModalOpen(false);
     setBatchDetails([]);
   };
+
+  // Effects
+  useEffect(() => {
+    fetchInventory();
+  }, [token]);
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
@@ -196,7 +210,7 @@ const formatDate = (dateString: string): string => {
           <CardBody>
             <h4 className="font-semibold">Stok Rendah</h4>
             <b>
-              {products.filter((p) => p.ketersediaan === "Low stock").length}
+              {products.filter((p) => p.ketersediaan === "Stok Menipis").length}
             </b>
           </CardBody>
         </Card>
@@ -204,7 +218,7 @@ const formatDate = (dateString: string): string => {
           <CardBody>
             <h4 className="font-semibold">Stok Habis</h4>
             <b>
-              {products.filter((p) => p.ketersediaan === "Out of stock").length}
+              {products.filter((p) => p.ketersediaan === "Stok Habis").length}
             </b>
           </CardBody>
         </Card>

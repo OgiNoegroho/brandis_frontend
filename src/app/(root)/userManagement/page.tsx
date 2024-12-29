@@ -24,22 +24,22 @@ import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 import { Role } from "@/types/auth";
 
-interface User {
+type User ={
   id: string;
   nama: string;
   email: string;
   peran: Role;
 }
 
-interface NewUser extends User {
+type NewUser = User &{
   password: string;
 }
 
-interface UpdateFormData extends Partial<User> {
+type UpdateFormData = Partial<User> &{
   password?: string;
 }
 
-interface ValidationError {
+type ValidationError = {
   field: string;
   message: string;
 }

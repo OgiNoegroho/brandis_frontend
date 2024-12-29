@@ -20,13 +20,14 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input
+  Input,
 } from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
+// Types
 type DistributionTableEntry = {
   distribusi_id: number;
   distribusi_created_at: string;
@@ -66,6 +67,7 @@ type Outlet = {
 };
 
 const FinancialReportsDetails: React.FC = () => {
+  // States
   const { id } = useParams();
   const [selectedOutlet, setSelectedOutlet] = useState<Outlet | null>(null);
   const [distributions, setDistributions] = useState<DistributionTableEntry[]>(
@@ -78,12 +80,14 @@ const FinancialReportsDetails: React.FC = () => {
   const [amountPaidInput, setAmountPaidInput] = useState<string>("");
   const [isAmountUpdating, setIsAmountUpdating] = useState(false);
 
+  // Redux
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
+  // Utility Functions
   const formatDate = (date: string | Date): string => {
     const d = new Date(date);
     const day = String(d.getDate()).padStart(2, "0");
@@ -92,6 +96,7 @@ const FinancialReportsDetails: React.FC = () => {
     return `${day}-${month}-${year}`;
   };
 
+  // API Calls
   const fetchOutletDetails = async () => {
     try {
       const response = await fetch(
@@ -100,7 +105,7 @@ const FinancialReportsDetails: React.FC = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      if (!response.ok) throw new Error("Gagal mengambil detail outlet");
+      if (!response.ok) throw new Error("Data outlet tidak dapat ditemukan");
 
       const outletData: Outlet = await response.json();
       setSelectedOutlet(outletData);
@@ -108,19 +113,12 @@ const FinancialReportsDetails: React.FC = () => {
       dispatch(
         showErrorToast({
           message:
-            error instanceof Error ? error.message : "sebuah kesalahan terjadi",
+            error instanceof Error ? error.message : "Terjadi kesalahan sistem",
           isDarkMode,
         })
       );
     }
   };
-
-  useEffect(() => {
-    if (id) {
-      fetchOutletDetails();
-      fetchLaporanDistributions();
-    }
-  }, [id, token]);
 
   const fetchLaporanDistributions = async () => {
     try {
@@ -131,7 +129,8 @@ const FinancialReportsDetails: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("gagal mengambil data distribusi");
+      if (!response.ok)
+        throw new Error("Data distribusi tidak dapat ditemukan");
 
       const data: DistributionTableEntry[] = await response.json();
       setDistributions(data);
@@ -139,13 +138,14 @@ const FinancialReportsDetails: React.FC = () => {
       dispatch(
         showErrorToast({
           message:
-            error instanceof Error ? error.message : "sebuah kesalahan terjadi",
+            error instanceof Error ? error.message : "Terjadi kesalahan sistem",
           isDarkMode,
         })
       );
     }
   };
 
+  // Event Handlers
   const handleViewDetail = async (distributionId: number) => {
     try {
       const response = await fetch(
@@ -153,14 +153,15 @@ const FinancialReportsDetails: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (!response.ok) throw new Error("Gagal mengambil detail distribusi");
+      if (!response.ok)
+        throw new Error("Detail distribusi tidak dapat ditemukan");
 
       const data: DistributionDetailEntry[] = await response.json();
       setDetailData(data);
     } catch (error) {
       dispatch(
         showErrorToast({
-          message: "Gagal mengambil detail distribusi",
+          message: "Detail distribusi tidak dapat dimuat",
           isDarkMode,
         })
       );
@@ -174,14 +175,14 @@ const FinancialReportsDetails: React.FC = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (!response.ok) throw new Error("Gagal mengambil detail faktur");
+      if (!response.ok) throw new Error("Detail faktur tidak dapat ditemukan");
 
       const data: FakturEntry[] = await response.json();
       setFakturData(data);
     } catch (error) {
       dispatch(
         showErrorToast({
-          message: "Gagal mengambil detail faktur",
+          message: "Detail faktur tidak dapat dimuat",
           isDarkMode,
         })
       );
@@ -205,29 +206,27 @@ const FinancialReportsDetails: React.FC = () => {
         }
       );
 
-      if (!response.ok) throw new Error("Jumlah dibayar gagal diperbarui");
+      if (!response.ok) throw new Error("Pembaruan jumlah pembayaran gagal");
 
-      // Refresh faktur data
+      // Refresh data
       const distribusiId = fakturData?.[0]?.distribusi_id;
       if (distribusiId) {
-        await handleViewFaktur(distribusiId); // Refresh modal
+        await handleViewFaktur(distribusiId);
       }
-
-      // Refresh the distributions table
       await fetchLaporanDistributions();
 
       setAmountPaidInput("");
 
       dispatch(
         showSuccessToast({
-          message: "Jumlah dibayar berhasil diperbarui",
+          message: "Jumlah pembayaran berhasil diperbarui",
           isDarkMode,
         })
       );
     } catch (error) {
       dispatch(
         showErrorToast({
-          message: "Gagal memperbarui jumlah dibayar",
+          message: "Gagal memperbarui jumlah pembayaran",
           isDarkMode,
         })
       );
@@ -236,14 +235,11 @@ const FinancialReportsDetails: React.FC = () => {
     }
   };
 
-  const closeDetailModal = () => {
-    setDetailData(null);
-  };
+  // Modal Handlers
+  const closeDetailModal = () => setDetailData(null);
+  const closeFakturModal = () => setFakturData(null);
 
-  const closeFakturModal = () => {
-    setFakturData(null);
-  };
-
+  // UI Helper Functions
   const getStatus = (status: string) => {
     switch (status) {
       case "Lunas":
@@ -279,6 +275,14 @@ const FinancialReportsDetails: React.FC = () => {
     }
   };
 
+  // Effects
+  useEffect(() => {
+    if (id) {
+      fetchOutletDetails();
+      fetchLaporanDistributions();
+    }
+  }, [id, token]);
+
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
       {selectedOutlet ? (
@@ -304,7 +308,9 @@ const FinancialReportsDetails: React.FC = () => {
 
       <Card className="mb-4">
         <CardBody>
-          <h3 className="text-lg font-semibold">Laporan Distribusi pada Outlet</h3>
+          <h3 className="text-lg font-semibold">
+            Laporan Distribusi pada Outlet
+          </h3>
           <Divider className="mb-2" />
           <Table aria-label="Distribution Table">
             <TableHeader>
@@ -325,20 +331,20 @@ const FinancialReportsDetails: React.FC = () => {
                   <TableCell>{getStatus(item.status_pembayaran)}</TableCell>
                   <TableCell>
                     <div className="flex space-x-2">
-                    <Button
-                      onPress={() => handleViewDetail(item.distribusi_id)}
-                      variant="flat"
-                      color="primary"
-                    >
-                      Detail
-                    </Button>
-                    <Button
-                      onPress={() => handleViewFaktur(item.distribusi_id)}
-                      variant="flat"
-                      color="success"
-                    >
-                      Lihat Faktur
-                    </Button>
+                      <Button
+                        onPress={() => handleViewDetail(item.distribusi_id)}
+                        variant="flat"
+                        color="primary"
+                      >
+                        Detail
+                      </Button>
+                      <Button
+                        onPress={() => handleViewFaktur(item.distribusi_id)}
+                        variant="flat"
+                        color="success"
+                      >
+                        Lihat Faktur
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -427,40 +433,51 @@ const FinancialReportsDetails: React.FC = () => {
                       </div>
                     </div>
 
-                    <Table
-                      aria-label="Faktur details table"
-                      selectionMode="none"
-                    >
-                      <TableHeader>
-                        <TableColumn>Nama Produk</TableColumn>
-                        <TableColumn>Kuantitas</TableColumn>
-                        <TableColumn>Harga Satuan</TableColumn>
-                        <TableColumn>Total Harga</TableColumn>
-                      </TableHeader>
-                      <TableBody items={fakturData}>
-                        {(item: FakturEntry) => (
-                          <TableRow
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr>
+                          <th className="border-b text-left px-4 py-2">
+                            Nama Produk
+                          </th>
+                          <th className="border-b text-left px-4 py-2">
+                            Kuantitas
+                          </th>
+                          <th className="border-b text-left px-4 py-2">
+                            Harga Satuan
+                          </th>
+                          <th className="border-b text-left px-4 py-2">
+                            Total Harga
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fakturData?.map((item, idx) => (
+                          <tr
                             key={`${item.invoice_number}-${item.product_name}`}
                           >
-                            <TableCell>{item.product_name}</TableCell>
-                            <TableCell>{item.total_quantity}</TableCell>
-                            <TableCell>
+                            <td className="border-t px-4 py-2">
+                              {item.product_name}
+                            </td>
+                            <td className="border-t px-4 py-2">
+                              {item.total_quantity}
+                            </td>
+                            <td className="border-t px-4 py-2">
                               {Number(item.unit_price).toLocaleString("id-ID", {
                                 minimumFractionDigits: 0,
                               })}
-                            </TableCell>
-                            <TableCell>
+                            </td>
+                            <td className="border-t px-4 py-2">
                               {Number(item.total_price).toLocaleString(
                                 "id-ID",
                                 {
                                   minimumFractionDigits: 0,
                                 }
                               )}
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
                     <div className="mt-6 border-t pt-4">
                       <div className="grid grid-cols-2 gap-8">

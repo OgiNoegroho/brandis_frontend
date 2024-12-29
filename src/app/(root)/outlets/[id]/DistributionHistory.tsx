@@ -21,6 +21,7 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
+// Types
 type ProductEntry = {
   productName: string;
   batchName: string;
@@ -71,75 +72,78 @@ type Batch = {
   produksi_pada: string;
 };
 
-interface DistributionHistoryProps {
+type DistributionHistoryProps = {
   outletId: string;
 }
 
-const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) => {
+const DistributionHistory: React.FC<DistributionHistoryProps> = ({
+  outletId,
+}) => {
+  // State declarations
   const [productEntries, setProductEntries] = useState<ProductEntry[]>([]);
   const [allBatches, setAllBatches] = useState<Batch[]>([]);
   const [distributions, setDistributions] = useState<DistributionTableEntry[]>(
     []
   );
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isFakturModalOpen, setIsFakturModalOpen] = useState(false);
-  const [detailData, setDetailData] = useState<
-    DistributionDetailEntry[] | null
-  >(null);
-  const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
-
-  const [newProduct, setNewProduct] = useState<ProductEntry>({
-    productName: "",
-    batchName: "",
-    quantity: "",
-    distributionDate: "",
-  });
-  const [invoiceDate, setInvoiceDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [paymentStatus, setPaymentStatus] = useState<"Lunas" | "Belum Lunas">(
-    "Belum Lunas"
-  );
-  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
-
-  const formatDate = (date?: string | number | null) => {
-    if (!date) return "N/A";
-
-    const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-
-    return `${day}-${month}-${year}`;
-  };
-
   const [products, setProducts] = useState<Product[]>([]);
   const [batches, setBatches] = useState<Batch[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [selectedBatch, setSelectedBatch] = useState<string>("");
   const [loadingBatches, setLoadingBatches] = useState(false);
 
+  // Modal states
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isFakturModalOpen, setIsFakturModalOpen] = useState(false);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+
+  // Data states
+  const [detailData, setDetailData] = useState<
+    DistributionDetailEntry[] | null
+  >(null);
+  const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
+  const [newProduct, setNewProduct] = useState<ProductEntry>({
+    productName: "",
+    batchName: "",
+    quantity: "",
+    distributionDate: "",
+  });
+
+  // Form states
+  const [invoiceDate, setInvoiceDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState<"Lunas" | "Belum Lunas">(
+    "Belum Lunas"
+  );
+
+  // Redux
   const dispatch = useAppDispatch();
-
   const token = useAppSelector((state: RootState) => state.auth.token);
-    const isDarkMode = useAppSelector(
-      (state: RootState) => state.global.isDarkMode
-    );
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  // Utilities
+  const formatDate = (date?: string | number | null) => {
+    if (!date) return "N/A";
+    const d = new Date(date);
+    return `${String(d.getDate()).padStart(2, "0")}-${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}-${d.getFullYear()}`;
+  };
 
+  // API Calls
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products`,
+        {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      if (!response.ok) throw new Error("Failed to fetch products");
+      if (!response.ok) throw new Error("Gagal mengambil data produk");
 
       const data = await response.json();
       setProducts(data);
@@ -147,6 +151,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       console.error(error);
     }
   };
+
   const fetchBatches = async (productId: string) => {
     setLoadingBatches(true);
     try {
@@ -154,21 +159,18 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/${productId}`,
         {
           method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
-      if (!response.ok) throw new Error("Failed to fetch batches");
+      if (!response.ok) throw new Error("Gagal mengambil data batch");
 
       const data: Batch[] = await response.json();
-
       setBatches(data);
-      setAllBatches((prevBatches) => {
 
+      setAllBatches((prevBatches) => {
         const newBatches = [...prevBatches];
-        data.forEach((newBatch: Batch) => {
+        data.forEach((newBatch) => {
           if (
             !newBatches.some(
               (existingBatch) => existingBatch.batch_id === newBatch.batch_id
@@ -187,19 +189,11 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     }
   };
 
-  useEffect(() => {
-    if (outletId) {
-      fetchDistributions();
-    }
-  }, [outletId, token]);
-
   const fetchDistributions = async () => {
-
     try {
       const outletIdNumber = Number(outletId);
-
       if (isNaN(outletIdNumber)) {
-        throw new Error("Invalid outlet ID");
+        throw new Error("ID outlet tidak valid");
       }
 
       const response = await fetch(
@@ -215,23 +209,26 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch distributions");
+        throw new Error(errorData.message || "Gagal mengambil data distribusi");
       }
 
       const data: DistributionTableEntry[] = await response.json();
-
       if (!Array.isArray(data)) {
-        throw new Error("Invalid response structure: expected an array");
+        throw new Error("Struktur respons tidak valid: harap array");
       }
 
       setDistributions(data);
     } catch (error) {
-          dispatch(
-            showErrorToast({ message: "Failed to load products", isDarkMode })
-          );
-        }
-      };
+      dispatch(
+        showErrorToast({
+          message: "Gagal memuat data produk",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
+  // Event Handlers
   const handleViewDetail = async (distributionId: number) => {
     try {
       const response = await fetch(
@@ -244,25 +241,24 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          errorData.message || "Failed to fetch distribution details"
+          errorData.message || "Gagal mengambil detail distribusi"
         );
       }
 
       const data: DistributionDetailEntry[] = await response.json();
-
       if (
         !Array.isArray(data) ||
         data.some(
           (entry) => !entry.batch_id || !entry.product_name || !entry.quantity
         )
       ) {
-        throw new Error("Invalid response structure");
+        throw new Error("Struktur respons tidak valid");
       }
 
       setDetailData(data);
       setIsDetailModalOpen(true);
     } catch (error) {
-      console.error("Error fetching distribution details:", error);
+      console.error("Error mengambil detail distribusi:", error);
     }
   };
 
@@ -277,11 +273,10 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to fetch invoice details");
+        throw new Error(errorData.message || "Gagal mengambil detail faktur");
       }
 
       const data: FakturEntry[] = await response.json();
-
       if (
         !Array.isArray(data) ||
         data.some(
@@ -289,33 +284,29 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
             !entry.invoice_number || !entry.invoice_date || !entry.grand_total
         )
       ) {
-        throw new Error("Invalid response structure");
+        throw new Error("Struktur respons tidak valid");
       }
 
       setFakturData(data);
       setIsFakturModalOpen(true);
     } catch (error) {
-      console.error("Error fetching invoice details:", error);
+      console.error("Error mengambil detail faktur:", error);
     }
   };
-
 
   const handleProductChange = (productId: string) => {
     setSelectedProduct(productId);
     setSelectedBatch("");
-
     const product = products.find((p) => p.id.toString() === productId);
     setNewProduct((prev) => ({
       ...prev,
       productName: product ? product.nama : "",
     }));
-
     fetchBatches(productId);
   };
 
   const handleBatchChange = (batchId: string) => {
     setSelectedBatch(batchId);
-
     const batch = batches.find((b) => b.batch_id.toString() === batchId);
     setNewProduct((prev) => ({
       ...prev,
@@ -331,7 +322,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
 
   const handleAddProduct = () => {
     if (!selectedProduct || !selectedBatch || !newProduct.quantity) {
-      alert("Please fill in all product details");
+      alert("Mohon isi semua detail produk");
       return;
     }
 
@@ -343,7 +334,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     );
 
     if (!selectedBatchData || !selectedProductData) {
-      alert("Invalid batch or product selection");
+      alert("Pemilihan batch atau produk tidak valid");
       return;
     }
 
@@ -362,23 +353,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       distributionDate: formattedDate,
     };
 
-    console.log("DEBUG 1: New entry being added:", newEntry);
-    console.log(
-      "DEBUG 2: Current productEntries before update:",
-      productEntries
-    );
-
-    setProductEntries((prevEntries) => {
-      const updatedEntries = [...prevEntries, newEntry];
-      console.log("DEBUG 3: Updated productEntries:", updatedEntries);
-      return updatedEntries;
-    });
-
-    // Log right after setting
-    console.log(
-      "DEBUG 4: productEntries right after setProductEntries:",
-      productEntries
-    );
+    setProductEntries((prevEntries) => [...prevEntries, newEntry]);
 
     // Reset form
     setNewProduct({
@@ -392,31 +367,19 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
     setIsModalOpen(false);
   };
 
-  // In handleSaveDistribution:
   const handleSaveDistribution = async () => {
-    console.log("DEBUG 5: Starting save with productEntries:", productEntries);
-
     if (productEntries.length === 0) {
-      alert("No products to save.");
+      alert("Tidak ada produk untuk disimpan.");
       return;
     }
 
-    console.log("DEBUG 6: Available batches:", allBatches);
-
-    // Build the details array from product entries
     const distributionDetails = productEntries
       .map((entry) => {
-        console.log("DEBUG 7: Processing entry:", entry);
-
-        // Find the batch ID from allBatches array using the batch name
         const batch = allBatches.find((b) => b.nama_batch === entry.batchName);
-        console.log("DEBUG 8: Found batch:", batch);
-
         if (!batch) {
-          console.error("Batch not found for:", entry.batchName);
+          console.error("Batch tidak ditemukan untuk:", entry.batchName);
           return null;
         }
-
         return {
           batch_id: batch.batch_id,
           kuantitas_terjual: Number(entry.quantity),
@@ -427,13 +390,12 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       );
 
     if (distributionDetails.length === 0) {
-      alert("No valid products to save. Please check batch information.");
+      alert(
+        "Tidak ada produk valid untuk disimpan. Mohon periksa informasi batch."
+      );
       return;
     }
 
-    console.log("DEBUG 9: Final distributionDetails:", distributionDetails);
-
-    // Create the payload for the API call
     const distribusiData = {
       outlet_id: Number(outletId),
       status_pembayaran: paymentStatus,
@@ -458,39 +420,44 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(
-          `HTTP error! status: ${response.status}, message: ${
-            errorData.message || "Unknown error"
+          `Error HTTP! status: ${response.status}, pesan: ${
+            errorData.message || "Error tidak diketahui"
           }`
         );
       }
 
-      const result = await response.json();
-      console.log("API response:", result);
-
-      // Reset form and fetch updated distributions
+      await response.json();
       setProductEntries([]);
       setIsSaveModalOpen(false);
       await fetchDistributions();
 
-      // Show success toast
       dispatch(
         showSuccessToast({
-          message: "Distribution saved successfully!",
+          message: "Distribusi berhasil disimpan!",
           isDarkMode,
         })
       );
     } catch (error) {
-      console.error("Failed to save distribution:", error);
-
-      // Show error toast
+      console.error("Gagal menyimpan distribusi:", error);
       dispatch(
         showErrorToast({
-          message: `Failed to save distribution: ${error || error}`,
+          message: `Gagal menyimpan distribusi: ${error || error}`,
           isDarkMode,
         })
       );
     }
   };
+
+  // Effects
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    if (outletId) {
+      fetchDistributions();
+    }
+  }, [outletId, token]);
 
   return (
     <div>
@@ -731,7 +698,7 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({ outletId }) =
           )}
         </TableBody>
       </Table>
-      
+
       {isDetailModalOpen && (
         <Modal
           isOpen={isDetailModalOpen}

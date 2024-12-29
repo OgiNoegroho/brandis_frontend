@@ -6,7 +6,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Divider,
   Input,
   Button,
   Select,
@@ -16,30 +15,31 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Divider
 } from "@nextui-org/react";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-interface StockOverview {
+type StockOverview = {
   produk_id: number;
   nama_produk: string;
   harga_produk: number;
   kuantitas_stok: number;
-}
+};
 
-interface Sale {
+type Sale = {
   penjualan_id: number;
   product_name: string;
   kuantitas_terjual: number;
   dibuat_pada: string;
-}
+};
 
-interface ProductSelect {
+type ProductSelect = {
   produk_id: number;
   nama_produk: string;
   kuantitas_stok: number;
-}
+};
 
 const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
   const [stockData, setStockData] = useState<StockOverview[]>([]);
@@ -52,7 +52,6 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
-
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
@@ -68,75 +67,72 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
     return `${day}-${month}-${year} ${hours}:${minutes}`;
   };
 
-  useEffect(() => {
-    const fetchStockData = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/outlet/${outletId}/stock-overview`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch stock data");
+  // API Calls
+  const fetchStockData = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet/${outletId}/stock-overview`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        const data: StockOverview[] = await response.json();
-        setStockData(data);
-      } catch (err) {
-        showErrorToast({ message: "Error fetching stock data.", isDarkMode });
-      }
-    };
-    if (outletId) fetchStockData();
-  }, [outletId, token]);
+      if (!response.ok) throw new Error("Gagal mengambil data stok");
+      const data: StockOverview[] = await response.json();
+      setStockData(data);
+    } catch (err) {
+      dispatch(
+        showErrorToast({ message: "Gagal mengambil data stok", isDarkMode })
+      );
+    }
+  };
 
-  useEffect(() => {
-    const fetchProductSelectData = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/outlet/${outletId}/stock-overview-without-price`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok)
-          throw new Error("Failed to fetch product select data");
+  const fetchProductSelectData = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/outlet/${outletId}/stock-overview-without-price`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        const data: ProductSelect[] = await response.json();
-        setProductSelectData(data);
-      } catch (err) {
+      if (!response.ok) throw new Error("Gagal mengambil data produk");
+      const data: ProductSelect[] = await response.json();
+      setProductSelectData(data);
+    } catch (err) {
+      dispatch(
+        showErrorToast({ message: "Gagal mengambil data produk", isDarkMode })
+      );
+    }
+  };
+
+  const fetchSalesData = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/sales/${outletId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error("Gagal mengambil data penjualan");
+      const data: Sale[] = await response.json();
+      setSalesData(data);
+    } catch (err) {
+      dispatch(
         showErrorToast({
-          message: "Error fetching product select data.",
+          message: "Gagal mengambil data penjualan",
           isDarkMode,
-        });
-      }
-    };
-    if (outletId) fetchProductSelectData();
-  }, [outletId, token]);
-
-  useEffect(() => {
-    const fetchSalesData = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/sales/${outletId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!response.ok) throw new Error("Failed to fetch sales data");
-
-        const data: Sale[] = await response.json();
-        setSalesData(data);
-      } catch (err) {
-        showErrorToast({ message: "Error fetching sales data.", isDarkMode });
-      }
-    };
-    if (outletId) fetchSalesData();
-  }, [outletId, token]);
+        })
+      );
+    }
+  };
 
   const handleSaleSubmit = async () => {
     if (selectedProduct && quantitySold && parseInt(quantitySold) > 0) {
@@ -166,7 +162,7 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(
-            errorData?.message || "An error occurred while creating the sale."
+            errorData?.message || "Gagal mengirim data penjualan"
           );
         }
 
@@ -179,7 +175,7 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
 
         dispatch(
           showSuccessToast({
-            message: "Sale submitted successfully!",
+            message: "Data penjualan berhasil disimpan!",
             isDarkMode,
           })
         );
@@ -190,7 +186,7 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
       } catch (err: any) {
         dispatch(
           showErrorToast({
-            message: "Error submitting sale.",
+            message: "Gagal mengirim data penjualan",
             isDarkMode,
           })
         );
@@ -198,12 +194,25 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
     } else {
       dispatch(
         showErrorToast({
-          message: "Please select a product and enter a valid quantity.",
+          message: "Pilih produk dan masukkan kuantitas yang valid",
           isDarkMode,
         })
       );
     }
   };
+
+  // Effects
+  useEffect(() => {
+    if (outletId) fetchStockData();
+  }, [outletId, token]);
+
+  useEffect(() => {
+    if (outletId) fetchProductSelectData();
+  }, [outletId, token]);
+
+  useEffect(() => {
+    if (outletId) fetchSalesData();
+  }, [outletId, token]);
 
   return (
     <div className="space-y-6">
@@ -245,7 +254,7 @@ const StockOverview: React.FC<{ outletId: string }> = ({ outletId }) => {
         >
           Tambah Penjualan
         </Button>
-        
+
         <Table aria-label="Sales transactions">
           <TableHeader>
             <TableColumn>Nama Produk</TableColumn>

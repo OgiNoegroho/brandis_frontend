@@ -20,7 +20,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-interface Product {
+type Product ={
   id: string;
   nama: string;
   harga: number;

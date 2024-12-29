@@ -18,53 +18,67 @@ import {
   Input,
 } from "@nextui-org/react";
 
-
-interface Outlet {
+// Types and Interfaces
+type Outlet = {
   id: string;
   nama: string;
   alamat: string;
   nomor_telepon: string;
 }
 
-interface FormData {
+type FormData = {
   outletName: string;
   address: string;
   phone: string;
 }
 
+const initialFormData: FormData = {
+  outletName: "",
+  address: "",
+  phone: "",
+};
+
 const Outlet = () => {
+  // Hooks
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  // Redux Selectors
   const token = useAppSelector((state: RootState) => state.auth.token);
   const role = useAppSelector((state: RootState) => state.auth.role);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
+  // State Management
   const [outlets, setOutlets] = useState<Outlet[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedOutlet, setSelectedOutlet] = useState<Outlet | null>(null);
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [editFormData, setEditFormData] = useState<FormData>(initialFormData);
 
-  const [formData, setFormData] = useState<FormData>({
-    outletName: "",
-    address: "",
-    phone: "",
-  });
-  const [editFormData, setEditFormData] = useState<FormData>({
-    outletName: "",
-    address: "",
-    phone: "",
-  });
+  // Form Validation
+  const validateForm = (data: FormData): string[] => {
+    const errors: string[] = [];
+    if (!data.outletName.trim()) errors.push("Nama outlet harus diisi");
+    if (!data.address.trim()) errors.push("Alamat harus diisi");
+    if (!data.phone.trim()) errors.push("Nomor telepon harus diisi");
+    if (!/^\+?[\d\s-]+$/.test(data.phone)) {
+      errors.push("Format nomor telepon tidak valid");
+    }
+    return errors;
+  };
 
+  // API Calls
   const fetchOutlets = async () => {
     try {
       setIsLoading(true);
 
       if (!token) {
-        throw new Error("Authentication token not found");
+        throw new Error("Token autentikasi tidak ditemukan");
       }
 
       const response = await fetch(
@@ -99,17 +113,7 @@ const Outlet = () => {
     fetchOutlets();
   }, [token]);
 
-  const validateForm = (data: FormData): string[] => {
-    const errors: string[] = [];
-    if (!data.outletName.trim()) errors.push("Outlet name is required");
-    if (!data.address.trim()) errors.push("Address is required");
-    if (!data.phone.trim()) errors.push("Phone number is required");
-    if (!/^\+?[\d\s-]+$/.test(data.phone)) {
-      errors.push("Invalid phone number format");
-    }
-    return errors;
-  };
-
+  // Event Handlers
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement>,
     setData: React.Dispatch<React.SetStateAction<FormData>>
@@ -134,7 +138,7 @@ const Outlet = () => {
         return;
       }
 
-      if (!token) throw new Error("Authentication token not found");
+      if (!token) throw new Error("Token autentikasi tidak ditemukan");
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/outlet`,
@@ -159,7 +163,7 @@ const Outlet = () => {
       const newOutlet = await response.json();
       setOutlets((prevOutlets) => [...prevOutlets, newOutlet]);
       setShowCreateModal(false);
-      setFormData({ outletName: "", address: "", phone: "" });
+      setFormData(initialFormData);
       dispatch(
         showSuccessToast({
           message: "Outlet berhasil ditambahkan",
@@ -192,7 +196,7 @@ const Outlet = () => {
         return;
       }
 
-      if (!token) throw new Error("Authentication token not found");
+      if (!token) throw new Error("Token autentikasi tidak ditemukan");
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/outlet/${selectedOutlet.id}`,
@@ -240,12 +244,12 @@ const Outlet = () => {
   };
 
   const handleDeleteOutlet = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this outlet?")) {
+    if (!window.confirm("Apakah Anda yakin ingin menghapus outlet ini?")) {
       return;
     }
 
     try {
-      if (!token) throw new Error("Authentication token not found");
+      if (!token) throw new Error("Token autentikasi tidak ditemukan");
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`,
@@ -296,7 +300,7 @@ const Outlet = () => {
   };
 
   if (isLoading) {
-    return <div className="p-6 text-center">Loading outlets...</div>;
+    return <div className="p-6 text-center">Memuat data outlet...</div>;
   }
 
   const onlyRole = role === "Pimpinan" || role === "Pemasaran";

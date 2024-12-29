@@ -4,15 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
-import {
-  Card,
-  CardBody,
-  CardFooter,
-  Button,
-} from "@nextui-org/react";
+import { Card, CardBody, CardFooter, Button } from "@nextui-org/react";
 import { showErrorToast } from "@/redux/slices/toastSlice";
 
-interface Outlet {
+// Types
+type Outlet = {
   id: string;
   nama: string;
   alamat: string;
@@ -20,15 +16,20 @@ interface Outlet {
 }
 
 const FinancialReports = () => {
+  // Hooks
   const router = useRouter();
   const dispatch = useAppDispatch();
+
+  // Redux Selectors
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
+  // State
   const [outlets, setOutlets] = useState<Outlet[]>([]);
 
+  // API Calls
   const fetchOutlets = async () => {
     try {
       if (!token) {
@@ -46,7 +47,7 @@ const FinancialReports = () => {
       );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error("Gagal mengambil data outlet");
       }
 
       const data = await response.json();
@@ -55,20 +56,22 @@ const FinancialReports = () => {
       dispatch(
         showErrorToast({
           message:
-            error instanceof Error ? error.message : "Sebuah kesalahan terjadi",
+            error instanceof Error ? error.message : "Terjadi kesalahan sistem",
           isDarkMode,
         })
       );
     }
   };
 
-  useEffect(() => {
-    fetchOutlets();
-  }, [token]);
-
+  // Event Handlers
   const handleViewDetails = (id: string) => {
     router.push(`/financialReports/${id}`);
   };
+
+  // Effects
+  useEffect(() => {
+    fetchOutlets();
+  }, [token]);
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

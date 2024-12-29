@@ -7,7 +7,7 @@ const TOKEN_CONFIG = {
   storageKey: "authToken",
   cookieKey: "authToken",
   cookieOptions: {
-    expires: 1, // 1 day
+    expires: 1,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax" as const,
     path: "/",
@@ -16,7 +16,6 @@ const TOKEN_CONFIG = {
 
 const isBrowser = typeof window !== "undefined";
 
-// Local Storage Functions
 export const saveTokenToLocalStorage = (token: string): void => {
   if (!isBrowser) return;
 
@@ -50,7 +49,6 @@ export const removeTokenFromLocalStorage = (): void => {
   }
 };
 
-// Cookie Functions
 export const saveTokenToCookies = (token: string): void => {
   if (!isBrowser) return;
 
@@ -86,7 +84,6 @@ export const removeTokenFromCookies = (): void => {
   }
 };
 
-// Token Decoding and Role Handling
 export const getRoleFromToken = (token: string): Role | null => {
   try {
     const decoded = jwt.decode(token) as { peran?: Role };

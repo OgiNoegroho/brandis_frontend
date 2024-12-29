@@ -5,24 +5,26 @@ import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { setToken } from "@/redux/slices/authSlice";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice"; 
+import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 import { Button, Card, Input } from "@nextui-org/react";
 import { Eye, EyeOff } from "lucide-react";
 
 const LogIn = () => {
   const dispatch = useAppDispatch();
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
+
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/login`,
@@ -40,30 +42,25 @@ const LogIn = () => {
       }
 
       const data = await response.json();
+      dispatch(setToken(data.token));
 
-      // Dispatch token to Redux store
-      dispatch(setToken(data.token)); // This triggers saving token in local storage and cookies
-
-      // Show success toast
       dispatch(
         showSuccessToast({
           message: "Login berhasil! Anda akan diarahkan ke dashboard.",
-          isDarkMode, // Change based on your theme
+          isDarkMode,
         })
       );
 
-      // Redirect to dashboard
       router.push("/dashboard");
     } catch (error) {
-      // Show error toast
       dispatch(
         showErrorToast({
           message: "Login gagal. Silakan cek kembali kredensial Anda.",
-          isDarkMode, // Change based on your theme
+          isDarkMode,
         })
       );
     } finally {
-      setIsLoading(false); // Stop loading
+      setIsLoading(false);
     }
   };
 

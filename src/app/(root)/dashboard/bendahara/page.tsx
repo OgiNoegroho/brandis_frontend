@@ -5,66 +5,53 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
 
-interface RingkasanFaktur {
-  status_pembayaran: string;
-  total_tagihan: number;
-}
-
 interface OverdueInvoice {
-  id: string;
-  status_pembayaran: string;
+  faktur_id: string;
+  distribusi_id: string;
   tanggal_faktur: string;
   tanggal_jatuh_tempo: string;
+  overdue_days: number;
   jumlah_tagihan: number;
   jumlah_dibayar: number;
+  sisa_tagihan: number;
+}
+
+interface FinancialSummary {
+  outlet_name: string;
+  total_revenue: number;
+  total_debt: number;
+  remaining_balance: number;
 }
 
 const DashboardBendahara: React.FC = () => {
-  const [ringkasanFaktur, setRingkasanFaktur] = useState<RingkasanFaktur[]>([]);
-  const [pendapatanBulanIni, setPendapatanBulanIni] = useState<number | null>(
-    null
-  );
-  const [fakturJatuhTempo, setFakturJatuhTempo] = useState<number | null>(null);
+  const [totalOutstandingInvoices, setTotalOutstandingInvoices] = useState<
+    number | null
+  >(null);
   const [overdueInvoices, setOverdueInvoices] = useState<OverdueInvoice[]>([]);
+  const [financialSummary, setFinancialSummary] = useState<FinancialSummary[]>(
+    []
+  );
+  const [monthlyFinancialTrends, setMonthlyFinancialTrends] = useState<any[]>(
+    []
+  );
+  const [returnsSummary, setReturnsSummary] = useState<any>(null);
 
   const token = useAppSelector((state: RootState) => state.auth.token);
   const dispatch = useAppDispatch();
 
-  // Fetch data with useCallback to avoid redefining in useEffect
   const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
 
-      // Fetch ringkasanFakturDistribusi
-      const ringkasanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/ringkasanFakturDistribusi`,
+      const outstandingRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/totalOutstandingInvoices`,
         { headers }
       );
-      if (!ringkasanRes.ok) throw new Error("Gagal memuat ringkasan faktur.");
-      const ringkasanData: RingkasanFaktur[] = await ringkasanRes.json();
-      setRingkasanFaktur(Array.isArray(ringkasanData) ? ringkasanData : []);
+      if (!outstandingRes.ok)
+        throw new Error("Gagal memuat total faktur belum terbayar.");
+      const outstandingData = await outstandingRes.json();
+      setTotalOutstandingInvoices(outstandingData.total_outstanding_amount);
 
-      // Fetch pendapatanBulanIni
-      const pendapatanRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/pendapatanBulanIni`,
-        { headers }
-      );
-      if (!pendapatanRes.ok)
-        throw new Error("Gagal memuat pendapatan bulan ini.");
-      const pendapatanData = await pendapatanRes.json();
-      setPendapatanBulanIni(pendapatanData[0]?.total_pendapatan || 0);
-
-      // Fetch fakturJatuhTempoHariIni
-      const jatuhTempoRes = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/fakturJatuhTempoHariIni`,
-        { headers }
-      );
-      if (!jatuhTempoRes.ok)
-        throw new Error("Gagal memuat faktur jatuh tempo hari ini.");
-      const jatuhTempoData = await jatuhTempoRes.json();
-      setFakturJatuhTempo(jatuhTempoData[0]?.faktur_jatuh_tempo || 0);
-
-      // Fetch overdueInvoices
       const overdueRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/bendahara/overdueInvoices`,
         { headers }
@@ -74,19 +61,42 @@ const DashboardBendahara: React.FC = () => {
       const overdueData: OverdueInvoice[] = await overdueRes.json();
       setOverdueInvoices(overdueData);
 
-      // Show success toast for successful data fetch
+      const financialRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/financialSummaryByOutlet`,
+        { headers }
+      );
+      if (!financialRes.ok)
+        throw new Error("Gagal memuat ringkasan keuangan outlet.");
+      const financialData: FinancialSummary[] = await financialRes.json();
+      setFinancialSummary(financialData);
+
+      const trendsRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/monthlyFinancialTrends`,
+        { headers }
+      );
+      if (!trendsRes.ok) throw new Error("Gagal memuat tren keuangan bulanan.");
+      const trendsData = await trendsRes.json();
+      setMonthlyFinancialTrends(trendsData);
+
+      const returnsRes = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/bendahara/returnsSummary`,
+        { headers }
+      );
+      if (!returnsRes.ok) throw new Error("Gagal memuat ringkasan retur.");
+      const returnsData = await returnsRes.json();
+      setReturnsSummary(returnsData);
+
       dispatch(
         showSuccessToast({
           message: "Data berhasil dimuat.",
-          isDarkMode: false, // Adjust this based on your app's theme
+          isDarkMode: false,
         })
       );
     } catch (err: any) {
-      // Show error toast if an error occurs
       dispatch(
         showErrorToast({
           message: err.message || "Terjadi kesalahan saat memuat data.",
-          isDarkMode: false, // Adjust this based on your app's theme
+          isDarkMode: false,
         })
       );
     }
@@ -104,76 +114,19 @@ const DashboardBendahara: React.FC = () => {
         Dashboard Bendahara
       </h1>
 
-      {/* Ringkasan Faktur Distribusi */}
+      {/* Total Outstanding Invoices */}
       <section className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Ringkasan Faktur Distribusi
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full border-collapse border border-gray-200 text-center">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-4 py-2 border border-gray-200">
-                  Status Pembayaran
-                </th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Total Tagihan
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {ringkasanFaktur.length > 0 ? (
-                ringkasanFaktur.map((item, index) => (
-                  <tr
-                    key={index}
-                    className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
-                  >
-                    <td className="px-4 py-2 border border-gray-200">
-                      {item.status_pembayaran}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-200">
-                      {item.total_tagihan}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={2} className="py-4">
-                    No data available
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Pendapatan Bulan Ini */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Pendapatan Bulan Ini
-        </h2>
-        <div className="p-6 bg-indigo-50 rounded-md text-center">
-          <p className="text-3xl font-bold text-indigo-800">
-            {pendapatanBulanIni !== null ? pendapatanBulanIni : "Loading..."}
-          </p>
-          <p className="text-lg text-gray-600 mt-2">
-            Total pendapatan yang diterima pada bulan ini
-          </p>
-        </div>
-      </section>
-
-      {/* Faktur Jatuh Tempo Hari Ini */}
-      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
-          Faktur Jatuh Tempo Hari Ini
+          Total Faktur Belum Terbayar
         </h2>
         <div className="p-6 bg-red-50 rounded-md text-center">
           <p className="text-3xl font-bold text-red-800">
-            {fakturJatuhTempo !== null ? fakturJatuhTempo : "Loading..."}
+            {totalOutstandingInvoices !== null
+              ? totalOutstandingInvoices
+              : "Loading..."}
           </p>
           <p className="text-lg text-gray-600 mt-2">
-            Jumlah faktur yang harus dilunasi hari ini
+            Jumlah total faktur yang belum terbayar
           </p>
         </div>
       </section>
@@ -197,6 +150,9 @@ const DashboardBendahara: React.FC = () => {
                 <th className="px-4 py-2 border border-gray-200">
                   Jumlah Tagihan
                 </th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Hari Terlambat
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -207,10 +163,10 @@ const DashboardBendahara: React.FC = () => {
                     className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
                   >
                     <td className="px-4 py-2 border border-gray-200">
-                      {invoice.id}
+                      {invoice.faktur_id}
                     </td>
                     <td className="px-4 py-2 border border-gray-200">
-                      {invoice.status_pembayaran}
+                      {invoice.sisa_tagihan > 0 ? "Belum Dibayar" : "Lunas"}
                     </td>
                     <td className="px-4 py-2 border border-gray-200">
                       {invoice.tanggal_jatuh_tempo}
@@ -218,11 +174,14 @@ const DashboardBendahara: React.FC = () => {
                     <td className="px-4 py-2 border border-gray-200">
                       {invoice.jumlah_tagihan}
                     </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {invoice.overdue_days}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-4">
+                  <td colSpan={5} className="py-4">
                     No overdue invoices
                   </td>
                 </tr>
@@ -230,6 +189,74 @@ const DashboardBendahara: React.FC = () => {
             </tbody>
           </table>
         </div>
+      </section>
+
+      {/* Financial Summary by Outlet */}
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Ringkasan Keuangan Outlet
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full border-collapse border border-gray-200 text-center">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 border border-gray-200">Outlet</th>
+                <th className="px-4 py-2 border border-gray-200">Pendapatan</th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Total Hutang
+                </th>
+                <th className="px-4 py-2 border border-gray-200">
+                  Saldo Tersisa
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {financialSummary.length > 0 ? (
+                financialSummary.map((summary, index) => (
+                  <tr
+                    key={index}
+                    className={`${index % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                  >
+                    <td className="px-4 py-2 border border-gray-200">
+                      {summary.outlet_name}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {summary.total_revenue}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {summary.total_debt}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200">
+                      {summary.remaining_balance}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-4">
+                    No financial data available
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* Monthly Financial Trends */}
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Tren Keuangan Bulanan
+        </h2>
+        <pre>{JSON.stringify(monthlyFinancialTrends, null, 2)}</pre>
+      </section>
+
+      {/* Returns Summary */}
+      <section className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 text-center">
+          Ringkasan Retur
+        </h2>
+        <pre>{JSON.stringify(returnsSummary, null, 2)}</pre>
       </section>
     </div>
   );

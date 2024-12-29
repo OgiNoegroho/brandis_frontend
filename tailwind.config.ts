@@ -72,29 +72,29 @@ const config: Config = {
     },
   },
   plugins: [
-    createThemes(themes), // Custom color themes with inverted shades
+    createThemes(themes),
     nextui({
       themes: {
         light: {
           colors: {
-            primary: "#0072F5", // Customize the primary color
-            secondary: "#9750DD", // Customize the secondary color
-            success: "#17C964", // Customize the success color
-            warning: "#F5A524", // Customize the warning color
-            danger: "#F31260", // Customize the error color
-            background: "#FFFFFF", // Light theme background
-            foreground: "#000000", // Light theme foreground
+            primary: "#0072F5",
+            secondary: "#9750DD",
+            success: "#17C964",
+            warning: "#F5A524",
+            danger: "#F31260",
+            background: "#FFFFFF",
+            foreground: "#000000",
           },
         },
         dark: {
           colors: {
-            primary: "#4B78E5", // Adjust for dark mode
+            primary: "#4B78E5",
             secondary: "#BB86FC",
             success: "#03DAC6",
             warning: "#FBC02D",
             danger: "#CF6679",
-            background: "#121212", // Dark theme background
-            foreground: "#E0E0E0", // Dark theme foreground
+            background: "#121212",
+            foreground: "#E0E0E0",
           },
         },
       },

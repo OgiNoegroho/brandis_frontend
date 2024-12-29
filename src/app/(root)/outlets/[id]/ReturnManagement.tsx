@@ -21,27 +21,28 @@ import { useAppSelector, useAppDispatch } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-interface Product {
+// Types
+type Product = {
   product_id: number;
   product_name: string;
-}
+};
 
-interface Batch {
+type Batch = {
   batch_id: number;
   batch_name: string;
   kuantitas: number;
-}
+};
 
-interface NewReturn {
+type NewReturn = {
   outletId: string;
   productId: number | null;
   batchId: number | null;
   quantity: number;
   reason: string;
   returnDate: string;
-}
+};
 
-interface ReturnHistory {
+type ReturnHistory = {
   return_id: number;
   outlet_id: number;
   batch_id: number;
@@ -49,137 +50,130 @@ interface ReturnHistory {
   reason: string;
   return_date: string;
   product_name: string;
+};
+
+interface ReturnManagementProps {
+  outletId: string;
 }
 
-const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
+const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
+  // Redux
   const dispatch = useAppDispatch();
-
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const isDarkMode = useAppSelector(
-    (state: RootState) => state.global.isDarkMode
-  );
+  const isDarkMode = useAppSelector((state: RootState) => state.global.isDarkMode);
+
+  // State
   const [returnData, setReturnData] = useState<ReturnHistory[]>([]);
   const [returnHistory, setReturnHistory] = useState<ReturnHistory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [batches, setBatches] = useState<Batch[]>([]);
   const [newReturn, setNewReturn] = useState<NewReturn>({
-    outletId: outletId,
+    outletId,
     productId: null,
     batchId: null,
     quantity: 0,
     reason: "",
     returnDate: "",
   });
-  const [products, setProducts] = useState<Product[]>([]);
-  const [batches, setBatches] = useState<Batch[]>([]);
 
+  // Utilities
   const formatDate = (date?: string | number | null) => {
     if (!date) return "N/A";
-
     const d = new Date(date);
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = d.getFullYear();
-
-    return `${day}-${month}-${year}`;
+    return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
   };
 
-  useEffect(() => {
-    const currentDate = new Date().toISOString().split("T")[0];
-    setNewReturn((prev) => ({
-      ...prev,
-      returnDate: currentDate,
-    }));
-  }, []);
+  const resetForm = () => {
+    setNewReturn({
+      outletId,
+      productId: null,
+      batchId: null,
+      quantity: 0,
+      reason: "",
+      returnDate: new Date().toISOString().split("T")[0],
+    });
+  };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/returns/${outletId}/products`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+  // API Calls
+  const fetchProducts = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns/${outletId}/products`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        if (!response.ok) throw new Error("Failed to fetch products");
-        const productsList = await response.json();
-        setProducts(productsList);
-      } catch (error) {
-        dispatch(
-          showErrorToast({ message: "Failed to fetch products", isDarkMode })
-        );
-      }
-    };
+      if (!response.ok) throw new Error("Gagal mengambil data produk");
+      const productsList = await response.json();
+      setProducts(productsList);
+    } catch (error) {
+      dispatch(
+        showErrorToast({ message: "Gagal mengambil data produk", isDarkMode })
+      );
+    }
+  };
 
-    if (outletId) fetchProducts();
-  }, [outletId, token]);
+  const fetchBatches = async () => {
+    if (!newReturn.productId) {
+      setBatches([]);
+      return;
+    }
 
-  useEffect(() => {
-    const fetchBatches = async () => {
-      if (!newReturn.productId) {
-        setBatches([]);
-        return;
-      }
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns/${newReturn.productId}/batches`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/returns/${newReturn.productId}/batches`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+      if (!response.ok) throw new Error("Gagal mengambil data batch");
+      const batchesList = await response.json();
+      setBatches(batchesList);
+    } catch (error) {
+      dispatch(
+        showErrorToast({
+          message: "Gagal mengambil data batch. Silakan coba lagi nanti.",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
-        if (!response.ok) throw new Error("Failed to fetch batches");
-        const batchesList = await response.json();
-        setBatches(batchesList);
-      } catch (error) {
-        dispatch(
-          showErrorToast({
-            message: "Error fetching batches. Please try again later.",
-            isDarkMode,
-          })
-        );
-      }
-    };
+  const fetchReturnHistory = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/returns/${outletId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    fetchBatches();
-  }, [newReturn.productId, token]);
+      if (!response.ok) throw new Error("Gagal mengambil riwayat retur");
+      const history = await response.json();
+      setReturnHistory(history);
+    } catch (error) {
+      dispatch(
+        showErrorToast({
+          message: "Gagal mengambil riwayat retur. Silakan coba lagi nanti.",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
-  useEffect(() => {
-    const fetchReturnHistory = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/returns/${outletId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch return history");
-        const history = await response.json();
-        setReturnHistory(history);
-      } catch (error) {
-        dispatch(
-          showErrorToast({
-            message: "Error fetching return history. Please try again later.",
-            isDarkMode,
-          })
-        );
-      }
-    };
-
-    if (outletId) fetchReturnHistory();
-  }, [outletId, token]);
-
+  // Event Handlers
   const handleAddReturn = () => {
     if (
       !newReturn.productId ||
@@ -187,29 +181,27 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
       !newReturn.quantity ||
       !newReturn.reason
     ) {
-      showErrorToast({ message: "please fill all the field", isDarkMode });
+      dispatch(showErrorToast({ message: "Mohon lengkapi semua field", isDarkMode }));
       return;
     }
 
     const quantity = Number(newReturn.quantity);
     if (isNaN(quantity) || quantity <= 0) {
-      showErrorToast({
-        message: "quantity must be a positive number",
+      dispatch(showErrorToast({
+        message: "Kuantitas harus berupa angka positif",
         isDarkMode,
-      });
+      }));
       return;
     }
 
-    const selectedProduct = products.find(
-      (p) => p.product_id === newReturn.productId
-    );
-    const selectedBatch = batches.find((b) => b.batch_id === newReturn.batchId);
+    const selectedProduct = products.find(p => p.product_id === newReturn.productId);
+    const selectedBatch = batches.find(b => b.batch_id === newReturn.batchId);
 
     if (!selectedProduct || !selectedBatch) {
-      showErrorToast({
-        message: "invalid product or batch selection",
+      dispatch(showErrorToast({
+        message: "Pemilihan produk atau batch tidak valid",
         isDarkMode,
-      });
+      }));
       return;
     }
 
@@ -223,37 +215,24 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
       outlet_id: Number(outletId),
     };
 
-    setReturnData((prev) => [...prev, newEntry]);
+    setReturnData(prev => [...prev, newEntry]);
     setIsModalOpen(false);
     resetForm();
   };
 
-  const resetForm = () => {
-    setNewReturn({
-      outletId: outletId,
-      productId: null,
-      batchId: null,
-      quantity: 0,
-      reason: "",
-      returnDate: new Date().toISOString().split("T")[0],
-    });
-  };
-
   const handleSaveReturns = async () => {
     if (returnData.length === 0) {
-      dispatch(showErrorToast({ message: "No returns to save", isDarkMode }));
+      dispatch(showErrorToast({ message: "Tidak ada retur untuk disimpan", isDarkMode }));
       return;
     }
 
     try {
-      const returnRequestBody = returnData.map((item) => ({
+      const returnRequestBody = returnData.map(item => ({
         outlet_id: item.outlet_id,
         batch_id: item.batch_id,
         kuantitas: item.quantity,
         alasan: item.reason,
       }));
-
-      console.log("Return Request Body:", returnRequestBody);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/returns`,
@@ -269,22 +248,42 @@ const ReturnManagement: React.FC<{ outletId: string }> = ({ outletId }) => {
 
       if (!response.ok) {
         const error = await response.json();
-        console.error("Error Response:", error);
-        throw new Error(error.message || "Failed to save returns");
+        throw new Error(error.message || "Gagal menyimpan data retur");
       }
 
-      setReturnHistory((prev) => [...prev, ...returnData]);
+      setReturnHistory(prev => [...prev, ...returnData]);
       setReturnData([]);
       dispatch(
-        showSuccessToast({ message: "Returns saved successfully!", isDarkMode })
+        showSuccessToast({ message: "Retur berhasil disimpan!", isDarkMode })
       );
     } catch (error) {
-      console.error("Failed to save returns:", error);
+      console.error("Gagal menyimpan retur:", error);
       dispatch(
-        showErrorToast({ message: "Failed to save returns", isDarkMode })
+        showErrorToast({ message: "Gagal menyimpan data retur", isDarkMode })
       );
     }
   };
+
+  // Effects
+  useEffect(() => {
+    const currentDate = new Date().toISOString().split("T")[0];
+    setNewReturn(prev => ({
+      ...prev,
+      returnDate: currentDate,
+    }));
+  }, []);
+
+  useEffect(() => {
+    if (outletId) fetchProducts();
+  }, [outletId, token]);
+
+  useEffect(() => {
+    fetchBatches();
+  }, [newReturn.productId, token]);
+
+  useEffect(() => {
+    if (outletId) fetchReturnHistory();
+  }, [outletId, token]);
 
   return (
     <div>
