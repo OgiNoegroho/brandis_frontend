@@ -238,8 +238,16 @@ const StockManagement: React.FC = () => {
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.produk_id}>
-                <TableCell>{product.nama_produk}</TableCell>
-                <TableCell>{product.kuantitas} Packets</TableCell>
+                <TableCell className="max-w-full sm:max-w-xs md:max-w-none truncate">
+                  <div className="w-full sm:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                    {product.nama_produk}
+                  </div>
+                </TableCell>
+                <TableCell className="max-w-full sm:max-w-xs md:max-w-none truncate">
+                  <div className="w-full sm:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                    {product.kuantitas} Packets
+                  </div>
+                </TableCell>
                 <TableCell>{getStatus(product.ketersediaan)}</TableCell>
                 <TableCell>
                   <Button
@@ -280,7 +288,7 @@ const StockManagement: React.FC = () => {
                     {batchDetails.map((batch) => (
                       <li key={batch.batch_id} className="mb-4">
                         <p>
-                          <strong>Nama Batch:</strong> {batch.nama_batch}
+                          <strong>No Batch:</strong> {batch.nama_batch}
                         </p>
                         <p>
                           <strong>Kuantitas:</strong> {batch.kuantitas_batch}

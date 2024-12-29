@@ -20,7 +20,8 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { RootState } from "@/redux/store";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-type Product ={
+// Interfaces
+interface Product {
   id: string;
   nama: string;
   harga: number;
@@ -28,92 +29,106 @@ type Product ={
   deskripsi: string;
   imageUrl: string | null;
   imagePublicId: string | null;
-  images?: { url: string; isPrimary?: boolean }[];
+  images?: {
+    url: string;
+    isPrimary?: boolean;
+  }[];
 }
 
-const ProductsPage = () => {
+interface NewProduct {
+  nama: string;
+  harga: string;
+  komposisi: string;
+  deskripsi: string;
+  image: File | null;
+}
+
+const INITIAL_PRODUCT_STATE: NewProduct = {
+  nama: "",
+  harga: "",
+  komposisi: "",
+  deskripsi: "",
+  image: null,
+};
+
+const ProductsPage: React.FC = () => {
+  // State Management
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState<NewProduct>(
+    INITIAL_PRODUCT_STATE
+  );
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Redux Selectors
   const token = useAppSelector((state: RootState) => state.auth.token);
   const role = useAppSelector((state: RootState) => state.auth.role);
-  const dispatch = useAppDispatch();
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
+  const dispatch = useAppDispatch();
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newProduct, setNewProduct] = useState({
-    nama: "",
-    harga: "",
-    komposisi: "",
-    deskripsi: "",
-    image: null as File | null,
-  });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  // Utilities
+  const formatHarga = (value: string): string => {
+    const numberValue = value.replace(/[^\d]/g, "");
+    return new Intl.NumberFormat("id-ID").format(Number(numberValue));
+  };
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      if (!token) {
-        dispatch(
-          showErrorToast({
-            message: "Token tidak ditemukan, silahkan login!",
-            isDarkMode,
-          })
-        );
-        return;
-      }
+  // API Calls
+  const fetchProducts = async () => {
+    if (!token) {
+      dispatch(
+        showErrorToast({
+          message: "Token tidak ditemukan, silahkan login!",
+          isDarkMode,
+        })
+      );
+      return;
+    }
 
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/products`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-        if (!response.ok) throw new Error("Gagal mengambil produk.");
+      if (!response.ok) throw new Error("Gagal mengambil produk.");
 
-        const data: Product[] = await response.json();
-        setProducts(data);
-      } catch (err) {
-        console.error(err);
-        dispatch(
-          showErrorToast({
-            message: "Gagal mengambil produk, silahkan coba kembali.",
-            isDarkMode,
-          })
-        );
-      }
-    };
+      const data: Product[] = await response.json();
+      setProducts(data);
+    } catch (err) {
+      console.error(err);
+      dispatch(
+        showErrorToast({
+          message: "Gagal mengambil produk, silahkan coba kembali.",
+          isDarkMode,
+        })
+      );
+    }
+  };
 
-    fetchProducts();
-  }, [token, dispatch, isDarkMode]);
-
-
-
+  // Event Handlers
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setNewProduct({ ...newProduct, image: file });
+      setNewProduct((prev) => ({ ...prev, image: file }));
       setImagePreview(URL.createObjectURL(file));
     }
   };
 
   const handleRemoveImage = () => {
-    setNewProduct({ ...newProduct, image: null });
+    setNewProduct((prev) => ({ ...prev, image: null }));
     setImagePreview(null);
-  };
-
-  const formatHarga = (value: string) => {
-    const numberValue = value.replace(/[^\d]/g, "");
-    return new Intl.NumberFormat("id-ID").format(Number(numberValue));
   };
 
   const handleHargaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value.replace(/[^\d]/g, "");
-    setNewProduct({ ...newProduct, harga: rawValue });
+    setNewProduct((prev) => ({ ...prev, harga: rawValue }));
   };
 
   const handleAddProduct = async () => {
@@ -127,72 +142,74 @@ const ProductsPage = () => {
       return;
     }
 
-    if (newProduct.nama && newProduct.harga) {
-      setIsLoading(true);
-
-      try {
-        const formData = new FormData();
-        formData.append("nama", newProduct.nama);
-        formData.append("harga", newProduct.harga);
-        formData.append("komposisi", newProduct.komposisi);
-        formData.append("deskripsi", newProduct.deskripsi);
-
-        if (newProduct.image) {
-          formData.append("image", newProduct.image);
-        }
-
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/products`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          }
-        );
-
-        if (!response.ok) throw new Error("Gagal menambahkan produk");
-
-        const addedProduct: Product = await response.json();
-        setProducts([...products, addedProduct]);
-        setNewProduct({
-          nama: "",
-          harga: "",
-          komposisi: "",
-          deskripsi: "",
-          image: null,
-        });
-        setImagePreview(null);
-        setIsModalOpen(false);
-        dispatch(
-          showSuccessToast({
-            message: "Produk berhasil ditambahkan!",
-            isDarkMode,
-          })
-        );
-      } catch (err) {
-        console.error(err);
-        dispatch(
-          showErrorToast({
-            message:
-              "Terjadi kesalahan saat menambah produk, Silahkan coba kembali.",
-            isDarkMode,
-          })
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
+    if (!newProduct.nama || !newProduct.harga) {
       dispatch(
         showErrorToast({
           message: "Isi semua kolom terlebih dahulu!",
           isDarkMode,
         })
       );
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("nama", newProduct.nama);
+      formData.append("harga", newProduct.harga);
+      formData.append("komposisi", newProduct.komposisi);
+      formData.append("deskripsi", newProduct.deskripsi);
+
+      if (newProduct.image) {
+        formData.append("image", newProduct.image);
+      }
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error("Gagal menambahkan produk");
+
+      const addedProduct: Product = await response.json();
+      setProducts((prev) => [...prev, addedProduct]);
+      setNewProduct(INITIAL_PRODUCT_STATE);
+      setImagePreview(null);
+      setIsModalOpen(false);
+
+      dispatch(
+        showSuccessToast({
+          message: "Produk berhasil ditambahkan!",
+          isDarkMode,
+        })
+      );
+    } catch (err) {
+      console.error(err);
+      dispatch(
+        showErrorToast({
+          message:
+            "Terjadi kesalahan saat menambah produk, Silahkan coba kembali.",
+          isDarkMode,
+        })
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
-  
+
+  // Effects
+  useEffect(() => {
+    fetchProducts();
+  }, [token, dispatch, isDarkMode]);
+
+  // Computed Properties
   const onlyRole = role === "Pimpinan" || role === "Manajer";
 
   return (
@@ -223,9 +240,7 @@ const ProductsPage = () => {
                     alt={product.nama}
                     className="w-full object-cover h-[140px] rounded-lg" // Fixed height and rounded corners
                     src={
-                      primaryImage
-                        ? primaryImage.url
-                        : "/noImageAvailable.jpg"
+                      primaryImage ? primaryImage.url : "/noImageAvailable.jpg"
                     }
                     width={500} // Fixed width for all images
                     height={500} // Fixed height for all images

@@ -11,10 +11,10 @@ const allowedRoles = {
   "/dashboard/pemasaran": ["Pemasaran"],
   "/dashboard/bendahara": ["Bendahara"],
   "/products": ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"],
-  "/outlets": ["Pimpinan", "Manajer", "Pemasaran"],
+  "/outlets": ["Pimpinan", "Pemasaran"],
   "/financialReports": ["Pimpinan", "Bendahara"],
-  "/inventory/stockManagement": ["Pimpinan", "Pemasaran"],
-  "/inventory/batchManagement": ["Pimpinan", "Pemasaran"],
+  "/inventory/stockManagement": ["Pimpinan", "Manajer", "Pemasaran"],
+  "/inventory/batchManagement": ["Pimpinan", "Manajer", "Pemasaran"],
 };
 
 export function middleware(request: NextRequest) {

@@ -16,7 +16,8 @@ import {
 } from "@nextui-org/react";
 import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
 
-type Product = {
+// Interfaces
+interface Product {
   id: string;
   nama: string;
   harga: number;
@@ -24,106 +25,105 @@ type Product = {
   deskripsi: string;
   imageUrl: string | null;
   imagePublicId: string | null;
-  images?: { url: string; publicId: string; isPrimary?: boolean }[];
+  images?: {
+    url: string;
+    publicId: string;
+    isPrimary?: boolean;
+  }[];
 }
 
-const ProductDetail = () => {
+interface FormData {
+  nama: string;
+  harga: number;
+  komposisi: string;
+  deskripsi: string;
+}
+
+const INITIAL_FORM_STATE: FormData = {
+  nama: "",
+  harga: 0,
+  komposisi: "",
+  deskripsi: "",
+};
+
+const ProductDetail: React.FC = () => {
+  // State Management
   const [product, setProduct] = useState<Product | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [editMode, setEditMode] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
+  const [editMode, setEditMode] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isImageUploading, setImageUploading] = useState<boolean>(false);
+  const [isImageUploading, setImageUploading] = useState(false);
   const [showImageUploadModal, setShowImageUploadModal] = useState(false);
-  const [formData, setFormData] = useState({
-    nama: "",
-    harga: 0,
-    komposisi: "",
-    deskripsi: "",
-  });
+  const [formData, setFormData] = useState<FormData>(INITIAL_FORM_STATE);
 
+  // Hooks
   const router = useRouter();
+  const { id } = useParams();
+  const dispatch = useAppDispatch();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Redux Selectors
   const token = useAppSelector((state: RootState) => state.auth.token);
   const role = useAppSelector((state: RootState) => state.auth.role);
-  const dispatch = useAppDispatch();
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
-  const { id } = useParams();
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
+  // Utilities
   const formatPrice = (price: number): string => {
     return Math.floor(price)
       .toString()
       .replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsDropdownOpen(false);
-      }
-    };
+  // API Calls
+  const fetchProductDetail = async () => {
+    if (!token) {
+      dispatch(
+        showErrorToast({
+          message: "Token tidak ditemukan, silahkan login!",
+          isDarkMode,
+        })
+      );
+      return;
+    }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isDarkMode]);
+    setLoading(true);
+    setProduct(null);
 
-  useEffect(() => {
-    if (!id) return;
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-    const fetchProductDetail = async () => {
-      if (!token) {
-        dispatch(
-          showErrorToast({
-            message: "Token tidak ditemukan, silahkan login!",
-            isDarkMode,
-          })
-        );
-        return;
-      }
+      if (!response.ok) throw new Error("Gagal menampilkan detail produk");
 
-      setLoading(true);
-      setProduct(null);
+      const data: Product = await response.json();
+      setProduct(data);
+      setFormData({
+        nama: data.nama,
+        harga: data.harga,
+        komposisi: data.komposisi,
+        deskripsi: data.deskripsi,
+      });
+    } catch (err) {
+      console.error(err);
+      dispatch(
+        showErrorToast({
+          message: "Gagal menampilkan detail produk. Silahkan coba lagi.",
+          isDarkMode,
+        })
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        if (!response.ok) throw new Error("Gagal menampilkan detail produk");
-
-        const data: Product = await response.json();
-        setProduct(data);
-        setFormData({
-          nama: data.nama,
-          harga: data.harga,
-          komposisi: data.komposisi,
-          deskripsi: data.deskripsi,
-        });
-      } catch (err) {
-        console.error(err);
-        dispatch(
-          showErrorToast({
-            message: "Gagal menampilkan detail produk, silahkan coba lagi.",
-            isDarkMode,
-          })
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductDetail();
-  }, [id, token, dispatch]);
-
+  // Event Handlers
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -135,7 +135,6 @@ const ProductDetail = () => {
     if (!token || !product) return;
 
     setImageUploading(true);
-
     const uploadFormData = new FormData();
     uploadFormData.append("image", file);
 
@@ -154,7 +153,7 @@ const ProductDetail = () => {
       if (!response.ok) throw new Error("Gagal mengganti gambar produk");
 
       const updatedProduct = await response.json();
-      setProduct(updatedProduct); // Ensure the image is updated
+      setProduct(updatedProduct);
       setShowImageUploadModal(false);
       dispatch(
         showSuccessToast({
@@ -166,7 +165,7 @@ const ProductDetail = () => {
       console.error(err);
       dispatch(
         showErrorToast({
-          message: "Gagal mengganti gambar produk, Silahkan coba lagi.",
+          message: "Gagal mengganti gambar produk. Silahkan coba lagi.",
           isDarkMode,
         })
       );
@@ -206,7 +205,7 @@ const ProductDetail = () => {
       console.error(err);
       dispatch(
         showErrorToast({
-          message: "Gagal mengupdate produk, silahkan coba lagi.",
+          message: "Gagal mengupdate produk. Silahkan coba lagi.",
           isDarkMode,
         })
       );
@@ -240,27 +239,51 @@ const ProductDetail = () => {
       console.error(err);
       dispatch(
         showErrorToast({
-          message: "Gagal menghapus produk, silahkan coba lagi.",
+          message: "Gagal menghapus produk. Silahkan coba lagi.",
           isDarkMode,
         })
       );
     }
   };
 
-  const onlyRole = role === "Pimpinan" || role === "Manajer";
+  // Effects
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
 
-  if (loading)
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isDarkMode]);
+
+  useEffect(() => {
+    if (id) fetchProductDetail();
+  }, [id, token, dispatch]);
+
+  // Computed Properties
+  const onlyRole = role === "Pimpinan" || role === "Manajer";
+  const primaryImage =
+    product?.images?.find((img) => img.isPrimary) || product?.images?.[0];
+
+  // Render Methods
+  if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <p className="animate-pulse text-lg">Loading...
-        </p>
+        <p className="animate-pulse text-lg">Memuat...</p>
       </div>
     );
-  if (!product)
-    return <div className="text-center text-gray-500">No product found.</div>;
+  }
 
-  const primaryImage =
-    product.images?.find((img) => img.isPrimary) || product.images?.[0];
+  if (!product) {
+    return (
+      <div className="text-center text-gray-500">Produk tidak ditemukan.</div>
+    );
+  }
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

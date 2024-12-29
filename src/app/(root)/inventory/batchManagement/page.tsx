@@ -313,7 +313,6 @@ const BatchManagement: React.FC = () => {
     setBatchName(batch.nama_batch);
     setProductId(products.find((p) => p.nama === batch.nama_produk)?.id || "");
     setQuantity(batch.kuantitas);
-    setProductionDate(formatDate(batch.dibuat_pada));
     setExpirationDate(formatDate(batch.tanggal_kadaluarsa));
     setShowEditModal(true);
   };
@@ -380,12 +379,6 @@ const BatchManagement: React.FC = () => {
                     ))}
                   </Select>
                   <Input
-                    type="date"
-                    label="Tanggal Produksi"
-                    value={productionDate}
-                    onChange={(e) => setProductionDate(e.target.value)}
-                  />
-                  <Input
                     type="number"
                     label="Kuantitas"
                     value={String(quantity)}
@@ -403,7 +396,7 @@ const BatchManagement: React.FC = () => {
                 <Button color="danger" variant="flat" onPress={onClose}>
                   Batal
                 </Button>
-                <Button color="primary" onPress={addBatch}>
+                <Button color="primary" variant="flat" onPress={addBatch}>
                   Simpan
                 </Button>
               </ModalFooter>
@@ -434,12 +427,6 @@ const BatchManagement: React.FC = () => {
                     ))}
                   </Select>
                   <Input
-                    type="date"
-                    label="Tanggal Produksi"
-                    value={productionDate}
-                    onChange={(e) => setProductionDate(e.target.value)}
-                  />
-                  <Input
                     type="number"
                     label="Kuantitas"
                     value={String(quantity)}
@@ -457,7 +444,7 @@ const BatchManagement: React.FC = () => {
                 <Button color="danger" variant="flat" onPress={onClose}>
                   Batal
                 </Button>
-                <Button color="primary" onPress={updateBatch}>
+                <Button color="primary" variant="flat" onPress={updateBatch}>
                   Simpan
                 </Button>
               </ModalFooter>
@@ -568,8 +555,17 @@ const BatchManagement: React.FC = () => {
               <TableBody>
                 {batches.map((batch) => (
                   <TableRow key={batch.batch_id}>
-                    <TableCell>{batch.nama_batch}</TableCell>
-                    <TableCell>{batch.nama_produk}</TableCell>
+                    <TableCell className="max-w-full sm:max-w-xs md:max-w-none truncate">
+                      <div className="w-full sm:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                        {batch.nama_batch}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-full sm:max-w-xs md:max-w-none truncate">
+                      {/* Truncate text for mobile devices */}
+                      <div className="w-full sm:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                        {batch.nama_produk}
+                      </div>
+                    </TableCell>
                     <TableCell>{batch.kuantitas}</TableCell>
                     <TableCell>{formatDate(batch.dibuat_pada)}</TableCell>
                     <TableCell>
@@ -578,7 +574,6 @@ const BatchManagement: React.FC = () => {
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
-                          className=""
                           color="primary"
                           variant="flat"
                           onPress={() => fetchBatchDetails(batch.batch_id)}
@@ -588,7 +583,6 @@ const BatchManagement: React.FC = () => {
                         {onlyRole && (
                           <>
                             <Button
-                              className=""
                               color="warning"
                               variant="flat"
                               onPress={() => handleEditBatch(batch)}
@@ -596,7 +590,6 @@ const BatchManagement: React.FC = () => {
                               Edit
                             </Button>
                             <Button
-                              className=""
                               color="danger"
                               variant="flat"
                               onPress={() => handleDeleteBatch(batch)}
@@ -621,9 +614,7 @@ const BatchManagement: React.FC = () => {
         <Card>
           <CardBody>
             <div className="overflow-x-auto">
-              <Table
-                aria-label="Empty Batches Table"
-              >
+              <Table aria-label="Empty Batches Table">
                 <TableHeader>
                   <TableColumn>No. Batch</TableColumn>
                   <TableColumn>Nama Produk</TableColumn>
@@ -634,8 +625,16 @@ const BatchManagement: React.FC = () => {
                 <TableBody items={emptyBatches}>
                   {(batch) => (
                     <TableRow key={batch.batch_id}>
-                      <TableCell>{batch.nama_batch}</TableCell>
-                      <TableCell>{batch.nama_produk}</TableCell>
+                      <TableCell className="max-w-full sm:max-w-xs md:max-w-none truncate">
+                        <div className="w-full sm:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                          {batch.nama_batch}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-full sm:max-w-xs md:max-w-none truncate">
+                        <div className="w-full sm:w-auto overflow-hidden text-ellipsis whitespace-nowrap">
+                          {batch.nama_produk}
+                        </div>
+                      </TableCell>
                       <TableCell>{formatDate(batch.dibuat_pada)}</TableCell>
                       <TableCell>
                         {formatDate(batch.tanggal_kadaluarsa)}
