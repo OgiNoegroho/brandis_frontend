@@ -613,7 +613,7 @@ const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
                 }
               />
               <Input
-                label="Confirm Password"
+                label="Konfirmasi Password"
                 type={confirmPasswordVisibility ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) =>

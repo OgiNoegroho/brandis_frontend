@@ -194,6 +194,7 @@ const ProductsPage = () => {
   };
   
   const onlyRole = role === "Pimpinan" || role === "Manajer";
+
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-6">
@@ -224,7 +225,7 @@ const ProductsPage = () => {
                     src={
                       primaryImage
                         ? primaryImage.url
-                        : "/images/default-product.png"
+                        : "/noImageAvailable.jpg"
                     }
                     width={500} // Fixed width for all images
                     height={500} // Fixed height for all images

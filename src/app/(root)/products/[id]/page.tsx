@@ -194,7 +194,7 @@ const ProductDetail = () => {
       if (!response.ok) throw new Error("Gagal mengupdate produk");
 
       const updatedProduct = await response.json();
-      setProduct(updatedProduct); // Update product details and image if changed
+      setProduct(updatedProduct);
       setEditMode(false);
       dispatch(
         showSuccessToast({
@@ -269,11 +269,7 @@ const ProductDetail = () => {
           <div className="relative w-full max-w-md mx-auto lg:mx-0">
             <div className="aspect-square w-full relative mb-2">
               <img
-                src={
-                  primaryImage
-                    ? primaryImage.url
-                    : "/images/default-product.png"
-                }
+                src={primaryImage ? primaryImage.url : "/noImageAvailable.jpg"}
                 alt={formData.nama}
                 className="w-full h-full object-cover cursor-pointer rounded-lg shadow-md transition-transform hover:scale-[1.02]"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
