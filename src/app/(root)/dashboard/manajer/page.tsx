@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import {
   FaWarehouse,
   FaExclamationTriangle,
@@ -32,7 +32,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { showErrorToast } from "@/redux/slices/toastSlice";
+import { showErrorToast } from "@/lib/redux/slices/toastSlice";
 
 ChartJS.register(
   CategoryScale,
@@ -72,7 +72,7 @@ interface PengembalianData {
 
 const DashboardManajer: React.FC = () => {
   const [gudangData, setGudangData] = useState<GudangData[]>([]);
-  
+
   const [batchKadaluarsa, setBatchKadaluarsa] = useState<BatchKadaluarsa[]>([]);
   const [produksiData, setProduksiData] = useState<ProduksiData[]>([]);
   const [stokRendahGudang, setStokRendahGudang] = useState<StokRendah[]>([]);

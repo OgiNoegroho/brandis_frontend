@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/lib/redux/hooks";
 import "@/styles/globals.css";
 
 const LogInLayout = ({ children }: { children: React.ReactNode }) => {

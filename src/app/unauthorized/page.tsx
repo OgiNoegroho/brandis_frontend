@@ -2,8 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAppDispatch } from "@/redux/hooks";
-import { removeToken } from "@/redux/slices/authSlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
+import { removeToken } from "@/lib/redux/slices/authSlice";
 import { Card, CardBody, CardFooter, Button } from "@nextui-org/react";
 import { AlertTriangle } from "lucide-react";
 

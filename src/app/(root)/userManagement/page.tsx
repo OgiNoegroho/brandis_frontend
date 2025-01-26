@@ -19,30 +19,33 @@ import {
   SelectItem,
 } from "@nextui-org/react";
 import { Eye, EyeOff } from "lucide-react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 import { Role } from "@/types/auth";
 
-type User ={
+type User = {
   id: string;
   nama: string;
   email: string;
   peran: Role;
-}
+};
 
-type NewUser = User &{
+type NewUser = User & {
   password: string;
-}
+};
 
-type UpdateFormData = Partial<User> &{
+type UpdateFormData = Partial<User> & {
   password?: string;
-}
+};
 
 type ValidationError = {
   field: string;
   message: string;
-}
+};
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -55,17 +58,17 @@ const UserManagement: React.FC = () => {
     []
   );
   const [updateFormData, setUpdateFormData] = useState<UpdateFormData>({});
-const [newUser, setNewUser] = useState<NewUser>({
-  id: "",
-  nama: "",
-  email: "",
-  peran: "Manajer",
-  password: "",
-});
-const [confirmPassword, setConfirmPassword] = useState("");
-const [passwordVisibility, setPasswordVisibility] = useState(false);
-const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
-  useState(false);
+  const [newUser, setNewUser] = useState<NewUser>({
+    id: "",
+    nama: "",
+    email: "",
+    peran: "Manajer",
+    password: "",
+  });
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordVisibility, setPasswordVisibility] = useState(false);
+  const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
+    useState(false);
 
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
@@ -123,50 +126,49 @@ const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
     }
   };
 
- const validateNewUser = (): ValidationError[] => {
-   const errors: ValidationError[] = [];
+  const validateNewUser = (): ValidationError[] => {
+    const errors: ValidationError[] = [];
 
-   if (!/^\d{10}$/.test(newUser.id)) {
-     errors.push({
-       field: "id",
-       message: "ID must be a 10-digit number.",
-     });
-   }
+    if (!/^\d{10}$/.test(newUser.id)) {
+      errors.push({
+        field: "id",
+        message: "ID must be a 10-digit number.",
+      });
+    }
 
-   if (newUser.nama.length < 3 || newUser.nama.length > 100) {
-     errors.push({
-       field: "nama",
-       message: "Name must be between 3 and 100 characters.",
-     });
-   }
+    if (newUser.nama.length < 3 || newUser.nama.length > 100) {
+      errors.push({
+        field: "nama",
+        message: "Name must be between 3 and 100 characters.",
+      });
+    }
 
-   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-   if (!emailRegex.test(newUser.email)) {
-     errors.push({
-       field: "email",
-       message: "Please enter a valid email address.",
-     });
-   }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newUser.email)) {
+      errors.push({
+        field: "email",
+        message: "Please enter a valid email address.",
+      });
+    }
 
-   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-   if (!passwordRegex.test(newUser.password)) {
-     errors.push({
-       field: "password",
-       message:
-         "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
-     });
-   }
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(newUser.password)) {
+      errors.push({
+        field: "password",
+        message:
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
+      });
+    }
 
-   if (newUser.password !== confirmPassword) {
-     errors.push({
-       field: "confirmPassword",
-       message: "Passwords do not match.",
-     });
-   }
+    if (newUser.password !== confirmPassword) {
+      errors.push({
+        field: "confirmPassword",
+        message: "Passwords do not match.",
+      });
+    }
 
-   return errors;
- };
-
+    return errors;
+  };
 
   const validateUpdateUser = (): ValidationError[] => {
     const errors: ValidationError[] = [];
@@ -212,103 +214,103 @@ const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
     setIsUpdateUserModalOpen(true);
   };
 
- const handleUpdateUser = async () => {
-   if (!selectedUser || !updateFormData) return;
+  const handleUpdateUser = async () => {
+    if (!selectedUser || !updateFormData) return;
 
-   const errors = validateUpdateUser();
-   if (errors.length > 0) {
-     setValidationErrors(errors);
-     return;
-   }
+    const errors = validateUpdateUser();
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
 
-   try {
-     setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-     // Only include fields that have actually changed and aren't empty
-     const changes: UpdateFormData = {};
-     Object.keys(updateFormData).forEach((key) => {
-       const k = key as keyof UpdateFormData;
-       if (k === "password") {
-         // Only include password if it's not empty
-         if (updateFormData[k] && updateFormData[k]?.trim() !== "") {
-           changes[k] = updateFormData[k];
-         }
-       } else if (k === "peran") {
-         const peranValue = updateFormData[k];
-         if (
-           peranValue &&
-           ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"].includes(
-             peranValue
-           ) &&
-           peranValue !== selectedUser[k]
-         ) {
-           changes[k] = peranValue as Role;
-         }
-       } else {
-         // Handle other fields
-         if (updateFormData[k] !== selectedUser[k as keyof User]) {
-           changes[k] = updateFormData[k];
-         }
-       }
-     });
+      // Only include fields that have actually changed and aren't empty
+      const changes: UpdateFormData = {};
+      Object.keys(updateFormData).forEach((key) => {
+        const k = key as keyof UpdateFormData;
+        if (k === "password") {
+          // Only include password if it's not empty
+          if (updateFormData[k] && updateFormData[k]?.trim() !== "") {
+            changes[k] = updateFormData[k];
+          }
+        } else if (k === "peran") {
+          const peranValue = updateFormData[k];
+          if (
+            peranValue &&
+            ["Pimpinan", "Manajer", "Pemasaran", "Bendahara"].includes(
+              peranValue
+            ) &&
+            peranValue !== selectedUser[k]
+          ) {
+            changes[k] = peranValue as Role;
+          }
+        } else {
+          // Handle other fields
+          if (updateFormData[k] !== selectedUser[k as keyof User]) {
+            changes[k] = updateFormData[k];
+          }
+        }
+      });
 
-     // If no changes, just close the modal
-     if (Object.keys(changes).length === 0) {
-       setIsUpdateUserModalOpen(false);
-       return;
-     }
+      // If no changes, just close the modal
+      if (Object.keys(changes).length === 0) {
+        setIsUpdateUserModalOpen(false);
+        return;
+      }
 
-     const response = await fetch(
-       `${process.env.NEXT_PUBLIC_API_URL}/users/${selectedUser.email}`,
-       {
-         method: "PUT",
-         headers: {
-           "Content-Type": "application/json",
-           Authorization: `Bearer ${token}`,
-         },
-         body: JSON.stringify(changes),
-       }
-     );
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/users/${selectedUser.email}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(changes),
+        }
+      );
 
-     const data = await response.json();
+      const data = await response.json();
 
-     if (!response.ok) {
-       if (data.errors) {
-         setValidationErrors(data.errors);
-         throw new Error("Validation failed");
-       }
-       throw new Error(data.message || "Failed to update user");
-     }
+      if (!response.ok) {
+        if (data.errors) {
+          setValidationErrors(data.errors);
+          throw new Error("Validation failed");
+        }
+        throw new Error(data.message || "Failed to update user");
+      }
 
-     setUsers((prevUsers) =>
-       prevUsers.map((user) =>
-         user.email === selectedUser.email ? { ...user, ...changes } : user
-       )
-     );
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.email === selectedUser.email ? { ...user, ...changes } : user
+        )
+      );
 
-     dispatch(
-       showSuccessToast({
-         message: "Pengguna berhasil diperbarui",
-         isDarkMode,
-       })
-     );
+      dispatch(
+        showSuccessToast({
+          message: "Pengguna berhasil diperbarui",
+          isDarkMode,
+        })
+      );
 
-     setIsUpdateUserModalOpen(false);
-   } catch (error) {
-     console.error("Error updating user:", error);
-     dispatch(
-       showErrorToast({
-         message:
-           error instanceof Error
-             ? error.message
-             : "Gagal memperbarui pengguna",
-         isDarkMode,
-       })
-     );
-   } finally {
-     setIsLoading(false);
-   }
- };
+      setIsUpdateUserModalOpen(false);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      dispatch(
+        showErrorToast({
+          message:
+            error instanceof Error
+              ? error.message
+              : "Gagal memperbarui pengguna",
+          isDarkMode,
+        })
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleAddUser = async () => {
     setValidationErrors([]);
@@ -503,7 +505,7 @@ const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
         }}
         size="2xl"
       >
-        <ModalContent style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        <ModalContent style={{ maxHeight: "80vh", overflowY: "auto" }}>
           <ModalHeader>Tambah Pengguna Baru</ModalHeader>
           <ModalBody>
             <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
@@ -677,9 +679,6 @@ const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
                 <SelectItem key="Pemasaran" value="Pemasaran">
                   Pemasaran
                 </SelectItem>
-                <SelectItem key="Pimpinan" value="Pimpinan">
-                  Pimpinan
-                </SelectItem>
               </Select>
             </form>
           </ModalBody>
@@ -814,9 +813,6 @@ const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
                 </SelectItem>
                 <SelectItem key="Pemasaran" value="Pemasaran">
                   Pemasaran
-                </SelectItem>
-                <SelectItem key="Pimpinan" value="Pimpinan">
-                  Pimpinan
                 </SelectItem>
               </Select>
             </form>

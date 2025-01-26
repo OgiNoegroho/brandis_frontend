@@ -1,11 +1,11 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import {
   setIsDarkMode,
   setIsSidebarCollapsed,
-} from "@/redux/slices/globalSlice";
-import { removeToken } from "@/redux/slices/authSlice";
+} from "@/lib/redux/slices/globalSlice";
+import { removeToken } from "@/lib/redux/slices/authSlice";
 import { Menu, Moon, Sun, Settings, LogOut } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import {

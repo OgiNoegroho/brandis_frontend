@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import { Card, CardBody, CardFooter, Button } from "@nextui-org/react";
-import { showErrorToast } from "@/redux/slices/toastSlice";
+import { showErrorToast } from "@/lib/redux/slices/toastSlice";
 
 // Types
 type Outlet = {
@@ -13,7 +13,7 @@ type Outlet = {
   nama: string;
   alamat: string;
   nomor_telepon: string;
-}
+};
 
 const FinancialReports = () => {
   // Hooks

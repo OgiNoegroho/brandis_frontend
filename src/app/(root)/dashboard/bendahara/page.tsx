@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import {
   FaMoneyCheckAlt,
   FaChartPie,
@@ -22,7 +22,10 @@ import {
   TableRow,
   Spinner,
 } from "@nextui-org/react";
-import { showErrorToast, showSuccessToast } from "@/redux/slices/toastSlice";
+import {
+  showErrorToast,
+  showSuccessToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Updated Types to match API response
 interface OverdueInvoice {

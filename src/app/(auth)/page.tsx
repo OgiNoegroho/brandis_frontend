@@ -2,10 +2,13 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { setToken } from "@/redux/slices/authSlice";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import { setToken } from "@/lib/redux/slices/authSlice";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 import { Button, Card, Input } from "@nextui-org/react";
 import { Eye, EyeOff } from "lucide-react";
 

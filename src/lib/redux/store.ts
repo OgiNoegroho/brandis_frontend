@@ -1,8 +1,8 @@
 // src/redux/store.ts
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import globalReducer from "@/redux/slices/globalSlice";
-import authReducer from "@/redux/slices/authSlice";
-import toastReducer from "@/redux/slices/toastSlice";
+import globalReducer from "@/lib/redux/slices/globalSlice";
+import authReducer from "@/lib/redux/slices/authSlice";
+import toastReducer from "@/lib/redux/slices/toastSlice";
 import {
   persistReducer,
   FLUSH,

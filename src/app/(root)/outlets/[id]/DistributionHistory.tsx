@@ -17,9 +17,12 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Types
 type ProductEntry = {
@@ -92,7 +95,7 @@ interface DistributionModalProps {
 
 type DistributionHistoryProps = {
   outletId: string;
-}
+};
 
 const DistributionHistory: React.FC<DistributionHistoryProps> = ({
   outletId,
@@ -313,34 +316,34 @@ const DistributionHistory: React.FC<DistributionHistoryProps> = ({
     }
   };
 
-const handleProductChange = (productId: string) => {
-  setSelectedProduct(productId);
-  setSelectedBatch(""); // Reset batch selection when product changes
+  const handleProductChange = (productId: string) => {
+    setSelectedProduct(productId);
+    setSelectedBatch(""); // Reset batch selection when product changes
 
-  const product = products.find((p) => p.id.toString() === productId);
-  setNewProduct((prev) => ({
-    ...prev,
-    productName: product ? product.nama : "",
-    batchName: "", // Reset batch name when product changes
-    quantity: prev.quantity, // Preserve quantity if it exists
-  }));
-
-  fetchBatches(productId);
-};
-
-const handleBatchChange = (batchId: string) => {
-  console.log("Selected batch ID:", batchId); // For debugging
-  setSelectedBatch(batchId);
-
-  const batch = batches.find((b) => b.batch_id.toString() === batchId);
-  if (batch) {
+    const product = products.find((p) => p.id.toString() === productId);
     setNewProduct((prev) => ({
       ...prev,
-      batchName: batch.nama_batch,
-      quantity: prev.quantity,
+      productName: product ? product.nama : "",
+      batchName: "", // Reset batch name when product changes
+      quantity: prev.quantity, // Preserve quantity if it exists
     }));
-  }
-};
+
+    fetchBatches(productId);
+  };
+
+  const handleBatchChange = (batchId: string) => {
+    console.log("Selected batch ID:", batchId); // For debugging
+    setSelectedBatch(batchId);
+
+    const batch = batches.find((b) => b.batch_id.toString() === batchId);
+    if (batch) {
+      setNewProduct((prev) => ({
+        ...prev,
+        batchName: batch.nama_batch,
+        quantity: prev.quantity,
+      }));
+    }
+  };
 
   const handleRemoveProduct = (index: number) => {
     setProductEntries((prevEntries) =>

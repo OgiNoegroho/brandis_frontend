@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import {
   FaStore,
   FaExclamationTriangle,
@@ -20,7 +20,7 @@ import {
   TableHeader,
   TableRow,
 } from "@nextui-org/react";
-import { showErrorToast } from "@/redux/slices/toastSlice";
+import { showErrorToast } from "@/lib/redux/slices/toastSlice";
 
 interface OutletStock {
   outlet_nama: string;

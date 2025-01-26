@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useAppSelector } from "@/redux/hooks";
+import { useAppSelector } from "@/lib/redux/hooks";
 import { useRouter } from "next/navigation";
 import { Role } from "@/types/auth";
 
@@ -22,7 +22,7 @@ const DashboardPage = () => {
       }
     }
   }, [role, router]);
-  
+
   return <div>Loading...</div>;
 };
 

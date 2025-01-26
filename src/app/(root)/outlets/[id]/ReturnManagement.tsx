@@ -17,9 +17,12 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Types
 type Product = {
@@ -60,7 +63,9 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
   // Redux
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
-  const isDarkMode = useAppSelector((state: RootState) => state.global.isDarkMode);
+  const isDarkMode = useAppSelector(
+    (state: RootState) => state.global.isDarkMode
+  );
 
   // State
   const [returnData, setReturnData] = useState<ReturnHistory[]>([]);
@@ -82,7 +87,9 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
   const formatDate = (date?: string | number | null) => {
     if (!date) return "N/A";
     const d = new Date(date);
-    return `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}-${d.getFullYear()}`;
+    return `${String(d.getDate()).padStart(2, "0")}-${String(
+      d.getMonth() + 1
+    ).padStart(2, "0")}-${d.getFullYear()}`;
   };
 
   const resetForm = () => {
@@ -182,27 +189,35 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
       !newReturn.quantity ||
       !newReturn.reason
     ) {
-      dispatch(showErrorToast({ message: "Mohon lengkapi semua field", isDarkMode }));
+      dispatch(
+        showErrorToast({ message: "Mohon lengkapi semua field", isDarkMode })
+      );
       return;
     }
 
     const quantity = Number(newReturn.quantity);
     if (isNaN(quantity) || quantity <= 0) {
-      dispatch(showErrorToast({
-        message: "Kuantitas harus berupa angka positif",
-        isDarkMode,
-      }));
+      dispatch(
+        showErrorToast({
+          message: "Kuantitas harus berupa angka positif",
+          isDarkMode,
+        })
+      );
       return;
     }
 
-    const selectedProduct = products.find(p => p.product_id === newReturn.productId);
-    const selectedBatch = batches.find(b => b.batch_id === newReturn.batchId);
+    const selectedProduct = products.find(
+      (p) => p.product_id === newReturn.productId
+    );
+    const selectedBatch = batches.find((b) => b.batch_id === newReturn.batchId);
 
     if (!selectedProduct || !selectedBatch) {
-      dispatch(showErrorToast({
-        message: "Pemilihan produk atau batch tidak valid",
-        isDarkMode,
-      }));
+      dispatch(
+        showErrorToast({
+          message: "Pemilihan produk atau batch tidak valid",
+          isDarkMode,
+        })
+      );
       return;
     }
 
@@ -216,19 +231,24 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
       outlet_id: Number(outletId),
     };
 
-    setReturnData(prev => [...prev, newEntry]);
+    setReturnData((prev) => [...prev, newEntry]);
     setIsModalOpen(false);
     resetForm();
   };
 
   const handleSaveReturns = async () => {
     if (returnData.length === 0) {
-      dispatch(showErrorToast({ message: "Tidak ada retur untuk disimpan", isDarkMode }));
+      dispatch(
+        showErrorToast({
+          message: "Tidak ada retur untuk disimpan",
+          isDarkMode,
+        })
+      );
       return;
     }
 
     try {
-      const returnRequestBody = returnData.map(item => ({
+      const returnRequestBody = returnData.map((item) => ({
         outlet_id: item.outlet_id,
         batch_id: item.batch_id,
         kuantitas: item.quantity,
@@ -252,7 +272,7 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
         throw new Error(error.message || "Gagal menyimpan data retur");
       }
 
-      setReturnHistory(prev => [...prev, ...returnData]);
+      setReturnHistory((prev) => [...prev, ...returnData]);
       setReturnData([]);
       dispatch(
         showSuccessToast({ message: "Retur berhasil disimpan!", isDarkMode })
@@ -268,7 +288,7 @@ const ReturnManagement: React.FC<ReturnManagementProps> = ({ outletId }) => {
   // Effects
   useEffect(() => {
     const currentDate = new Date().toISOString().split("T")[0];
-    setNewReturn(prev => ({
+    setNewReturn((prev) => ({
       ...prev,
       returnDate: currentDate,
     }));

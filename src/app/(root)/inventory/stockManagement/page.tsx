@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import { Info } from "lucide-react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import { showErrorToast } from "@/lib/redux/slices/toastSlice";
 import {
   Card,
   CardBody,

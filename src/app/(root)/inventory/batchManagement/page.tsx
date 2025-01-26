@@ -20,9 +20,12 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Types
 type Batch = {

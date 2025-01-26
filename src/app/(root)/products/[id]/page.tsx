@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
 import {
   Modal,
   ModalContent,
@@ -14,7 +14,10 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Interfaces
 interface Product {
@@ -292,7 +295,7 @@ const ProductDetail: React.FC = () => {
           <div className="relative w-full max-w-md mx-auto lg:mx-0">
             <div className="aspect-square w-full relative mb-2">
               <img
-                src={primaryImage ? primaryImage.url : "/noImageAvailable.jpg"}
+                src={primaryImage ? primaryImage.url : "/noImageAvailable.png"}
                 alt={formData.nama}
                 className="w-full h-full object-cover cursor-pointer rounded-lg shadow-md transition-transform hover:scale-[1.02]"
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}

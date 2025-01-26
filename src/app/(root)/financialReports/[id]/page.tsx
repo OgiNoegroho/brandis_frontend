@@ -23,9 +23,12 @@ import {
   Input,
 } from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Types
 type DistributionTableEntry = {
@@ -363,38 +366,34 @@ const FinancialReportsDetails: React.FC = () => {
                 Detail Distribusi
               </ModalHeader>
               <ModalBody>
-               
-                  <table className="w-full border-collapse">
-                    <thead>
-                      <tr>
-                        <th className="border-b text-left px-4 py-2">
-                          Nama Batch
-                        </th>
-                        <th className="border-b text-left px-4 py-2">
-                          Nama Produk
-                        </th>
-                        <th className="border-b text-left px-4 py-2">
-                          Kuantitas
-                        </th>
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="border-b text-left px-4 py-2">
+                        Nama Batch
+                      </th>
+                      <th className="border-b text-left px-4 py-2">
+                        Nama Produk
+                      </th>
+                      <th className="border-b text-left px-4 py-2">
+                        Kuantitas
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {detailData?.map((item) => (
+                      <tr key={item.batch_id}>
+                        <td className="border-t px-4 py-2">
+                          {item.batch_name}
+                        </td>
+                        <td className="border-t px-4 py-2">
+                          {item.product_name}
+                        </td>
+                        <td className="border-t px-4 py-2">{item.quantity}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {detailData?.map((item) => (
-                        <tr key={item.batch_id}>
-                          <td className="border-t px-4 py-2">
-                            {item.batch_name}
-                          </td>
-                          <td className="border-t px-4 py-2">
-                            {item.product_name}
-                          </td>
-                          <td className="border-t px-4 py-2">
-                            {item.quantity}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-              
+                    ))}
+                  </tbody>
+                </table>
               </ModalBody>
               <ModalFooter>
                 <Button color="danger" variant="light" onPress={onClose}>

@@ -16,9 +16,12 @@ import {
   Input,
   Textarea,
 } from "@nextui-org/react";
-import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 
 // Interfaces
 interface Product {
@@ -240,7 +243,7 @@ const ProductsPage: React.FC = () => {
                     alt={product.nama}
                     className="w-full object-cover h-[140px] rounded-lg" // Fixed height and rounded corners
                     src={
-                      primaryImage ? primaryImage.url : "/noImageAvailable.jpg"
+                      primaryImage ? primaryImage.url : "/noImageAvailable.png"
                     }
                     width={500} // Fixed width for all images
                     height={500} // Fixed height for all images

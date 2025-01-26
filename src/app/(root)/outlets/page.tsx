@@ -2,9 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAppSelector, useAppDispatch } from "@/redux/hooks";
-import { RootState } from "@/redux/store";
-import { showSuccessToast, showErrorToast } from "@/redux/slices/toastSlice";
+import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
+import { RootState } from "@/lib/redux/store";
+import {
+  showSuccessToast,
+  showErrorToast,
+} from "@/lib/redux/slices/toastSlice";
 import {
   Card,
   CardBody,
@@ -24,13 +27,13 @@ type Outlet = {
   nama: string;
   alamat: string;
   nomor_telepon: string;
-}
+};
 
 type FormData = {
   outletName: string;
   address: string;
   phone: string;
-}
+};
 
 const initialFormData: FormData = {
   outletName: "",
