@@ -21,6 +21,7 @@ import {
   ModalBody,
   ModalFooter,
   Input,
+  Spinner,
 } from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -82,6 +83,7 @@ const FinancialReportsDetails: React.FC = () => {
   const [fakturData, setFakturData] = useState<FakturEntry[] | null>(null);
   const [amountPaidInput, setAmountPaidInput] = useState<string>("");
   const [isAmountUpdating, setIsAmountUpdating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Redux
   const dispatch = useAppDispatch();
@@ -100,8 +102,10 @@ const FinancialReportsDetails: React.FC = () => {
   };
 
   // API Calls
+
   const fetchOutletDetails = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/outlet/${id}`,
         {
@@ -120,11 +124,14 @@ const FinancialReportsDetails: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchLaporanDistributions = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/laporanOutlet/${id}`,
         {
@@ -145,12 +152,14 @@ const FinancialReportsDetails: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Event Handlers
   const handleViewDetail = async (distributionId: number) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/distribusi/detail/${distributionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -168,11 +177,14 @@ const FinancialReportsDetails: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleViewFaktur = async (distributionId: number) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/faktur/${distributionId}`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -189,6 +201,8 @@ const FinancialReportsDetails: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -285,6 +299,15 @@ const FinancialReportsDetails: React.FC = () => {
       fetchLaporanDistributions();
     }
   }, [id, token]);
+
+  // Render Methods
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

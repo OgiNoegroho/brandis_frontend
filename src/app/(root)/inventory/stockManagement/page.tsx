@@ -22,6 +22,7 @@ import {
   Chip,
   Button,
   Divider,
+  Spinner
 } from "@nextui-org/react";
 
 // Types
@@ -53,6 +54,7 @@ const StockManagement: React.FC = () => {
   const [batchDetails, setBatchDetails] = useState<BatchDetail[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [loadingBatchDetails, setLoadingBatchDetails] = useState(false);
 
   // Utility Functions
@@ -102,6 +104,7 @@ const StockManagement: React.FC = () => {
   };
 
   // API Calls
+
   const fetchInventory = async () => {
     if (!token) {
       console.error("Token tidak tersedia");
@@ -109,6 +112,7 @@ const StockManagement: React.FC = () => {
     }
 
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory`,
         {
@@ -133,6 +137,8 @@ const StockManagement: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -142,9 +148,8 @@ const StockManagement: React.FC = () => {
       return;
     }
 
-    setLoadingBatchDetails(true);
-
     try {
+      setLoadingBatchDetails(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/${produkId}`,
         {
@@ -192,6 +197,15 @@ const StockManagement: React.FC = () => {
   useEffect(() => {
     fetchInventory();
   }, [token]);
+
+  // Render Methods
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

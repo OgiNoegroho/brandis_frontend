@@ -15,6 +15,7 @@ import {
   Button,
   Input,
   Textarea,
+  Spinner,
 } from "@nextui-org/react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
@@ -211,6 +212,15 @@ const ProductsPage: React.FC = () => {
   useEffect(() => {
     fetchProducts();
   }, [token, dispatch, isDarkMode]);
+
+  // Render Methods
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   // Computed Properties
   const onlyRole = role === "Pimpinan" || role === "Manajer";

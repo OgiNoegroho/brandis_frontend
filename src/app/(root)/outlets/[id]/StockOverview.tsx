@@ -15,14 +15,11 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Divider,
+  Divider
 } from "@nextui-org/react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
-import {
-  showSuccessToast,
-  showErrorToast,
-} from "@/lib/redux/slices/toastSlice";
+import { showSuccessToast, showErrorToast } from "@/lib/redux/slices/toastSlice";
 
 type StockOverview = {
   produk_id: number;

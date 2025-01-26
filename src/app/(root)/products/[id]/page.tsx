@@ -13,6 +13,7 @@ import {
   Button,
   Input,
   Textarea,
+  Spinner,
 } from "@nextui-org/react";
 import {
   showSuccessToast,
@@ -53,7 +54,7 @@ const ProductDetail: React.FC = () => {
   // State Management
   const [product, setProduct] = useState<Product | null>(null);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isImageUploading, setImageUploading] = useState(false);
@@ -92,7 +93,7 @@ const ProductDetail: React.FC = () => {
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     setProduct(null);
 
     try {
@@ -122,7 +123,7 @@ const ProductDetail: React.FC = () => {
         })
       );
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -274,10 +275,10 @@ const ProductDetail: React.FC = () => {
     product?.images?.find((img) => img.isPrimary) || product?.images?.[0];
 
   // Render Methods
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <p className="animate-pulse text-lg">Memuat...</p>
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
       </div>
     );
   }
@@ -426,7 +427,7 @@ const ProductDetail: React.FC = () => {
             </Button>
             <Button
               onPress={handleEdit}
-              disabled={loading}
+              disabled={isLoading}
               color="primary"
               variant="flat"
             >
@@ -462,7 +463,7 @@ const ProductDetail: React.FC = () => {
             </Button>
             <Button
               onPress={handleDelete}
-              disabled={loading}
+              disabled={isLoading}
               color="danger"
               variant="flat"
             >

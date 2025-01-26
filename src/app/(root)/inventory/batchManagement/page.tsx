@@ -19,6 +19,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Spinner
 } from "@nextui-org/react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
@@ -58,6 +59,7 @@ const BatchManagement: React.FC = () => {
   const [emptyBatches, setEmptyBatches] = useState<Batch[]>([]);
   const [selectedBatch, setSelectedBatch] = useState<Batch | null>(null);
   const [batchToDelete, setBatchToDelete] = useState<Batch | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Form States
   const [batchName, setBatchName] = useState("");
@@ -95,6 +97,7 @@ const BatchManagement: React.FC = () => {
   // API Calls
   const fetchBatches = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch`,
         {
@@ -113,11 +116,14 @@ const BatchManagement: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchProducts = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/products`,
         {
@@ -136,11 +142,14 @@ const BatchManagement: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchEmptyBatches = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/empty`,
         {
@@ -159,11 +168,14 @@ const BatchManagement: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const fetchBatchDetails = async (batchId: number) => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/${batchId}`,
         {
@@ -191,12 +203,14 @@ const BatchManagement: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // CRUD Operations
   const addBatch = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch`,
         {
@@ -227,6 +241,8 @@ const BatchManagement: React.FC = () => {
       dispatch(
         showErrorToast({ message: "Gagal menambahkan batch", isDarkMode })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -234,6 +250,7 @@ const BatchManagement: React.FC = () => {
     if (!selectedBatch) return;
 
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/${selectedBatch.batch_id}`,
         {
@@ -268,6 +285,8 @@ const BatchManagement: React.FC = () => {
       dispatch(
         showErrorToast({ message: "Gagal memperbarui batch", isDarkMode })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -275,6 +294,7 @@ const BatchManagement: React.FC = () => {
     if (!batchToDelete) return;
 
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/inventory/batch/${batchToDelete.batch_id}`,
         {
@@ -297,6 +317,8 @@ const BatchManagement: React.FC = () => {
       dispatch(
         showErrorToast({ message: "Gagal menghapus batch", isDarkMode })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -343,6 +365,15 @@ const BatchManagement: React.FC = () => {
     fetchProducts();
     fetchEmptyBatches();
   }, [token]);
+
+  // Render Methods
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

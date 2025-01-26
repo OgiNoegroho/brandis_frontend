@@ -9,6 +9,7 @@ import {
   Tabs,
   Tab,
   Divider,
+  Spinner
 } from "@nextui-org/react";
 import { PhoneCall, MapPin } from "lucide-react";
 import StockOverview from "./StockOverview";
@@ -57,8 +58,8 @@ const OutletDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse text-lg">Loading...</div>
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
       </div>
     );
   }

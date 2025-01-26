@@ -17,6 +17,7 @@ import {
   Input,
   Select,
   SelectItem,
+  Spinner,
 } from "@nextui-org/react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
@@ -443,6 +444,15 @@ const UserManagement: React.FC = () => {
     setIsAddUserModalOpen(true);
     setValidationErrors([]);
   };
+
+  // Render Methods
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">

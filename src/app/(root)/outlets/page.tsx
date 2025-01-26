@@ -19,6 +19,7 @@ import {
   ModalFooter,
   Button,
   Input,
+  Spinner,
 } from "@nextui-org/react";
 
 // Types and Interfaces
@@ -303,7 +304,11 @@ const Outlet = () => {
   };
 
   if (isLoading) {
-    return <div className="p-6 text-center">Memuat data outlet...</div>;
+    return (
+      <div className="flex justify-center items-center py-64">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
   const onlyRole = role === "Pimpinan" || role === "Pemasaran";

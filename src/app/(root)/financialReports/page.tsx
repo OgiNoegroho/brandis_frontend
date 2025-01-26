@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/lib/redux/hooks";
 import { RootState } from "@/lib/redux/store";
-import { Card, CardBody, CardFooter, Button } from "@nextui-org/react";
+import { Card, CardBody, CardFooter, Button, Spinner } from "@nextui-org/react";
 import { showErrorToast } from "@/lib/redux/slices/toastSlice";
 
 // Types
@@ -28,6 +28,7 @@ const FinancialReports = () => {
 
   // State
   const [outlets, setOutlets] = useState<Outlet[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // API Calls
   const fetchOutlets = async () => {
@@ -60,6 +61,8 @@ const FinancialReports = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -72,6 +75,15 @@ const FinancialReports = () => {
   useEffect(() => {
     fetchOutlets();
   }, [token]);
+
+    // Render Methods
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center py-64">
+          <Spinner size="lg" />
+        </div>
+      );
+    }
 
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
