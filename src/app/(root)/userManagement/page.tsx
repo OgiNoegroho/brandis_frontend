@@ -54,7 +54,7 @@ const UserManagement: React.FC = () => {
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
   const [isDeleteUserModalOpen, setIsDeleteUserModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>(
     []
   );
@@ -99,6 +99,7 @@ const UserManagement: React.FC = () => {
 
   const fetchUsers = async () => {
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/users/`,
         {
@@ -124,6 +125,8 @@ const UserManagement: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -457,7 +460,7 @@ const UserManagement: React.FC = () => {
   return (
     <div className="container pl-12 sm:px-6 lg:pl-0 content">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-bold">Daftar Pengguna</h1>
+        <h2 className="text-2xl font-bold">Daftar Pengguna</h2>
         <Button variant="flat" color="success" onPress={handleOpenAddUserModal}>
           Tambah Pengguna
         </Button>

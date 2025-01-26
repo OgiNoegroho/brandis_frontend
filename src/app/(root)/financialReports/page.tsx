@@ -28,7 +28,7 @@ const FinancialReports = () => {
 
   // State
   const [outlets, setOutlets] = useState<Outlet[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // API Calls
   const fetchOutlets = async () => {

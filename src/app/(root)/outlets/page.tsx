@@ -80,7 +80,6 @@ const Outlet = () => {
   const fetchOutlets = async () => {
     try {
       setIsLoading(true);
-
       if (!token) {
         throw new Error("Token autentikasi tidak ditemukan");
       }

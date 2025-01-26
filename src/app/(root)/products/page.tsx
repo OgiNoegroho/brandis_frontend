@@ -63,7 +63,7 @@ const ProductsPage: React.FC = () => {
     INITIAL_PRODUCT_STATE
   );
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Redux Selectors
   const token = useAppSelector((state: RootState) => state.auth.token);
@@ -92,6 +92,7 @@ const ProductsPage: React.FC = () => {
     }
 
     try {
+      setIsLoading(true);
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/products`,
         {
@@ -113,6 +114,8 @@ const ProductsPage: React.FC = () => {
           isDarkMode,
         })
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
