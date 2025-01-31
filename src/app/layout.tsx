@@ -24,7 +24,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <StoreProvider>
-          <ToastContainer position="bottom-right" autoClose={3000} /> {children}
+          {children}
         </StoreProvider>
       </body>
     </html>

@@ -6,8 +6,8 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
 import { setupListeners } from "@reduxjs/toolkit/query";
-import { makeStore } from "./store"; // Import the makeStore function
-import { AppStore } from "./store"; // Import AppStore type
+import { makeStore } from "./store";
+import { AppStore } from "./store";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -28,7 +28,7 @@ export default function StoreProvider({
     <Provider store={storeRef.current}>
       <PersistGate loading={null} persistor={persistStore(storeRef.current)}>
         {children}
-        <ToastContainer />
+        <ToastContainer position="bottom-right" autoClose={2000}/>
       </PersistGate>
     </Provider>
   );

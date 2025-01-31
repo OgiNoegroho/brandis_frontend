@@ -28,6 +28,7 @@ import {
 } from "@/lib/redux/slices/toastSlice";
 import { Role } from "@/types/auth";
 
+// Interfaces
 type User = {
   id: string;
   nama: string;
@@ -49,6 +50,7 @@ type ValidationError = {
 };
 
 const UserManagement: React.FC = () => {
+  // State Management
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isUpdateUserModalOpen, setIsUpdateUserModalOpen] = useState(false);
@@ -71,13 +73,14 @@ const UserManagement: React.FC = () => {
   const [confirmPasswordVisibility, setConfirmPasswordVisibility] =
     useState(false);
 
+  // Redux Selectors
   const dispatch = useAppDispatch();
   const token = useAppSelector((state: RootState) => state.auth.token);
   const isDarkMode = useAppSelector(
     (state: RootState) => state.global.isDarkMode
   );
 
-  // Add the missing handleUpdateFormChange function
+  // API Calls
   const handleUpdateFormChange = (
     field: keyof UpdateFormData,
     value: string
@@ -87,12 +90,10 @@ const UserManagement: React.FC = () => {
       [field]: value,
     }));
 
-    // Clear validation error for the field being changed
     setValidationErrors((prev) =>
       prev.filter((error) => error.field !== field)
     );
   };
-
   useEffect(() => {
     fetchUsers();
   }, [token]);
@@ -230,12 +231,10 @@ const UserManagement: React.FC = () => {
     try {
       setIsLoading(true);
 
-      // Only include fields that have actually changed and aren't empty
       const changes: UpdateFormData = {};
       Object.keys(updateFormData).forEach((key) => {
         const k = key as keyof UpdateFormData;
         if (k === "password") {
-          // Only include password if it's not empty
           if (updateFormData[k] && updateFormData[k]?.trim() !== "") {
             changes[k] = updateFormData[k];
           }
@@ -251,14 +250,12 @@ const UserManagement: React.FC = () => {
             changes[k] = peranValue as Role;
           }
         } else {
-          // Handle other fields
           if (updateFormData[k] !== selectedUser[k as keyof User]) {
             changes[k] = updateFormData[k];
           }
         }
       });
 
-      // If no changes, just close the modal
       if (Object.keys(changes).length === 0) {
         setIsUpdateUserModalOpen(false);
         return;
